@@ -63,3 +63,39 @@ add_custom_command(TARGET stapikmedia POST_BUILD
         ${CMAKE_CURRENT_SOURCE_DIR}/resources
         $<TARGET_FILE_DIR:stapikmedia>/resources
 )
+
+install(TARGETS stapikmedia
+        RUNTIME DESTINATION lib/stapikmedia
+)
+
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources/
+        DESTINATION lib/stapikmedia/resources
+)
+
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/packaging/stapikmedia-launcher.sh
+        DESTINATION bin
+        RENAME stapikmedia
+)
+
+install(FILES ${CMAKE_SOURCE_DIR}/packaging/stapikmedia.desktop
+        DESTINATION share/applications
+)
+
+install(FILES ${CMAKE_SOURCE_DIR}/packaging/icon.png
+        DESTINATION share/icons/hicolor/256x256/apps
+        RENAME stapikmedia.png
+)
+
+set(CPACK_PACKAGE_NAME "stapikmedia")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_PACKAGE_VENDOR ${PROJECT_AUTHOR})
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A retro-styled desktop media-tracking application")
+set(CPACK_PACKAGE_CONTACT "sebastian.smolinski6@gmail.com")
+
+set(CPACK_GENERATOR "DEB")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${PROJECT_AUTHOR} <sebastian.smolinski6@gmail.com>")
+set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+
+include(CPack)

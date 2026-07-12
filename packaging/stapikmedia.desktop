@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Stapik Media
+Comment=Oldschool media tracker
+Exec=stapikmedia
+Icon=stapikmedia
+Terminal=false
+Categories=Office;
+StartupWMClass=stapikmedia
