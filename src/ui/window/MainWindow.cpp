@@ -72,6 +72,7 @@ void MainWindow::initSignals()
 
     m_model.signalEntriesChanged().connect([this] {
         m_currentPage = 1;
+        m_filterBar.setAvailableYears(EntryFilterService::distinctConsumedYears(m_model.entries()));
         applyFiltersAndRefresh();
     });
 
