@@ -1,6 +1,4 @@
 #include "MediaListView.hpp"
-
-#include "../../core/model/MediaEntry.hpp"
 #include "stapik/locale/LocaleManager.hpp"
 
 MediaListView::MediaListView() : Box(Gtk::Orientation::VERTICAL, LIST_SPACING)
@@ -10,25 +8,26 @@ MediaListView::MediaListView() : Box(Gtk::Orientation::VERTICAL, LIST_SPACING)
     m_emptyPlaceholder.add_css_class("dim-label");
 }
 
-void MediaListView::refresh(const std::vector<MediaEntry>& allEntries, const MediaCategory filterCategory)
+void MediaListView::refresh(const std::vector<MediaEntry>& allEntries, const std::vector<std::size_t>& indicesToShow)
 {
     clearRows();
 
-    bool anyVisible = false;
-    for (std::size_t i = 0; i < allEntries.size(); ++i)
+    for (const auto index : indicesToShow)
     {
-        if (allEntries[i].category != filterCategory)
+        if (index >= allEntries.size())
+        {
+            g_warning("MediaListView::refresh: index out of range: %zu", index);
             continue;
+        }
 
-        anyVisible = true;
-        auto row = std::make_unique<MediaEntryRow>(allEntries[i]);
-        row->signalEditRequested().connect([this, i] { m_signalEditRequested.emit(i); });
-        row->signalDeleteRequested().connect([this, i] { m_signalDeleteRequested.emit(i); });
+        auto row = std::make_unique<MediaEntryRow>(allEntries[index]);
+        row->signalEditRequested().connect([this, index] { m_signalEditRequested.emit(index); });
+        row->signalDeleteRequested().connect([this, index] { m_signalDeleteRequested.emit(index); });
         append(*row);
         m_rows.push_back(std::move(row));
     }
 
-    if (!anyVisible)
+    if (indicesToShow.empty())
         append(m_emptyPlaceholder);
 }
 
@@ -42,10 +41,11 @@ void MediaListView::clearRows()
         remove(m_emptyPlaceholder);
 }
 
-void MediaListView::refreshLabels() const
+void MediaListView::refreshLabels()
 {
     for (const auto& row : m_rows)
         row->refreshLabels();
+    m_emptyPlaceholder.set_text(LocaleManager::instance().translate("list.empty"));
 }
 
 sigc::signal<void(std::size_t)>& MediaListView::signalEditRequested()

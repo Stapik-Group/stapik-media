@@ -122,3 +122,15 @@
     font-size: 11px;
     color: #606060;
 }
+
+.entry-filter-bar {
+    padding: 6px 8px;
+}
+
+.pagination-bar {
+    padding: 6px 8px;
+}
+
+.pagination-bar label {
+    min-width: 60px;
+}

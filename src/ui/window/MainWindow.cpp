@@ -2,6 +2,7 @@
 
 #include "../../infrastructure/storage/Storage.hpp"
 #include "../dialog/MediaEntryDialog.hpp"
+#include "../util/EntryFilterService.hpp"
 
 #include "stapik/storage/CloudStorageConfigStorage.hpp"
 #include "stapik/locale/LocaleManager.hpp"
@@ -47,7 +48,9 @@ void MainWindow::initLayout()
     m_listScroller.add_css_class("media-list-scroller");
 
     m_rightBox.append(m_listHeaderLabel);
+    m_rightBox.append(m_filterBar);
     m_rightBox.append(m_listScroller);
+    m_rightBox.append(m_paginationBar);
     m_rightBox.append(m_addButton);
 
     m_contentBox.append(m_sidebar);
@@ -63,16 +66,21 @@ void MainWindow::initSignals()
     m_sidebar.signalCategorySelected().connect(sigc::mem_fun(*this, &MainWindow::onCategorySelected));
     m_listView.signalEditRequested().connect(sigc::mem_fun(*this, &MainWindow::onEntryEditRequested));
     m_listView.signalDeleteRequested().connect(sigc::mem_fun(*this, &MainWindow::onEntryDeleteRequested));
+    m_filterBar.signalFilterChanged().connect(sigc::mem_fun(*this, &MainWindow::onFilterChanged));
+    m_paginationBar.signalPreviousRequested().connect(sigc::mem_fun(*this, &MainWindow::onPreviousPageRequested));
+    m_paginationBar.signalNextRequested().connect(sigc::mem_fun(*this, &MainWindow::onNextPageRequested));
 
     m_model.signalEntriesChanged().connect([this] {
-        m_listView.refresh(m_model.entries(), m_sidebar.selectedCategory());
+        m_currentPage = 1;
+        applyFiltersAndRefresh();
     });
 
     LocaleManager::instance().signalLocaleChanged().connect([this] {
         m_addButton.set_label(LocaleManager::instance().translate("window.button.add"));
         m_sidebar.refreshLabels();
         m_listView.refreshLabels();
-        m_listHeaderLabel.set_text(m_sidebar.labelFor(m_sidebar.selectedCategory()));
+        m_filterBar.refreshLabels();
+        m_listHeaderLabel.set_text(CategorySidebar::labelFor(m_sidebar.selectedCategory()));
     });
 
     onCategorySelected(m_sidebar.selectedCategory());
@@ -90,8 +98,11 @@ void MainWindow::initCloud()
 
 void MainWindow::onCategorySelected(const MediaCategory category)
 {
-    m_listView.refresh(m_model.entries(), category);
-    m_listHeaderLabel.set_text(m_sidebar.labelFor(category));
+    m_currentPage = 1;
+    m_filterBar.reset();
+    m_filterBar.setAvailableYears(EntryFilterService::distinctConsumedYears(m_model.entries()));
+    m_listHeaderLabel.set_text(CategorySidebar::labelFor(category));
+    applyFiltersAndRefresh();
 }
 
 void MainWindow::onAddClicked()
@@ -140,4 +151,51 @@ void MainWindow::onEntryEditRequested(const std::size_t index)
 void MainWindow::onEntryDeleteRequested(const std::size_t index)
 {
     m_model.removeEntry(index);
+}
+
+void MainWindow::onFilterChanged()
+{
+    m_currentPage = 1;
+    applyFiltersAndRefresh();
+}
+
+void MainWindow::onPreviousPageRequested()
+{
+    if (m_currentPage > 1)
+        --m_currentPage;
+    applyFiltersAndRefresh();
+}
+
+void MainWindow::onNextPageRequested()
+{
+    ++m_currentPage;
+    applyFiltersAndRefresh();
+}
+
+void MainWindow::applyFiltersAndRefresh()
+{
+    const EntryFilter filter{
+        m_sidebar.selectedCategory(),
+        m_filterBar.selectedMonth(),
+        m_filterBar.selectedYear()
+    };
+
+    const auto matchingIndices = EntryFilterService::filterIndices(m_model.entries(), filter);
+
+    const auto totalPages = matchingIndices.empty()
+        ? std::size_t{1}
+    : (matchingIndices.size() + PAGE_SIZE - 1) / PAGE_SIZE;
+
+    if (m_currentPage > totalPages)
+        m_currentPage = totalPages;
+
+    const auto startIndex = (m_currentPage - 1) * PAGE_SIZE;
+    const auto endIndex = std::min(startIndex + PAGE_SIZE, matchingIndices.size());
+
+    const std::vector pageIndices(
+        matchingIndices.begin() + static_cast<std::ptrdiff_t>(startIndex),
+        matchingIndices.begin() + static_cast<std::ptrdiff_t>(endIndex));
+
+    m_listView.refresh(m_model.entries(), pageIndices);
+    m_paginationBar.setState(m_currentPage, totalPages);
 }

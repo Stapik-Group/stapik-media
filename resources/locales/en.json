@@ -70,5 +70,10 @@
 
   "cloud.connected": "Connected",
   "cloud.connected.secondary": "Successfully connected to the cloud.",
-  "cloud.failed.header": "Connection failed"
+  "cloud.failed.header": "Connection failed",
+
+  "filter.year.label": "Year",
+  "filter.year.all": "All",
+  "filter.month.label": "Month",
+  "filter.month.all": "All"
 }

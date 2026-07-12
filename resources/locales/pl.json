@@ -70,5 +70,10 @@
 
   "cloud.connected": "Połączono",
   "cloud.connected.secondary": "Pomyślnie połączono z chmurą.",
-  "cloud.failed.header": "Nie udało się połączyć"
+  "cloud.failed.header": "Nie udało się połączyć",
+
+  "filter.year.label": "Rok",
+  "filter.year.all": "Wszystkie",
+  "filter.month.label": "Miesiąc",
+  "filter.month.all": "Wszystkie"
 }

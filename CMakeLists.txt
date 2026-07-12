@@ -34,12 +34,15 @@ add_executable(stapikmedia
         src/ui/dialog/AboutDialog.cpp
         src/ui/dialog/MediaEntryDialog.cpp
         src/ui/util/DateFormatter.cpp
+        src/ui/util/EntryFilterService.cpp
         src/ui/view/CategorySidebar.cpp
         src/ui/view/MediaListView.cpp
         src/ui/widget/ConsumedDatePicker.cpp
         src/ui/widget/MainMenu.cpp
         src/ui/widget/MediaEntryRow.cpp
         src/ui/widget/ReleaseDatePicker.cpp
+        src/ui/widget/EntryFilterBar.cpp
+        src/ui/widget/PaginationBar.cpp
         src/ui/window/MainWindow.cpp
         src/main.cpp
 )
