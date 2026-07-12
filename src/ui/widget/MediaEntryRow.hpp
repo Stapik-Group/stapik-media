@@ -22,6 +22,8 @@ private:
     static constexpr int ROW_MARGIN = 8;
     static constexpr int COLUMN_SPACING = 12;
 
+    MediaEntry m_entry;
+
     Gtk::Box m_infoBox;
     Gtk::Label m_titleLabel;
     Gtk::Label m_detailsLabel;

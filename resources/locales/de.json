@@ -39,6 +39,7 @@
   "dialog.about.version": "Version:",
   "dialog.about.author": "Autor:",
   "dialog.button.ok": "OK",
+  "dialog.button.cancel": "Abbrechen",
 
   "picker.precision.label": "Genauigkeit des Erscheinungsdatums",
   "picker.precision.day": "Tag",

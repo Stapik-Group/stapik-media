@@ -39,6 +39,7 @@
   "dialog.about.version": "Version:",
   "dialog.about.author": "Author:",
   "dialog.button.ok": "OK",
+  "dialog.button.cancel": "Cancel",
 
   "picker.precision.label": "Release date precision",
   "picker.precision.day": "Day",

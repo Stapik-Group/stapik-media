@@ -31,7 +31,10 @@ void EntryFilterBar::initLayout()
 
 void EntryFilterBar::setAvailableYears(const std::set<unsigned>& years)
 {
+    m_lastAvailableYears = years;
+
     const auto& loc = LocaleManager::instance();
+    const auto previousSelection = selectedYear();
 
     std::vector<Glib::ustring> labels{ loc.translate("filter.year.all") };
     m_yearValues.clear();
@@ -45,7 +48,17 @@ void EntryFilterBar::setAvailableYears(const std::set<unsigned>& years)
 
     const auto model = Gtk::StringList::create(labels);
     m_yearDropDown.set_model(model);
-    m_yearDropDown.set_selected(ALL_YEARS_INDEX);
+    if (previousSelection.has_value())
+    {
+        const auto it = std::ranges::find(m_yearValues, previousSelection.value());
+        m_yearDropDown.set_selected(it != m_yearValues.end()
+            ? static_cast<guint>(std::distance(m_yearValues.begin(), it))
+            : ALL_YEARS_INDEX);
+    }
+    else
+    {
+        m_yearDropDown.set_selected(ALL_YEARS_INDEX);
+    }
 }
 
 void EntryFilterBar::rebuildMonthOptions()
@@ -107,6 +120,15 @@ void EntryFilterBar::refreshLabels()
     const auto& loc = LocaleManager::instance();
     m_yearLabel.set_text(loc.translate("filter.year.label"));
     m_monthLabel.set_text(loc.translate("filter.month.label"));
+
+    const auto previousMonth = selectedMonth();
+
+    setAvailableYears(m_lastAvailableYears);
+    rebuildMonthOptions();
+
+    if (previousMonth.has_value())
+        m_monthDropDown.set_selected(previousMonth.value());
+
 }
 
 sigc::signal<void()> & EntryFilterBar::signalFilterChanged()

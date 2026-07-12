@@ -32,6 +32,7 @@ private:
     Gtk::DropDown m_yearDropDown;
 
     std::vector<unsigned> m_yearValues;
+    std::set<unsigned> m_lastAvailableYears;
 
     sigc::signal<void()> m_signalFilterChanged;
 

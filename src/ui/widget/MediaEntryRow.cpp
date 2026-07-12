@@ -9,7 +9,8 @@
 MediaEntryRow::MediaEntryRow(const MediaEntry& entry) :
     Box(Gtk::Orientation::HORIZONTAL, COLUMN_SPACING),
     m_infoBox(Gtk::Orientation::VERTICAL, ROW_SPACING),
-    m_buttonsBox(Gtk::Orientation::HORIZONTAL, ROW_SPACING)
+    m_buttonsBox(Gtk::Orientation::HORIZONTAL, ROW_SPACING),
+    m_entry(entry)
 {
     initLayout(entry);
 }
@@ -83,6 +84,13 @@ void MediaEntryRow::refreshLabels()
 {
     m_editButton.set_label(LocaleManager::instance().translate("list.entry.edit"));
     m_deleteButton.set_label(LocaleManager::instance().translate("list.entry.delete"));
+
+    m_detailsLabel.set_text(formatDetailsLine(m_entry));
+    const auto datesText =
+        LocaleManager::instance().translate("list.entry.released") + ": " + DateFormatter::formatReleaseDate(m_entry.releaseDate) +
+        "   " +
+        LocaleManager::instance().translate("list.entry.consumed") + ": " + DateFormatter::formatConsumedDate(m_entry.consumed);
+    m_datesLabel.set_text(datesText);
 }
 
 sigc::signal<void()>& MediaEntryRow::signalEditRequested()
