@@ -1,0 +1,74 @@
+{
+  "window.title": "Stapik Media",
+  "window.button.add": "Dodaj",
+
+  "sidebar.category.movie": "Filmy",
+  "sidebar.category.series": "Seriale",
+  "sidebar.category.cartoon": "Kreskówki",
+  "sidebar.category.book": "Książki",
+  "sidebar.category.album": "Albumy",
+  "sidebar.category.game": "Gry",
+
+  "list.entry.edit": "Edytuj",
+  "list.entry.delete": "Usuń",
+  "list.empty": "Brak wpisów w tej kategorii.",
+
+  "list.entry.released": "Wydano",
+  "list.entry.consumed": "Skonsumowano",
+
+  "dialog.entry.title.add": "Dodaj wpis",
+  "dialog.entry.title.edit": "Edytuj wpis",
+  "dialog.entry.title.label": "Tytuł",
+  "dialog.entry.button.save": "Zapisz",
+  "dialog.entry.error.title": "Błąd",
+  "dialog.entry.error.emptyTitle": "Tytuł nie może być pusty.",
+
+  "dialog.entry.releaseDate.label": "Data wydania",
+  "dialog.entry.consumedDate.label": "Kiedy skonsumowano",
+
+  "dialog.entry.director.label": "Reżyser",
+  "dialog.entry.genre.label": "Gatunek",
+  "dialog.entry.author.label": "Autor",
+  "dialog.entry.audiobook.label": "Audiobook",
+  "dialog.entry.performer.label": "Wykonawca",
+  "dialog.entry.publisher.label": "Wydawca",
+  "dialog.entry.studio.label": "Studio",
+  "dialog.entry.platform.label": "Platforma",
+
+  "dialog.about.title": "O programie",
+  "dialog.about.version": "Wersja:",
+  "dialog.about.author": "Autor:",
+  "dialog.button.ok": "OK",
+
+  "picker.precision.label": "Dokładność daty wydania",
+  "picker.precision.day": "Dzień",
+  "picker.precision.month": "Miesiąc",
+  "picker.precision.year": "Rok",
+  "picker.day.label": "Dzień",
+  "picker.month.label": "Miesiąc",
+  "picker.year.label": "Rok",
+
+  "menu.file": "Plik",
+  "menu.file.connect": "Połącz z chmurą",
+  "menu.file.sync": "Synchronizuj",
+  "menu.file.quit": "Zamknij",
+  "menu.help": "Pomoc",
+  "menu.help.about": "O programie",
+  "menu.settings": "Ustawienia",
+  "menu.settings.language": "Język",
+  "menu.settings.language.pl": "Polski",
+  "menu.settings.language.en": "Angielski",
+  "menu.settings.language.de": "Niemiecki",
+
+  "button.cancel": "Anuluj",
+
+  "dialog.connect.title": "Połącz z chmurą",
+  "dialog.connect.url.label": "Adres API",
+  "dialog.connect.key.label": "Klucz API",
+  "dialog.connect.key.placeholder": "Wprowadź klucz",
+  "dialog.connect.button.connect": "Połącz",
+
+  "cloud.connected": "Połączono",
+  "cloud.connected.secondary": "Pomyślnie połączono z chmurą.",
+  "cloud.failed.header": "Nie udało się połączyć"
+}

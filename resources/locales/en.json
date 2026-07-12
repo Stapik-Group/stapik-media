@@ -1,0 +1,74 @@
+{
+  "window.title": "Stapik Media",
+  "window.button.add": "Add",
+
+  "sidebar.category.movie": "Movies",
+  "sidebar.category.series": "Series",
+  "sidebar.category.cartoon": "Cartoons",
+  "sidebar.category.book": "Books",
+  "sidebar.category.album": "Albums",
+  "sidebar.category.game": "Games",
+
+  "list.entry.edit": "Edit",
+  "list.entry.delete": "Delete",
+  "list.empty": "No entries in this category.",
+
+  "list.entry.released": "Released",
+  "list.entry.consumed": "Consumed",
+
+  "dialog.entry.title.add": "Add entry",
+  "dialog.entry.title.edit": "Edit entry",
+  "dialog.entry.title.label": "Title",
+  "dialog.entry.button.save": "Save",
+  "dialog.entry.error.title": "Error",
+  "dialog.entry.error.emptyTitle": "Title cannot be empty.",
+
+  "dialog.entry.releaseDate.label": "Release date",
+  "dialog.entry.consumedDate.label": "When consumed",
+
+  "dialog.entry.director.label": "Director",
+  "dialog.entry.genre.label": "Genre",
+  "dialog.entry.author.label": "Author",
+  "dialog.entry.audiobook.label": "Audiobook",
+  "dialog.entry.performer.label": "Performer",
+  "dialog.entry.publisher.label": "Publisher",
+  "dialog.entry.studio.label": "Studio",
+  "dialog.entry.platform.label": "Platform",
+
+  "dialog.about.title": "About",
+  "dialog.about.version": "Version:",
+  "dialog.about.author": "Author:",
+  "dialog.button.ok": "OK",
+
+  "picker.precision.label": "Release date precision",
+  "picker.precision.day": "Day",
+  "picker.precision.month": "Month",
+  "picker.precision.year": "Year",
+  "picker.day.label": "Day",
+  "picker.month.label": "Month",
+  "picker.year.label": "Year",
+
+  "menu.file": "File",
+  "menu.file.connect": "Connect to cloud",
+  "menu.file.sync": "Sync",
+  "menu.file.quit": "Quit",
+  "menu.help": "Help",
+  "menu.help.about": "About",
+  "menu.settings": "Settings",
+  "menu.settings.language": "Language",
+  "menu.settings.language.pl": "Polish",
+  "menu.settings.language.en": "English",
+  "menu.settings.language.de": "German",
+
+  "button.cancel": "Cancel",
+
+  "dialog.connect.title": "Connect to cloud",
+  "dialog.connect.url.label": "API URL",
+  "dialog.connect.key.label": "API key",
+  "dialog.connect.key.placeholder": "Enter key",
+  "dialog.connect.button.connect": "Connect",
+
+  "cloud.connected": "Connected",
+  "cloud.connected.secondary": "Successfully connected to the cloud.",
+  "cloud.failed.header": "Connection failed"
+}

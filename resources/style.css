@@ -1,0 +1,124 @@
+/* === SIDEBAR (kategorie) === */
+.category-sidebar {
+    background-color: #000080;
+    border-right: 2px solid;
+    border-color: #ffffff #808080 #808080 #ffffff;
+    min-width: 160px;
+}
+
+.category-sidebar list {
+    background-color: transparent;
+}
+
+.category-sidebar row {
+    padding: 10px 12px;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.category-sidebar row:selected {
+    background-color: #ececec;
+    color: #000080;
+}
+
+.category-sidebar row:hover {
+    background-color: #1010a0;
+    color: #ffffff;
+}
+
+.category-sidebar row:selected:hover {
+    background-color: #d4d4d4;
+    color: #000080;
+}
+
+/* === ADD BUTTON === */
+.add-entry-button {
+    min-height: 36px;
+    font-weight: bold;
+    font-size: 13px;
+    border: 1px solid;
+    border-color: #ffffff #808080 #808080 #ffffff;
+    background-color: #ececec;
+}
+
+/* === MEDIA LIST === */
+.media-list-scroller {
+    background-color: #ececec;
+}
+
+/* === MEDIA ENTRY ROW === */
+.media-entry-row {
+    border-bottom: 1px solid #b0b0b0;
+    padding: 10px 8px;
+    font-size: 12px;
+    background-color: #ececec;
+}
+
+.media-entry-row:hover {
+    background-color: #e4e0d8;
+}
+
+.media-entry-row button {
+    min-height: 28px;
+    min-width: 60px;
+    font-size: 11px;
+}
+
+/* === MEDIA ENTRY DIALOG === */
+.media-entry-dialog-content {
+    background-color: #ececec;
+}
+
+.media-entry-dialog-content label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #000080;
+}
+
+.media-entry-dialog-content entry {
+    border: 1px solid;
+    border-color: #808080 #ffffff #ffffff #808080;
+    min-height: 28px;
+    padding: 4px 6px;
+}
+
+/* === DETAILS FORM (Screen/Book/Album/Game) === */
+.details-form entry,
+.details-form checkbutton {
+    min-height: 28px;
+}
+
+/* === DATE PICKERS === */
+.date-picker {
+    padding: 4px 0;
+}
+
+.date-picker label {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #000080;
+}
+
+.date-picker spinbutton,
+.date-picker dropdown {
+    min-height: 32px;
+    font-size: 12px;
+}
+
+.entry-title {
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.entry-details {
+    font-size: 11px;
+    color: #404040;
+}
+
+.entry-dates {
+    font-size: 11px;
+    color: #606060;
+}

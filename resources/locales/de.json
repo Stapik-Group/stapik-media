@@ -1,0 +1,74 @@
+{
+  "window.title": "Stapik Media",
+  "window.button.add": "Hinzufügen",
+
+  "sidebar.category.movie": "Filme",
+  "sidebar.category.series": "Serien",
+  "sidebar.category.cartoon": "Cartoons",
+  "sidebar.category.book": "Bücher",
+  "sidebar.category.album": "Alben",
+  "sidebar.category.game": "Spiele",
+
+  "list.entry.edit": "Bearbeiten",
+  "list.entry.delete": "Löschen",
+  "list.empty": "Keine Einträge in dieser Kategorie.",
+
+  "list.entry.released": "Erschienen",
+  "list.entry.consumed": "Konsumiert",
+
+  "dialog.entry.title.add": "Eintrag hinzufügen",
+  "dialog.entry.title.edit": "Eintrag bearbeiten",
+  "dialog.entry.title.label": "Titel",
+  "dialog.entry.button.save": "Speichern",
+  "dialog.entry.error.title": "Fehler",
+  "dialog.entry.error.emptyTitle": "Der Titel darf nicht leer sein.",
+
+  "dialog.entry.releaseDate.label": "Erscheinungsdatum",
+  "dialog.entry.consumedDate.label": "Wann konsumiert",
+
+  "dialog.entry.director.label": "Regisseur",
+  "dialog.entry.genre.label": "Genre",
+  "dialog.entry.author.label": "Autor",
+  "dialog.entry.audiobook.label": "Hörbuch",
+  "dialog.entry.performer.label": "Interpret",
+  "dialog.entry.publisher.label": "Verlag",
+  "dialog.entry.studio.label": "Studio",
+  "dialog.entry.platform.label": "Plattform",
+
+  "dialog.about.title": "Über",
+  "dialog.about.version": "Version:",
+  "dialog.about.author": "Autor:",
+  "dialog.button.ok": "OK",
+
+  "picker.precision.label": "Genauigkeit des Erscheinungsdatums",
+  "picker.precision.day": "Tag",
+  "picker.precision.month": "Monat",
+  "picker.precision.year": "Jahr",
+  "picker.day.label": "Tag",
+  "picker.month.label": "Monat",
+  "picker.year.label": "Jahr",
+
+  "menu.file": "Datei",
+  "menu.file.connect": "Mit Cloud verbinden",
+  "menu.file.sync": "Synchronisieren",
+  "menu.file.quit": "Beenden",
+  "menu.help": "Hilfe",
+  "menu.help.about": "Über",
+  "menu.settings": "Einstellungen",
+  "menu.settings.language": "Sprache",
+  "menu.settings.language.pl": "Polnisch",
+  "menu.settings.language.en": "Englisch",
+  "menu.settings.language.de": "Deutsch",
+
+  "button.cancel": "Abbrechen",
+
+  "dialog.connect.title": "Mit Cloud verbinden",
+  "dialog.connect.url.label": "API-URL",
+  "dialog.connect.key.label": "API-Schlüssel",
+  "dialog.connect.key.placeholder": "Schlüssel eingeben",
+  "dialog.connect.button.connect": "Verbinden",
+
+  "cloud.connected": "Verbunden",
+  "cloud.connected.secondary": "Erfolgreich mit der Cloud verbunden.",
+  "cloud.failed.header": "Verbindung fehlgeschlagen"
+}
