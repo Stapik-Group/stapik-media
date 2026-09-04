@@ -1,0 +1,245 @@
+* {
+    font-family: "Inter", "SF Pro Display", "Segoe UI", "Cantarell", sans-serif;
+    font-size: 12px;
+}
+
+window {
+    background-color: #f5f5f7;
+}
+
+/* --- Title bar / window controls --- */
+
+headerbar {
+    background-color: #f5f5f7;
+    border-bottom: 1px solid #e2e2e5;
+    box-shadow: none;
+    min-height: 40px;
+    padding: 4px 8px;
+}
+headerbar .title,
+headerbar label {
+    color: #1c1c1e;
+    font-weight: 600;
+}
+windowcontrols button {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 0;
+    border-radius: 999px;
+    border: none;
+    box-shadow: none;
+    background-color: #e2e2e5;
+    transition: background-color 120ms ease;
+}
+windowcontrols button:hover {
+    background-color: #d4d4d8;
+}
+
+/* --- Menu bar --- */
+
+menubar {
+    background-color: #f5f5f7;
+    border-bottom: 1px solid #e2e2e5;
+    padding: 3px 4px;
+}
+menubar > item {
+    padding: 4px 10px;
+    border-radius: 6px;
+    color: #1c1c1e;
+    transition: background-color 120ms ease;
+}
+menubar > item:hover {
+    background-color: #e8e8ec;
+    color: #1c1c1e;
+}
+popover contents {
+    background-color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.16);
+    padding: 6px;
+}
+popover modelbutton {
+    padding: 6px 12px;
+    border-radius: 7px;
+    color: #1c1c1e;
+    transition: background-color 100ms ease;
+}
+popover modelbutton:hover {
+    background-color: #007aff;
+    color: #ffffff;
+}
+
+/* --- Buttons --- */
+
+button {
+    background-image: none;
+    background-color: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #dcdce0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    padding: 5px 12px;
+    color: #1c1c1e;
+    transition: background-color 120ms ease, box-shadow 120ms ease;
+}
+button:hover {
+    background-color: #f0f0f3;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+button:active {
+    background-color: #e4e4e8;
+    box-shadow: none;
+    padding: 5px 12px;
+}
+
+/* --- Sidebar --- */
+
+.category-sidebar {
+    background-color: #ffffff;
+    border-right: 1px solid #e2e2e5;
+    min-width: 160px;
+}
+.category-sidebar row {
+    padding: 10px 12px;
+    color: #1c1c1e;
+    font-weight: 600;
+    font-size: 13px;
+    border-radius: 8px;
+    margin: 2px 6px;
+}
+.category-sidebar row:selected {
+    background-color: #007aff;
+    color: #ffffff;
+}
+.category-sidebar row:hover {
+    background-color: #e8e8ec;
+}
+.category-sidebar row:selected:hover {
+    background-color: #0a84ff;
+    color: #ffffff;
+}
+
+/* --- Add button --- */
+
+.add-entry-button {
+    min-height: 36px;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    border-radius: 8px;
+    background-color: #007aff;
+    color: #ffffff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+.add-entry-button:hover {
+    background-color: #0a84ff;
+}
+
+/* --- Media list --- */
+
+.media-list-scroller {
+    background-color: #f5f5f7;
+}
+.media-entry-row {
+    border-bottom: 1px solid #e2e2e5;
+    padding: 10px 8px;
+    font-size: 12px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    margin: 3px 6px;
+}
+.media-entry-row:hover {
+    background-color: #f0f0f3;
+}
+.media-entry-row button {
+    min-height: 28px;
+    min-width: 60px;
+    font-size: 11px;
+}
+
+/* --- Entry dialog / forms --- */
+
+.media-entry-dialog-content {
+    background-color: #f5f5f7;
+}
+.media-entry-dialog-content label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1c1c1e;
+}
+.media-entry-dialog-content entry {
+    border: 1px solid #dcdce0;
+    border-radius: 8px;
+    min-height: 28px;
+    padding: 4px 6px;
+}
+.details-form entry,
+.details-form checkbutton {
+    min-height: 28px;
+}
+
+/* --- Date pickers --- */
+
+.date-picker {
+    padding: 4px 0;
+}
+.date-picker label {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1c1c1e;
+}
+.date-picker spinbutton,
+.date-picker dropdown {
+    min-height: 32px;
+    font-size: 12px;
+}
+
+/* --- Row text --- */
+
+.entry-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1c1c1e;
+}
+.entry-details {
+    font-size: 11px;
+    color: #6e6e73;
+}
+.entry-dates {
+    font-size: 11px;
+    color: #8a8a8e;
+}
+
+.entry-filter-bar {
+    padding: 6px 8px;
+}
+.pagination-bar {
+    padding: 6px 8px;
+}
+.pagination-bar label {
+    min-width: 60px;
+    color: #1c1c1e;
+}
+
+/* --- Dialogs --- */
+
+dialog {
+    background-color: #f5f5f7;
+}
+dialog .dialog-vbox {
+    background-color: #f5f5f7;
+}
+entry {
+    background-color: #ffffff;
+    border: 1px solid #dcdce0;
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: #1c1c1e;
+    box-shadow: none;
+    transition: border-color 120ms ease;
+}
+entry:focus {
+    border-color: #007aff;
+}
