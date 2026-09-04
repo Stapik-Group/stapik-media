@@ -61,6 +61,11 @@
   "menu.settings.language.en": "Englisch",
   "menu.settings.language.de": "Deutsch",
 
+  "menu.settings.theme": "Design",
+  "menu.settings.theme.classic": "Klassisch",
+  "menu.settings.theme.classicPink": "Klassisch Pink",
+  "menu.settings.theme.modern": "Modern",
+  
   "button.cancel": "Abbrechen",
 
   "dialog.connect.title": "Mit Cloud verbinden",

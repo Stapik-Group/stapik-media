@@ -6,4 +6,4 @@ Exec=stapikmedia
 Icon=stapikmedia
 Terminal=false
 Categories=Office;
-StartupWMClass=stapikmedia
+StartupWMClass=pl.stapik.media

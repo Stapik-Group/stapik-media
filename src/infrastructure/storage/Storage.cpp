@@ -5,6 +5,9 @@
 #include "stapik/storage/AppPaths.hpp"
 
 #include <fstream>
+#include <chrono>
+#include <ctime>
+
 
 nlohmann::json Storage::toJson(const Snapshot& snapshot)
 {
@@ -12,10 +15,15 @@ nlohmann::json Storage::toJson(const Snapshot& snapshot)
     for (const auto& entry : snapshot.entries)
         entriesJson.push_back(MediaEntrySerializer::toJson(entry));
 
-    return stapik::sync::SyncEnvelope{
+    auto json = stapik::sync::SyncEnvelope{
         snapshot.lastUpdate,
         { { "entries", entriesJson } }
     }.toJson();
+
+    if (snapshot.lastKnownCloudUpdate.has_value())
+        json["lastKnownCloudUpdate"] = serializeTimestamp(snapshot.lastKnownCloudUpdate.value());
+
+    return json;
 }
 
 Snapshot Storage::fromJson(const nlohmann::json& json)
@@ -27,7 +35,11 @@ Snapshot Storage::fromJson(const nlohmann::json& json)
         for (const auto& e : payload.at("entries"))
             entries.push_back(MediaEntrySerializer::fromJson(e));
 
-        return Snapshot{ std::move(entries), lastUpdate };
+        std::optional<std::chrono::system_clock::time_point> lastKnownCloudUpdate;
+        if (json.contains("lastKnownCloudUpdate"))
+            lastKnownCloudUpdate = deserializeTimestamp(json.at("lastKnownCloudUpdate").get<std::string>());
+
+        return Snapshot{ std::move(entries), lastUpdate, lastKnownCloudUpdate };
     }
     catch (const nlohmann::json::exception&)
     {
@@ -66,4 +78,26 @@ Snapshot Storage::load()
 std::filesystem::path Storage::storagePath()
 {
     return AppPaths::userDataDir("stapikmedia") / "media.json";
+}
+
+std::string Storage::serializeTimestamp(const std::chrono::system_clock::time_point tp)
+{
+    return std::format("{:%Y-%m-%dT%H:%M:%SZ}", std::chrono::floor<std::chrono::seconds>(tp));
+}
+
+std::chrono::system_clock::time_point Storage::deserializeTimestamp(const std::string& str)
+{
+    if (str.size() < 19)
+        throw StorageException("Invalid ISO-8601 timestamp: " + str);
+
+    std::tm tm{};
+    tm.tm_year = std::stoi(str.substr(0, 4)) - 1900;
+    tm.tm_mon = std::stoi(str.substr(5, 2)) - 1;
+    tm.tm_mday = std::stoi(str.substr(8, 2));
+    tm.tm_hour = std::stoi(str.substr(11, 2));
+    tm.tm_min = std::stoi(str.substr(14, 2));
+    tm.tm_sec = std::stoi(str.substr(17, 2));
+
+    const auto time = timegm(&tm);
+    return std::chrono::system_clock::from_time_t(time);
 }

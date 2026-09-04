@@ -1,0 +1,214 @@
+* {
+    font-family: "Arial", sans-serif;
+    font-size: 11px;
+}
+window {
+    background-color: #f4b6dd;
+}
+headerbar {
+    background: linear-gradient(to right, #ff6ec7, #7b2ff7);
+    padding: 2px 4px;
+    border-bottom: 2px solid #8c3a72;
+    min-height: 26px;
+    box-shadow: none;
+}
+headerbar .title,
+headerbar label {
+    color: #ffffff;
+    font-weight: bold;
+}
+windowcontrols button {
+    min-width: 20px;
+    min-height: 18px;
+    padding: 0 2px;
+}
+menubar {
+    background-color: #f4b6dd;
+    border-bottom: 1px solid #8c3a72;
+    padding: 1px;
+}
+menubar > item {
+    padding: 2px 6px;
+    color: #4a0e4e;
+}
+menubar > item:hover {
+    background-color: #7b2ff7;
+    color: #ffffff;
+}
+popover contents {
+    background-color: #f4b6dd;
+    border: 2px solid;
+    border-color: #ffe0f3 #8c3a72 #8c3a72 #ffe0f3;
+    padding: 2px;
+}
+popover modelbutton {
+    padding: 2px 16px;
+    color: #4a0e4e;
+    border-radius: 0;
+}
+popover modelbutton:hover {
+    background-color: #7b2ff7;
+    color: #ffffff;
+}
+button {
+    background-image: none;
+    background-color: #f4b6dd;
+    border-radius: 0;
+    border: 2px solid;
+    border-color: #ffe0f3 #8c3a72 #8c3a72 #ffe0f3;
+    box-shadow: 1px 1px 0 #4a0e4e;
+    padding: 2px 8px;
+    color: #4a0e4e;
+}
+button:hover {
+    background-color: #f9cbe6;
+}
+button:active {
+    border-color: #8c3a72 #ffe0f3 #ffe0f3 #8c3a72;
+    box-shadow: none;
+    padding: 3px 7px 1px 9px;
+}
+
+/* --- Sidebar --- */
+
+.category-sidebar {
+    background-color: #7b2ff7;
+    border-right: 2px solid;
+    border-color: #ffe0f3 #8c3a72 #8c3a72 #ffe0f3;
+    min-width: 160px;
+}
+.category-sidebar row {
+    padding: 10px 12px;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 13px;
+}
+.category-sidebar row:selected {
+    background-color: #00e5ff;
+    color: #4a0e4e;
+}
+.category-sidebar row:hover {
+    background-color: #ff6ec7;
+    color: #ffffff;
+}
+.category-sidebar row:selected:hover {
+    background-color: #4fd8e8;
+    color: #4a0e4e;
+}
+.category-sidebar list {
+    background-color: transparent;
+}
+/* --- Add button --- */
+
+.add-entry-button {
+    min-height: 36px;
+    font-weight: bold;
+    font-size: 13px;
+    border: 2px solid;
+    border-color: #ffe0f3 #8c3a72 #8c3a72 #ffe0f3;
+    background-color: #ff6ec7;
+    color: #ffffff;
+}
+
+/* --- Media list --- */
+
+.media-list-scroller {
+    background-color: #f4b6dd;
+}
+.media-entry-row {
+    border-bottom: 1px solid #8c3a72;
+    padding: 10px 8px;
+    font-size: 12px;
+    background-color: #f4b6dd;
+}
+.media-entry-row:hover {
+    background-color: #f9cbe6;
+}
+.media-entry-row button {
+    min-height: 28px;
+    min-width: 60px;
+    font-size: 11px;
+}
+
+/* --- Entry dialog / forms --- */
+
+.media-entry-dialog-content {
+    background-color: #f4b6dd;
+}
+.media-entry-dialog-content label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #4a0e4e;
+}
+.media-entry-dialog-content entry {
+    border: 2px solid;
+    border-color: #8c3a72 #ffe0f3 #ffe0f3 #8c3a72;
+    min-height: 28px;
+    padding: 4px 6px;
+}
+.details-form entry,
+.details-form checkbutton {
+    min-height: 28px;
+}
+
+/* --- Date pickers --- */
+
+.date-picker {
+    padding: 4px 0;
+}
+.date-picker label {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #4a0e4e;
+}
+.date-picker spinbutton,
+.date-picker dropdown {
+    min-height: 32px;
+    font-size: 12px;
+}
+
+/* --- Row text --- */
+
+.entry-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #4a0e4e;
+}
+.entry-details {
+    font-size: 11px;
+    color: #6b1f5e;
+}
+.entry-dates {
+    font-size: 11px;
+    color: #8c3a72;
+}
+
+.entry-filter-bar {
+    padding: 6px 8px;
+}
+.pagination-bar {
+    padding: 6px 8px;
+}
+.pagination-bar label {
+    min-width: 60px;
+    color: #4a0e4e;
+}
+
+/* --- Dialogs --- */
+
+dialog {
+    background-color: #f4b6dd;
+}
+dialog .dialog-vbox {
+    background-color: #f4b6dd;
+}
+entry {
+    background-color: #ffffff;
+    border: 2px solid;
+    border-color: #8c3a72 #ffe0f3 #ffe0f3 #8c3a72;
+    border-radius: 0;
+    padding: 2px 4px;
+    color: #4a0e4e;
+}

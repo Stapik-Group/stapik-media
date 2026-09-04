@@ -134,3 +134,88 @@
 .pagination-bar label {
     min-width: 60px;
 }
+
+headerbar {
+    background: linear-gradient(to right, #000080, #1084d0);
+    padding: 2px 4px;
+    border-bottom: 2px solid #808080;
+    min-height: 26px;
+    box-shadow: none;
+}
+headerbar .title,
+headerbar label {
+    color: #ffffff;
+    font-weight: bold;
+}
+windowcontrols button {
+    min-width: 20px;
+    min-height: 18px;
+    padding: 0 2px;
+}
+
+window {
+    background-color: #c0c0c0;
+}
+
+menubar {
+    background-color: #c0c0c0;
+    border-bottom: 1px solid #808080;
+    padding: 1px;
+}
+menubar > item {
+    padding: 2px 6px;
+    color: #000000;
+}
+menubar > item:hover {
+    background-color: #000080;
+    color: #ffffff;
+}
+popover contents {
+    background-color: #c0c0c0;
+    border: 2px solid;
+    border-color: #ffffff #808080 #808080 #ffffff;
+    padding: 2px;
+}
+popover modelbutton {
+    padding: 2px 16px;
+    color: #000000;
+    border-radius: 0;
+}
+popover modelbutton:hover {
+    background-color: #000080;
+    color: #ffffff;
+}
+
+button {
+    background-image: none;
+    background-color: #c0c0c0;
+    border-radius: 0;
+    border: 2px solid;
+    border-color: #ffffff #808080 #808080 #ffffff;
+    box-shadow: 1px 1px 0 #000000;
+    padding: 2px 8px;
+    color: #000000;
+}
+button:hover {
+    background-color: #c0c0c0;
+}
+button:active {
+    border-color: #808080 #ffffff #ffffff #808080;
+    box-shadow: none;
+    padding: 3px 7px 1px 9px;
+}
+
+dialog {
+    background-color: #c0c0c0;
+}
+dialog .dialog-vbox {
+    background-color: #c0c0c0;
+}
+entry {
+    background-color: #ffffff;
+    border: 2px solid;
+    border-color: #808080 #ffffff #ffffff #808080;
+    border-radius: 0;
+    padding: 2px 4px;
+    color: #000000;
+}
