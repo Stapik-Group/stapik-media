@@ -4,6 +4,14 @@
 
 #include <nlohmann/json.hpp>
 #include <filesystem>
+#include <optional>
+#include <stdexcept>
+
+class StorageException : public std::runtime_error
+{
+public:
+    using std::runtime_error::runtime_error;
+};
 
 class Storage
 {
@@ -16,4 +24,6 @@ public:
 
 private:
     [[nodiscard]] static std::filesystem::path storagePath();
+    static std::string serializeTimestamp(std::chrono::system_clock::time_point tp);
+    static std::chrono::system_clock::time_point deserializeTimestamp(const std::string& str);
 };

@@ -3,8 +3,6 @@
 #include "../../infrastructure/storage/Storage.hpp"
 #include "../../infrastructure/storage/MediaSyncCoordinator.hpp"
 
-#include "stapik/cloud/CloudStorageException.hpp"
-
 #include <chrono>
 #include <glib.h>
 
@@ -72,19 +70,11 @@ bool MediaModel::isValidIndex(const std::size_t index) const
 void MediaModel::persist()
 {
     m_snapshot.lastUpdate = std::chrono::system_clock::now();
-    Storage::save(m_snapshot);
 
     if (m_cloudClient == nullptr)
-        return;
+        m_snapshot = MediaSyncCoordinator::pushLocalChange(m_snapshot, *m_cloudClient);
 
-    try
-    {
-        m_cloudClient->saveJson(Storage::toJson(m_snapshot));
-    }
-    catch (const CloudStorageException& e)
-    {
-        g_warning("Failed to push to cloud: %s", e.what());
-    }
+    Storage::save(m_snapshot);
 }
 
 void MediaModel::syncFromCloud()
@@ -93,5 +83,6 @@ void MediaModel::syncFromCloud()
         return;
 
     m_snapshot = MediaSyncCoordinator::resolveOnConnect(m_snapshot, *m_cloudClient);
+    Storage::save(m_snapshot);
     m_signalEntriesChanged.emit();
 }

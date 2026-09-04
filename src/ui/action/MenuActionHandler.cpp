@@ -57,7 +57,7 @@ void MenuActionHandler::applyCloudConfig(const CloudStorageConfig& config) const
     try
     {
         auto client = std::make_unique<CloudStorageClient>(config, MEDIA_FILENAME);
-        std::ignore = client->loadJson();
+        std::ignore = client->loadDocument();
 
         m_model.setCloudClient(std::move(client));
 

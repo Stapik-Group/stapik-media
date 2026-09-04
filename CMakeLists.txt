@@ -1,24 +1,30 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 4.2)
 project(stapikmedia VERSION 1.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(PROJECT_NAME_DISPLAY "Stapik Media")
 set(PROJECT_AUTHOR "Sebastian Smoliński")
 set(PROJECT_GITHUB_URL "https://github.com/Stapik-Group/stapik-media")
 
+configure_file(
+        src/ui/dialog/Version.hpp.in
+        ${CMAKE_CURRENT_BINARY_DIR}/generated/Version.hpp
+)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET gtkmm-4.0)
+
+find_package(CURL REQUIRED)
+
 include(FetchContent)
 FetchContent_Declare(
         stapikcommon
         GIT_REPOSITORY https://github.com/Stapik-Group/stapik-common.git
-        GIT_TAG v1.0.0
+        GIT_TAG v1.1.2
 )
 FetchContent_MakeAvailable(stapikcommon)
-
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET gtkmm-4.0)
 
 add_executable(stapikmedia
         src/core/model/ReleaseDate.cpp
@@ -26,6 +32,7 @@ add_executable(stapikmedia
         src/infrastructure/storage/MediaEntrySerializer.cpp
         src/infrastructure/storage/MediaSyncCoordinator.cpp
         src/infrastructure/storage/Storage.cpp
+        src/infrastructure/network/CloudSchemaMigrationGuard.cpp
         src/ui/action/MenuActionHandler.cpp
         src/ui/dialog/details/AlbumDetailsForm.cpp
         src/ui/dialog/details/BookDetailsForm.cpp
@@ -52,11 +59,10 @@ target_link_libraries(stapikmedia PRIVATE
         stapikcommon
 )
 
-configure_file(
-        src/ui/dialog/Version.hpp.in
-        ${CMAKE_CURRENT_BINARY_DIR}/generated/Version.hpp
-)
-target_include_directories(stapikmedia PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated)
+target_include_directories(stapikmedia PRIVATE ${GTKMM_INCLUDE_DIRS})
+target_include_directories(stapikmedia PRIVATE ${CMAKE_BINARY_DIR}/generated)
+target_compile_options(stapikmedia PRIVATE ${GTKMM_CFLAGS_OTHER})
+target_link_libraries(stapikmedia PRIVATE ${GTKMM_LIBRARIES} stapikcommon CURL::libcurl nlohmann_json::nlohmann_json)
 
 add_custom_command(TARGET stapikmedia POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
