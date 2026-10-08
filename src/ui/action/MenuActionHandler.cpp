@@ -7,8 +7,6 @@
 #include "stapik/ui/dialog/ConnectDialog.hpp"
 #include "stapik/ui/dialog/DialogUtils.hpp"
 
-#include "../../ui/dialog/AboutDialog.hpp"
-
 #include <gtkmm/application.h>
 #include <tuple>
 
@@ -20,7 +18,6 @@ void MenuActionHandler::registerActions()
 {
     m_window.add_action("connect", sigc::mem_fun(*this, &MenuActionHandler::onActionConnect));
     m_window.add_action("quit", sigc::mem_fun(*this, &MenuActionHandler::onActionQuit));
-    m_window.add_action("about", sigc::mem_fun(*this, &MenuActionHandler::onActionAbout));
     m_window.add_action("sync", sigc::mem_fun(*this, &MenuActionHandler::onActionSync));
 }
 
@@ -75,11 +72,6 @@ void MenuActionHandler::applyCloudConfig(const CloudStorageConfig& config) const
 void MenuActionHandler::onActionQuit() const
 {
     m_window.get_application()->quit();
-}
-
-void MenuActionHandler::onActionAbout() const
-{
-    showAutoDeletingDialog<AboutDialog>(m_window);
 }
 
 void MenuActionHandler::onActionSync() const

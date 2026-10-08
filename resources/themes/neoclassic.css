@@ -1,0 +1,135 @@
+.category-sidebar {
+    background-color: #4a7bd8;
+    background-image: linear-gradient(to bottom, #7ba2e7, #3f6fd0);
+    border-right: 1px solid #003c74;
+    min-width: 160px;
+}
+
+.category-sidebar list {
+    background-color: transparent;
+}
+
+.category-sidebar row {
+    padding: 10px 12px;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.category-sidebar row:selected {
+    background-color: #ece9d8;
+    color: #003c74;
+}
+
+.category-sidebar row:hover {
+    background-color: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+}
+
+.category-sidebar row:selected:hover {
+    background-color: #fbfaf4;
+    color: #003c74;
+}
+
+.add-entry-button {
+    min-height: 36px;
+    font-weight: bold;
+    font-size: 13px;
+    border: 1px solid #2b7a2b;
+    border-radius: 3px;
+    background-image: linear-gradient(to bottom, #54b854, #3c9b3c);
+    color: #ffffff;
+}
+
+.add-entry-button:hover {
+    background-image: linear-gradient(to bottom, #6fcb6f, #4aaa4a);
+}
+
+.media-list-scroller {
+    background-color: #ece9d8;
+}
+
+.media-entry-row {
+    border-bottom: 1px solid #7f9db9;
+    padding: 10px 8px;
+    font-size: 12px;
+    background-color: #fbfaf4;
+}
+
+.media-entry-row:hover {
+    background-color: #eaf1fc;
+}
+
+.media-entry-row button {
+    min-height: 28px;
+    min-width: 60px;
+    font-size: 11px;
+}
+
+.media-entry-dialog-content {
+    background-color: #ece9d8;
+}
+
+.media-entry-dialog-content label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #003c74;
+}
+
+.media-entry-dialog-content entry {
+    border: 1px solid #7f9db9;
+    min-height: 28px;
+    padding: 4px 6px;
+}
+
+.details-form entry,
+.details-form checkbutton {
+    min-height: 28px;
+}
+
+.date-picker {
+    padding: 4px 0;
+}
+
+.date-picker label {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #003c74;
+}
+
+.date-picker spinbutton,
+.date-picker dropdown {
+    min-height: 32px;
+    font-size: 12px;
+}
+
+.entry-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #000000;
+}
+
+.entry-details {
+    font-size: 11px;
+    color: #5a5a52;
+}
+
+.entry-dates {
+    font-size: 11px;
+    color: #7a7a70;
+}
+
+.entry-filter-bar {
+    padding: 6px 8px;
+}
+
+.pagination-bar {
+    padding: 6px 8px;
+}
+
+.pagination-bar label {
+    min-width: 60px;
+    color: #000000;
+}

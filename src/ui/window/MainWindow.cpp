@@ -8,12 +8,12 @@
 #include "stapik/storage/CloudStorageConfigStorage.hpp"
 #include "stapik/locale/LocaleManager.hpp"
 
-MainWindow::MainWindow() :
+MainWindow::MainWindow(const stapik::theme::ThemeRegistry& themes) :
     m_model(loadInitialSnapshot()),
     m_mainBox(Gtk::Orientation::VERTICAL, 0),
     m_contentBox(Gtk::Orientation::HORIZONTAL, 0),
     m_rightBox(Gtk::Orientation::VERTICAL, 0),
-    m_mainMenu(*this, m_model)
+    m_mainMenu(*this, m_model, themes)
 {
     init();
     initLayout();

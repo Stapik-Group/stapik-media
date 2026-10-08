@@ -19,7 +19,6 @@ private:
 
     void onActionConnect() const;
     void onActionQuit() const;
-    void onActionAbout() const;
     void onActionSync() const;
 
     void handleConnectResult(const CloudStorageConfig& config) const;

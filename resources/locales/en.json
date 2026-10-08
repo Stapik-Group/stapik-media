@@ -35,12 +35,6 @@
   "dialog.entry.studio.label": "Studio",
   "dialog.entry.platform.label": "Platform",
 
-  "dialog.about.title": "About",
-  "dialog.about.version": "Version:",
-  "dialog.about.author": "Author:",
-  "dialog.button.ok": "OK",
-  "dialog.button.cancel": "Cancel",
-
   "picker.precision.label": "Release date precision",
   "picker.precision.day": "Day",
   "picker.precision.month": "Month",
@@ -49,34 +43,7 @@
   "picker.month.label": "Month",
   "picker.year.label": "Year",
 
-  "menu.file": "File",
-  "menu.file.connect": "Connect to cloud",
-  "menu.file.sync": "Sync",
-  "menu.file.quit": "Quit",
-  "menu.help": "Help",
-  "menu.help.about": "About",
-  "menu.settings": "Settings",
-  "menu.settings.language": "Language",
-  "menu.settings.language.pl": "Polish",
-  "menu.settings.language.en": "English",
-  "menu.settings.language.de": "German",
-
-  "menu.settings.theme": "Theme",
-  "menu.settings.theme.classic": "Classic",
-  "menu.settings.theme.classicPink": "Classic Pink",
-  "menu.settings.theme.modern": "Modern",
-  
   "button.cancel": "Cancel",
-
-  "dialog.connect.title": "Connect to cloud",
-  "dialog.connect.url.label": "API URL",
-  "dialog.connect.key.label": "API key",
-  "dialog.connect.key.placeholder": "Enter key",
-  "dialog.connect.button.connect": "Connect",
-
-  "cloud.connected": "Connected",
-  "cloud.connected.secondary": "Successfully connected to the cloud.",
-  "cloud.failed.header": "Connection failed",
 
   "filter.year.label": "Year",
   "filter.year.all": "All",

@@ -6,6 +6,8 @@
 #include "../widget/EntryFilterBar.hpp"
 #include "../widget/PaginationBar.hpp"
 
+#include "stapik/theme/ThemeRegistry.hpp"
+
 #include <gtkmm/applicationwindow.h>
 #include <gtkmm/box.h>
 #include <gtkmm/button.h>
@@ -14,7 +16,7 @@
 class MainWindow : public Gtk::ApplicationWindow
 {
 public:
-    explicit MainWindow();
+    explicit MainWindow(const stapik::theme::ThemeRegistry& themes);
     ~MainWindow() override = default;
     void initCloud();
 private:

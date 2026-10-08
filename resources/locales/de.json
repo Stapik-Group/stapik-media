@@ -35,12 +35,6 @@
   "dialog.entry.studio.label": "Studio",
   "dialog.entry.platform.label": "Plattform",
 
-  "dialog.about.title": "Über",
-  "dialog.about.version": "Version:",
-  "dialog.about.author": "Autor:",
-  "dialog.button.ok": "OK",
-  "dialog.button.cancel": "Abbrechen",
-
   "picker.precision.label": "Genauigkeit des Erscheinungsdatums",
   "picker.precision.day": "Tag",
   "picker.precision.month": "Monat",
@@ -49,34 +43,7 @@
   "picker.month.label": "Monat",
   "picker.year.label": "Jahr",
 
-  "menu.file": "Datei",
-  "menu.file.connect": "Mit Cloud verbinden",
-  "menu.file.sync": "Synchronisieren",
-  "menu.file.quit": "Beenden",
-  "menu.help": "Hilfe",
-  "menu.help.about": "Über",
-  "menu.settings": "Einstellungen",
-  "menu.settings.language": "Sprache",
-  "menu.settings.language.pl": "Polnisch",
-  "menu.settings.language.en": "Englisch",
-  "menu.settings.language.de": "Deutsch",
-
-  "menu.settings.theme": "Design",
-  "menu.settings.theme.classic": "Klassisch",
-  "menu.settings.theme.classicPink": "Klassisch Pink",
-  "menu.settings.theme.modern": "Modern",
-  
   "button.cancel": "Abbrechen",
-
-  "dialog.connect.title": "Mit Cloud verbinden",
-  "dialog.connect.url.label": "API-URL",
-  "dialog.connect.key.label": "API-Schlüssel",
-  "dialog.connect.key.placeholder": "Schlüssel eingeben",
-  "dialog.connect.button.connect": "Verbinden",
-
-  "cloud.connected": "Verbunden",
-  "cloud.connected.secondary": "Erfolgreich mit der Cloud verbunden.",
-  "cloud.failed.header": "Verbindung fehlgeschlagen",
 
   "filter.year.label": "Jahr",
   "filter.year.all": "Alle",

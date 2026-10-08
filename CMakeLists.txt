@@ -8,11 +8,6 @@ set(PROJECT_NAME_DISPLAY "Stapik Media")
 set(PROJECT_AUTHOR "Sebastian Smoliński")
 set(PROJECT_GITHUB_URL "https://github.com/Stapik-Group/stapik-media")
 
-configure_file(
-        src/ui/dialog/Version.hpp.in
-        ${CMAKE_CURRENT_BINARY_DIR}/generated/Version.hpp
-)
-
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET gtkmm-4.0)
 
@@ -51,7 +46,6 @@ stapik_add_application(
                 src/ui/dialog/details/BookDetailsForm.cpp
                 src/ui/dialog/details/GameDetailsForm.cpp
                 src/ui/dialog/details/ScreenDetailsForm.cpp
-                src/ui/dialog/AboutDialog.cpp
                 src/ui/dialog/MediaEntryDialog.cpp
                 src/ui/util/DateFormatter.cpp
                 src/ui/util/EntryFilterService.cpp
@@ -66,5 +60,3 @@ stapik_add_application(
                 src/ui/window/MainWindow.cpp
                 src/main.cpp
 )
-
-target_include_directories(stapikmedia PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated)
