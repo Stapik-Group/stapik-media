@@ -4,6 +4,7 @@
 #include "../dialog/MediaEntryDialog.hpp"
 #include "../util/EntryFilterService.hpp"
 
+#include "stapik/log/Log.hpp"
 #include "stapik/storage/CloudStorageConfigStorage.hpp"
 #include "stapik/locale/LocaleManager.hpp"
 
@@ -129,7 +130,7 @@ void MainWindow::onEntryEditRequested(const std::size_t index)
     const auto& entries = m_model.entries();
     if (index >= entries.size())
     {
-        g_warning("MainWindow::onEntryEditRequested: invalid index %zu", index);
+        stapik::log::warning("MainWindow::onEntryEditRequested: invalid index {}", index);
         return;
     }
 

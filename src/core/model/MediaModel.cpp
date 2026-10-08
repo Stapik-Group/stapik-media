@@ -3,8 +3,9 @@
 #include "../../infrastructure/storage/Storage.hpp"
 #include "../../infrastructure/storage/MediaSyncCoordinator.hpp"
 
+#include "stapik/log/Log.hpp"
+
 #include <chrono>
-#include <glib.h>
 
 MediaModel::MediaModel(Snapshot initial) : m_snapshot(std::move(initial)) {}
 
@@ -24,7 +25,7 @@ void MediaModel::updateEntry(const std::size_t index, MediaEntry entry)
 {
     if (!isValidIndex(index))
     {
-        g_warning("MediaModel::updateEntry: invalid index %zu", index);
+        stapik::log::warning("MediaModel::updateEntry: invalid index {}", index);
         return;
     }
 
@@ -37,7 +38,7 @@ void MediaModel::removeEntry(const std::size_t index)
 {
     if (!isValidIndex(index))
     {
-        g_warning("MediaModel::removeEntry: invalid index %zu", index);
+        stapik::log::warning("MediaModel::removeEntry: invalid index {}", index);
         return;
     }
 

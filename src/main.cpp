@@ -1,5 +1,7 @@
 #include <gtkmm.h>
 
+#include "stapik/app/AppContext.hpp"
+#include "stapik/app/SingleInstanceGuard.hpp"
 #include "stapik/storage/AppPaths.hpp"
 #include "stapik/theme/ThemeManager.hpp"
 #include "stapik/ui/style/AppStyleProvider.hpp"
@@ -9,19 +11,34 @@
 
 namespace
 {
-    constexpr auto APP_NAME = "stapikmedia";
+    constexpr auto APPLICATION_ID = "pl.stapik.media";
+    constexpr auto AUTHOR = "Sebastian Smoliński";
+    constexpr auto REPOSITORY_URL = "https://github.com/Stapik-Group/stapik-media";
 }
 
 int main(const int argc, char *argv[])
 {
+    stapik::app::AppContext::initialize({
+        .applicationId = APPLICATION_ID,
+        .internalName = STAPIK_APP_NAME,
+        .displayName = STAPIK_APP_DISPLAY_NAME,
+        .version = STAPIK_APP_VERSION,
+        .author = AUTHOR,
+        .repositoryUrl = REPOSITORY_URL
+    });
+
+    const auto instanceGuard = stapik::app::SingleInstanceGuard::acquire(APPLICATION_ID, STAPIK_APP_DISPLAY_NAME);
+    if (instanceGuard == nullptr)
+        return 0;
+
     CloudSchemaMigrationGuard::ensureCompatible();
-    const auto app = Gtk::Application::create("pl.stapik.media");
+    const auto app = Gtk::Application::create(APPLICATION_ID);
 
     AppStyleProvider styleProvider(AppPaths::resourcesDir());
 
     app->signal_activate().connect([&]
     {
-        styleProvider.apply(ThemeManager::instance(APP_NAME).getTheme());
+        styleProvider.apply(ThemeManager::instance().getTheme());
         ThemeManager::instance().signalThemeChanged().connect([&styleProvider] { styleProvider.apply(ThemeManager::instance().getTheme()); });
         auto* window = new MainWindow();
         app->add_window(*window);

@@ -2,8 +2,8 @@
 #include "Storage.hpp"
 
 #include "stapik/cloud/CloudStorageException.hpp"
+#include "stapik/log/Log.hpp"
 
-#include <glib.h>
 
 Snapshot MediaSyncCoordinator::resolveOnConnect(const Snapshot &local, CloudStorageClient &cloudClient)
 {
@@ -13,7 +13,7 @@ Snapshot MediaSyncCoordinator::resolveOnConnect(const Snapshot &local, CloudStor
         remote = cloudClient.loadDocument();
     } catch (const CloudStorageException &)
     {
-        g_debug("Cloud unreachable right now — keep working with local data.");
+        stapik::log::debug("Cloud unreachable right now — keep working with local data.");
         return local;
     }
 
@@ -41,7 +41,7 @@ Snapshot MediaSyncCoordinator::pushWithConflictResolution(const Snapshot &local,
                                           baseline.value_or(std::chrono::system_clock::time_point{}));
     } catch (const CloudStorageException &)
     {
-        g_debug("Cannot sync with cloud, will retry on next save.");
+        stapik::log::debug("Cannot sync with cloud, will retry on next save.");
         return local;
     }
 
@@ -68,7 +68,7 @@ Snapshot MediaSyncCoordinator::pushWithConflictResolution(const Snapshot &local,
         return fromCloudDocument(document);
     } catch (const CloudStorageException &)
     {
-        g_debug("Cannot sync with cloud, will retry on next save.");
+        stapik::log::debug("Cannot sync with cloud, will retry on next save.");
         return local;
     }
 }

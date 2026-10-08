@@ -1,5 +1,6 @@
 #include "MediaListView.hpp"
 #include "stapik/locale/LocaleManager.hpp"
+#include "stapik/log/Log.hpp"
 
 MediaListView::MediaListView() : Box(Gtk::Orientation::VERTICAL, LIST_SPACING)
 {
@@ -16,7 +17,7 @@ void MediaListView::refresh(const std::vector<MediaEntry>& allEntries, const std
     {
         if (index >= allEntries.size())
         {
-            g_warning("MediaListView::refresh: index out of range: %zu", index);
+            stapik::log::warning("MediaListView::refresh: index out of range: {}", index);
             continue;
         }
 

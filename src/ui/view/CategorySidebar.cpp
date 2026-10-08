@@ -1,5 +1,6 @@
 #include "CategorySidebar.hpp"
 #include "stapik/locale/LocaleManager.hpp"
+#include "stapik/log/Log.hpp"
 
 CategorySidebar::CategorySidebar() : Box(Gtk::Orientation::VERTICAL, SIDEBAR_SPACING)
 {
@@ -34,7 +35,7 @@ void CategorySidebar::onRowSelected(const Gtk::ListBoxRow *row) const
     const auto index = static_cast<std::size_t>(row->get_index());
     if (index >= ALL_CATEGORIES.size())
     {
-        g_warning("CategorySidebar::onRowSelected: index out of range: %zu", index);
+        stapik::log::warning("CategorySidebar::onRowSelected: index out of range: {}", index);
         return;
     }
 

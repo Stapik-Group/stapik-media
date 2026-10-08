@@ -2,6 +2,7 @@
 
 #include "stapik/cloud/CloudStorageException.hpp"
 #include "stapik/locale/LocaleManager.hpp"
+#include "stapik/log/Log.hpp"
 #include "stapik/storage/CloudStorageConfigStorage.hpp"
 #include "stapik/ui/dialog/ConnectDialog.hpp"
 #include "stapik/ui/dialog/DialogUtils.hpp"
@@ -61,12 +62,12 @@ void MenuActionHandler::applyCloudConfig(const CloudStorageConfig& config) const
 
         m_model.setCloudClient(std::move(client));
 
-        g_message("[Cloud] Connected: %s", config.apiUrl.c_str());
+        stapik::log::info("[Cloud] Connected: {}", config.apiUrl);
         showMessageDialog(m_window, loc.translate("cloud.connected"), loc.translate("cloud.connected.secondary"), Gtk::MessageType::INFO);
     }
     catch (const CloudStorageException& e)
     {
-        g_warning("[Cloud] Cloud connection error: %s", e.what());
+        stapik::log::warning("[Cloud] Cloud connection error: {}", e.what());
         showMessageDialog(m_window, loc.translate("cloud.failed.header"), e.what(), Gtk::MessageType::ERROR);
     }
 }
