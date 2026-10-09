@@ -55,5 +55,8 @@
 
   "command.entry.add": "entry addition",
   "command.entry.edit": "entry edit",
-  "command.entry.remove": "entry deletion"
+  "command.entry.remove": "entry deletion",
+
+  "partition.notLoaded.header": "Archive not loaded",
+  "partition.notLoaded.message": "Entries from that year are stored in a cloud archive that has not been downloaded yet. Select the year in the filter first to load it, then try again."
 }

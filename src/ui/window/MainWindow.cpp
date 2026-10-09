@@ -106,11 +106,12 @@ void MainWindow::initSignals()
     m_paginationBar.signalNextRequested().connect(sigc::mem_fun(*this, &MainWindow::onNextPageRequested));
 
     m_model.signalSyncStatusChanged().connect(sigc::mem_fun(*this, &MainWindow::onSyncStatusChanged));
+    m_model.signalAvailableYearsChanged().connect([this] { m_filterBar.setAvailableYears(m_model.availableYears()); });
     signal_close_request().connect(sigc::mem_fun(*this, &MainWindow::onCloseRequest), false);
 
     m_model.signalEntriesChanged().connect([this] {
         m_currentPage = 1;
-        m_filterBar.setAvailableYears(EntryFilterService::distinctConsumedYears(m_model.entries()));
+        m_filterBar.setAvailableYears(m_model.availableYears());
         applyFiltersAndRefresh();
     });
 
@@ -168,7 +169,7 @@ void MainWindow::onCategorySelected(const MediaCategory category)
 {
     m_currentPage = 1;
     m_filterBar.reset();
-    m_filterBar.setAvailableYears(EntryFilterService::distinctConsumedYears(m_model.entries()));
+    m_filterBar.setAvailableYears(m_model.availableYears());
     m_listHeaderLabel.set_text(CategorySidebar::labelFor(category));
     applyFiltersAndRefresh();
 }
@@ -181,8 +182,8 @@ void MainWindow::onAddClicked()
     {
         if (responseId == Gtk::ResponseType::OK)
         {
-            if (const auto result = dialog->getResult(); result.has_value())
-                m_model.addEntry(*result);
+            if (const auto result = dialog->getResult(); result.has_value() && !m_model.addEntry(*result))
+                showArchiveNotLoaded();
         }
         dialog->hide();
     });
@@ -207,8 +208,8 @@ void MainWindow::onEntryEditRequested(const std::size_t index)
     {
         if (responseId == Gtk::ResponseType::OK)
         {
-            if (const auto result = dialog->getResult(); result.has_value())
-                m_model.updateEntry(id, *result);
+            if (const auto result = dialog->getResult(); result.has_value() && !m_model.updateEntry(id, *result))
+                showArchiveNotLoaded();
         }
         dialog->hide();
     });
@@ -226,8 +227,17 @@ void MainWindow::onEntryDeleteRequested(const std::size_t index)
     m_model.removeEntry(entries.at(index).id);
 }
 
+void MainWindow::showArchiveNotLoaded()
+{
+    const auto& loc = LocaleManager::instance();
+    showMessageDialog(*this, loc.translate("partition.notLoaded.header"), loc.translate("partition.notLoaded.message"), Gtk::MessageType::WARNING);
+}
+
 void MainWindow::onFilterChanged()
 {
+    if (const auto year = m_filterBar.selectedYear(); year.has_value())
+        m_model.requestYear(static_cast<int>(*year));
+
     m_currentPage = 1;
     applyFiltersAndRefresh();
 }

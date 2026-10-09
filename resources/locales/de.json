@@ -55,5 +55,8 @@
 
   "command.entry.add": "Hinzufügen des Eintrags",
   "command.entry.edit": "Bearbeiten des Eintrags",
-  "command.entry.remove": "Löschen des Eintrags"
+  "command.entry.remove": "Löschen des Eintrags",
+
+  "partition.notLoaded.header": "Archiv nicht geladen",
+  "partition.notLoaded.message": "Die Einträge dieses Jahres liegen in einem Cloud-Archiv, das noch nicht heruntergeladen wurde. Wählen Sie das Jahr zuerst im Filter aus, um es zu laden, und versuchen Sie es dann erneut."
 }

@@ -6,6 +6,7 @@
 #include "stapik/command/ICommand.hpp"
 
 #include <cstddef>
+#include <optional>
 #include <string>
 
 class AddEntryCommand final : public stapik::command::ICommand
@@ -40,7 +41,7 @@ private:
 class RemoveEntryCommand final : public stapik::command::ICommand
 {
 public:
-    RemoveEntryCommand(MediaModel& model, MediaEntry entry, std::size_t position);
+    RemoveEntryCommand(MediaModel& model, MediaEntry entry);
 
     void execute() override;
     void undo() override;
@@ -49,5 +50,5 @@ public:
 private:
     MediaModel& m_model;
     MediaEntry m_entry;
-    std::size_t m_position;
+    std::optional<std::size_t> m_position;
 };

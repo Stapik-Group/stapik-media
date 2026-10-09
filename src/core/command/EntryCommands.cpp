@@ -12,7 +12,7 @@ AddEntryCommand::AddEntryCommand(MediaModel& model, MediaEntry entry) :
 
 void AddEntryCommand::execute()
 {
-    m_model.insertEntry(m_model.entries().size(), m_entry);
+    m_model.insertEntry(m_entry);
 }
 
 void AddEntryCommand::undo()
@@ -46,20 +46,19 @@ std::string UpdateEntryCommand::description() const
     return LocaleManager::instance().translate("command.entry.edit");
 }
 
-RemoveEntryCommand::RemoveEntryCommand(MediaModel& model, MediaEntry entry, const std::size_t position) :
+RemoveEntryCommand::RemoveEntryCommand(MediaModel& model, MediaEntry entry) :
     m_model(model),
-    m_entry(std::move(entry)),
-    m_position(position)
+    m_entry(std::move(entry))
 {}
 
 void RemoveEntryCommand::execute()
 {
-    std::ignore = m_model.eraseEntry(m_entry.id);
+    m_position = m_model.eraseEntry(m_entry.id);
 }
 
 void RemoveEntryCommand::undo()
 {
-    m_model.insertEntry(m_position, m_entry);
+    m_model.insertEntry(m_entry, m_position);
 }
 
 std::string RemoveEntryCommand::description() const

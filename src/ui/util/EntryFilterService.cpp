@@ -24,12 +24,4 @@ namespace EntryFilterService
 
         return result;
     }
-
-    std::set<unsigned> distinctConsumedYears(const std::vector<MediaEntry>& entries)
-    {
-        std::set<unsigned> years;
-        for (const auto& entry : entries)
-            years.insert(static_cast<unsigned>(entry.consumed.year()));
-        return years;
-    }
 }

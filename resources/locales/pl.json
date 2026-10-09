@@ -55,5 +55,8 @@
 
   "command.entry.add": "dodanie wpisu",
   "command.entry.edit": "edycja wpisu",
-  "command.entry.remove": "usunięcie wpisu"
+  "command.entry.remove": "usunięcie wpisu",
+
+  "partition.notLoaded.header": "Archiwum niezaładowane",
+  "partition.notLoaded.message": "Wpisy z tego roku są w archiwum w chmurze, które nie zostało jeszcze pobrane. Wybierz najpierw ten rok w filtrze, aby je wczytać, a potem spróbuj ponownie."
 }

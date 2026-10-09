@@ -65,6 +65,7 @@ private:
 
     void applyFiltersAndRefresh();
     void onFilterChanged();
+    void showArchiveNotLoaded();
     void onPreviousPageRequested();
     void onNextPageRequested();
 };
