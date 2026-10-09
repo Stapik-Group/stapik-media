@@ -4,9 +4,10 @@ MainMenu::MainMenu(Gtk::ApplicationWindow& window, MediaModel& model, const stap
     m_actionHandler(window, model),
     m_menu(window, StandardMenuOptions{
         .cloudItems = true,
-        .undoRedoItems = false,
+        .undoRedoItems = true,
         .aboutItem = true,
-        .themes = &themes
+        .themes = &themes,
+        .undoStack = &model.undoStack()
     })
 {
     m_actionHandler.registerActions();

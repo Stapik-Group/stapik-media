@@ -1,9 +1,13 @@
 #include "MediaModel.hpp"
 
+#include "../command/EntryCommands.hpp"
+
 #include "stapik/domain/IdGenerator.hpp"
 #include "stapik/log/Log.hpp"
 
+#include <algorithm>
 #include <chrono>
+#include <memory>
 #include <tuple>
 
 MediaModel::MediaModel(MediaDocument initial, MediaRepository& repository) :
@@ -33,38 +37,78 @@ void MediaModel::addEntry(MediaEntry entry)
     if (entry.id.empty())
         entry.id = stapik::domain::generateId();
 
-    m_document.entries.push_back(std::move(entry));
+    m_undoStack.execute(std::make_unique<AddEntryCommand>(*this, std::move(entry)));
+}
+
+void MediaModel::updateEntry(const std::string& id, MediaEntry entry)
+{
+    const auto index = indexOf(id);
+    if (!index.has_value())
+    {
+        stapik::log::warning("MediaModel::updateEntry: unknown id {}", id);
+        return;
+    }
+
+    entry.id = id;
+    m_undoStack.execute(std::make_unique<UpdateEntryCommand>(*this, m_document.entries.at(*index), std::move(entry)));
+}
+
+void MediaModel::removeEntry(const std::string& id)
+{
+    const auto index = indexOf(id);
+    if (!index.has_value())
+    {
+        stapik::log::warning("MediaModel::removeEntry: unknown id {}", id);
+        return;
+    }
+
+    m_undoStack.execute(std::make_unique<RemoveEntryCommand>(*this, m_document.entries.at(*index), *index));
+}
+
+void MediaModel::insertEntry(const std::size_t position, MediaEntry entry)
+{
+    const auto offset = static_cast<std::ptrdiff_t>(std::min(position, m_document.entries.size()));
+    m_document.entries.insert(m_document.entries.begin() + offset, std::move(entry));
     persist();
     m_signalEntriesChanged.emit();
 }
 
-void MediaModel::updateEntry(const std::size_t index, MediaEntry entry)
+bool MediaModel::replaceEntry(MediaEntry entry)
 {
-    if (!isValidIndex(index))
-    {
-        stapik::log::warning("MediaModel::updateEntry: invalid index {}", index);
-        return;
-    }
+    const auto index = indexOf(entry.id);
+    if (!index.has_value())
+        return false;
 
-    if (entry.id.empty())
-        entry.id = m_document.entries.at(index).id;
-
-    m_document.entries.at(index) = std::move(entry);
+    m_document.entries.at(*index) = std::move(entry);
     persist();
     m_signalEntriesChanged.emit();
+    return true;
 }
 
-void MediaModel::removeEntry(const std::size_t index)
+bool MediaModel::eraseEntry(const std::string& id)
 {
-    if (!isValidIndex(index))
-    {
-        stapik::log::warning("MediaModel::removeEntry: invalid index {}", index);
-        return;
-    }
+    const auto index = indexOf(id);
+    if (!index.has_value())
+        return false;
 
-    m_document.entries.erase(m_document.entries.begin() + static_cast<std::ptrdiff_t>(index));
+    m_document.entries.erase(m_document.entries.begin() + static_cast<std::ptrdiff_t>(*index));
     persist();
     m_signalEntriesChanged.emit();
+    return true;
+}
+
+std::optional<std::size_t> MediaModel::indexOf(const std::string& id) const
+{
+    const auto found = std::ranges::find(m_document.entries, id, &MediaEntry::id);
+    if (found == m_document.entries.end())
+        return std::nullopt;
+
+    return static_cast<std::size_t>(found - m_document.entries.begin());
+}
+
+stapik::command::UndoStack& MediaModel::undoStack()
+{
+    return m_undoStack;
 }
 
 bool MediaModel::connectCloud(const CloudStorageConfig& config)
@@ -116,11 +160,6 @@ sigc::signal<void(stapik::sync::SyncStatus)>& MediaModel::signalSyncStatusChange
     return m_signalSyncStatusChanged;
 }
 
-bool MediaModel::isValidIndex(const std::size_t index) const
-{
-    return index < m_document.entries.size();
-}
-
 void MediaModel::persist()
 {
     m_document.updatedAt = std::chrono::system_clock::now();
@@ -133,6 +172,7 @@ void MediaModel::persist()
 void MediaModel::onDocumentReplaced(const MediaDocument& document)
 {
     m_document = document;
+    m_undoStack.clear();
     std::ignore = m_repository.save(m_document);
     m_signalEntriesChanged.emit();
 }

@@ -200,14 +200,15 @@ void MainWindow::onEntryEditRequested(const std::size_t index)
         return;
     }
 
+    const auto id = entries.at(index).id;
     auto* dialog = new MediaEntryDialog(*this, entries.at(index));
 
-    dialog->signal_response().connect([this, dialog, index](const int responseId)
+    dialog->signal_response().connect([this, dialog, id](const int responseId)
     {
         if (responseId == Gtk::ResponseType::OK)
         {
             if (const auto result = dialog->getResult(); result.has_value())
-                m_model.updateEntry(index, *result);
+                m_model.updateEntry(id, *result);
         }
         dialog->hide();
     });
@@ -218,7 +219,11 @@ void MainWindow::onEntryEditRequested(const std::size_t index)
 
 void MainWindow::onEntryDeleteRequested(const std::size_t index)
 {
-    m_model.removeEntry(index);
+    const auto& entries = m_model.entries();
+    if (index >= entries.size())
+        return;
+
+    m_model.removeEntry(entries.at(index).id);
 }
 
 void MainWindow::onFilterChanged()

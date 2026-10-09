@@ -5,11 +5,13 @@
 #include "../../infrastructure/storage/MediaRepository.hpp"
 
 #include "stapik/cloud/CloudStorageConfig.hpp"
+#include "stapik/command/UndoStack.hpp"
 #include "stapik/sync/CloudSession.hpp"
 #include "stapik/sync/SyncStatus.hpp"
 
 #include <sigc++/signal.h>
 #include <optional>
+#include <string>
 #include <vector>
 
 class MediaModel
@@ -22,8 +24,15 @@ public:
     [[nodiscard]] const std::vector<MediaEntry>& entries() const;
 
     void addEntry(MediaEntry entry);
-    void updateEntry(std::size_t index, MediaEntry entry);
-    void removeEntry(std::size_t index);
+    void updateEntry(const std::string& id, MediaEntry entry);
+    void removeEntry(const std::string& id);
+
+    void insertEntry(std::size_t position, MediaEntry entry);
+    bool replaceEntry(MediaEntry entry);
+    bool eraseEntry(const std::string& id);
+    [[nodiscard]] std::optional<std::size_t> indexOf(const std::string& id) const;
+
+    [[nodiscard]] stapik::command::UndoStack& undoStack();
 
     bool connectCloud(const CloudStorageConfig& config);
     void syncNow();
@@ -42,6 +51,7 @@ private:
     MediaDocument m_document;
     MediaRepository& m_repository;
     stapik::sync::CloudSession<MediaDocument> m_session;
+    stapik::command::UndoStack m_undoStack;
     sigc::signal<void()> m_signalEntriesChanged;
     sigc::signal<void(stapik::sync::SyncStatus)> m_signalSyncStatusChanged;
 
@@ -49,6 +59,4 @@ private:
     void onDocumentReplaced(const MediaDocument& document);
     void onBaselineChanged(std::chrono::system_clock::time_point baseline);
     void onSyncOutcome(const stapik::sync::SyncOutcome<MediaDocument>& outcome);
-
-    [[nodiscard]] bool isValidIndex(std::size_t index) const;
 };

@@ -53,5 +53,9 @@
   "storage.problem.header": "Cannot use the saved data",
   "storage.problem.corrupted": "The data file was damaged and has been moved aside; the application started with an empty list. You can restore your entries from the backup (.bak) next to it or by syncing with the cloud.",
   "storage.problem.newerVersion": "The data file was saved by a newer version of Stapik Media. Update the application. The file has not been changed and editing is disabled.",
-  "storage.problem.migrationFailed": "The data file could not be converted to the current format. The file has not been changed and editing is disabled."
+  "storage.problem.migrationFailed": "The data file could not be converted to the current format. The file has not been changed and editing is disabled.",
+
+  "command.entry.add": "entry addition",
+  "command.entry.edit": "entry edit",
+  "command.entry.remove": "entry deletion"
 }
