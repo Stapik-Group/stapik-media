@@ -2,6 +2,9 @@
 
 #include "../dialog/MediaEntryDialog.hpp"
 #include "../util/EntryFilterService.hpp"
+#include "../../core/model/MediaCategoryKey.hpp"
+
+#include "stapik/app/AppContext.hpp"
 
 #include "stapik/locale/LocaleManager.hpp"
 #include "stapik/log/Log.hpp"
@@ -57,8 +60,17 @@ void MainWindow::reportStorageProblem()
 
 void MainWindow::init()
 {
+    const auto& settings = stapik::app::AppContext::instance().settings();
+    const auto storedWidth = settings.get(SETTING_WIDTH, DEFAULT_WIDTH);
+    const auto storedHeight = settings.get(SETTING_HEIGHT, DEFAULT_HEIGHT);
+    const auto sizeIsValid = storedWidth >= MIN_STORED_SIZE && storedHeight >= MIN_STORED_SIZE;
+
     set_title(WINDOW_TITLE);
-    set_default_size(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    set_default_size(sizeIsValid ? storedWidth : DEFAULT_WIDTH, sizeIsValid ? storedHeight : DEFAULT_HEIGHT);
+
+    if (settings.get(SETTING_MAXIMIZED, false))
+        maximize();
+
     set_child(m_mainBox);
 }
 
@@ -82,6 +94,10 @@ void MainWindow::initLayout()
     m_rightBox.append(m_listScroller);
     m_rightBox.append(m_paginationBar);
     m_rightBox.append(m_addButton);
+
+    const auto storedCategory = categoryFromKey(stapik::app::AppContext::instance().settings().get(SETTING_CATEGORY, std::string{}));
+    if (storedCategory.has_value())
+        m_sidebar.selectCategory(*storedCategory);
 
     m_contentBox.append(m_sidebar);
     m_contentBox.append(m_rightBox);
@@ -140,6 +156,7 @@ bool MainWindow::onCloseRequest()
     if (m_closing)
         return true;
 
+    saveWindowState();
     m_model.flush();
     if (!m_model.isSyncing())
         return false;
@@ -154,6 +171,24 @@ bool MainWindow::onCloseRequest()
     });
     Glib::signal_timeout().connect_once([this] { closeNow(); }, CLOSE_TIMEOUT_MS);
     return true;
+}
+
+void MainWindow::saveWindowState() const
+{
+    auto& settings = stapik::app::AppContext::instance().settings();
+    const auto maximized = is_maximized();
+
+    settings.set(SETTING_MAXIMIZED, maximized);
+    settings.set(SETTING_CATEGORY, categoryToKey(m_sidebar.selectedCategory()));
+
+    if (!maximized && get_width() >= MIN_STORED_SIZE && get_height() >= MIN_STORED_SIZE)
+    {
+        settings.set(SETTING_WIDTH, get_width());
+        settings.set(SETTING_HEIGHT, get_height());
+    }
+
+    if (!settings.save())
+        stapik::log::warning("Cannot persist the window state");
 }
 
 void MainWindow::closeNow()

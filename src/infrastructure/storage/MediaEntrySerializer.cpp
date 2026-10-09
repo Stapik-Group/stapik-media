@@ -1,38 +1,13 @@
 #include "MediaEntrySerializer.hpp"
 
+#include "../../core/model/MediaCategoryKey.hpp"
+
 #include "stapik/domain/IdGenerator.hpp"
 
 #include <stdexcept>
 
 namespace
 {
-    std::string categoryToString(const MediaCategory category)
-    {
-        switch (category)
-        {
-            using enum MediaCategory;
-            case Movie: return "movie";
-            case Series: return "series";
-            case Cartoon: return "cartoon";
-            case Book: return "book";
-            case Album: return "album";
-            case Game: return "game";
-        }
-        throw std::invalid_argument("Unknown MediaCategory");
-    }
-
-    MediaCategory categoryFromString(const std::string &str)
-    {
-        using enum MediaCategory;
-        if (str == "movie") return Movie;
-        if (str == "series") return Series;
-        if (str == "cartoon") return Cartoon;
-        if (str == "book") return Book;
-        if (str == "album") return Album;
-        if (str == "game") return Game;
-        throw std::invalid_argument("Unknown category string: " + str);
-    }
-
     std::string precisionToString(const DatePrecision precision)
     {
         switch (precision)
@@ -109,7 +84,7 @@ nlohmann::json MediaEntrySerializer::toJson(const MediaEntry &entry)
 {
     return {
         {"id", entry.id},
-        {"category", categoryToString(entry.category)},
+        {"category", categoryToKey(entry.category)},
         {"title", entry.title},
         {
             "releaseDate", {
@@ -124,7 +99,12 @@ nlohmann::json MediaEntrySerializer::toJson(const MediaEntry &entry)
 
 MediaEntry MediaEntrySerializer::fromJson(const nlohmann::json &json)
 {
-    const auto category = categoryFromString(json.at("category").get<std::string>());
+    const auto categoryKey = json.at("category").get<std::string>();
+    const auto parsedCategory = categoryFromKey(categoryKey);
+    if (!parsedCategory.has_value())
+        throw std::invalid_argument("Unknown category string: " + categoryKey);
+
+    const auto category = *parsedCategory;
     const auto &rd = json.at("releaseDate");
     const auto precision = precisionFromString(rd.at("precision").get<std::string>());
 
