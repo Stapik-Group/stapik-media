@@ -20,4 +20,5 @@ struct MediaEntry {
     ReleaseDate releaseDate;
     ConsumedDate consumed;
     MediaDetails details;
+    std::string id;
 };

@@ -48,5 +48,10 @@
   "filter.year.label": "Jahr",
   "filter.year.all": "Alle",
   "filter.month.label": "Monat",
-  "filter.month.all": "Alle"
+  "filter.month.all": "Alle",
+
+  "storage.problem.header": "Gespeicherte Daten können nicht verwendet werden",
+  "storage.problem.corrupted": "Die Datendatei war beschädigt und wurde beiseitegelegt; die Anwendung wurde mit einer leeren Liste gestartet. Die Einträge lassen sich aus der Sicherungskopie (.bak) neben der Datei oder per Cloud-Synchronisierung wiederherstellen.",
+  "storage.problem.newerVersion": "Die Datendatei wurde von einer neueren Version von Stapik Media gespeichert. Bitte aktualisieren Sie die Anwendung. Die Datei wurde nicht verändert, die Bearbeitung ist deaktiviert.",
+  "storage.problem.migrationFailed": "Die Datendatei konnte nicht in das aktuelle Format umgewandelt werden. Die Datei wurde nicht verändert, die Bearbeitung ist deaktiviert."
 }

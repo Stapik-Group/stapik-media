@@ -26,6 +26,7 @@ private:
     static constexpr int DEFAULT_WIDTH = 420;
 
     MediaCategory m_category;
+    std::string m_id;
     Gtk::Box m_contentBox;
     Gtk::Label m_titleLabel;
     Gtk::Entry m_titleEntry;

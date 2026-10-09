@@ -1,15 +1,35 @@
 #include "MainWindow.hpp"
 
-#include "../../infrastructure/storage/Storage.hpp"
 #include "../dialog/MediaEntryDialog.hpp"
 #include "../util/EntryFilterService.hpp"
 
+#include "stapik/cloud/CloudStorageClient.hpp"
+#include "stapik/locale/LocaleManager.hpp"
 #include "stapik/log/Log.hpp"
 #include "stapik/storage/CloudStorageConfigStorage.hpp"
-#include "stapik/locale/LocaleManager.hpp"
+#include "stapik/ui/dialog/DialogUtils.hpp"
+
+#include <glibmm/main.h>
+
+namespace
+{
+    const char* storageProblemKey(const StorageProblem problem)
+    {
+        switch (problem)
+        {
+            using enum StorageProblem;
+            case Corrupted: return "storage.problem.corrupted";
+            case NewerVersion: return "storage.problem.newerVersion";
+            case MigrationFailed: return "storage.problem.migrationFailed";
+            case None: break;
+        }
+        return "";
+    }
+}
 
 MainWindow::MainWindow(const stapik::theme::ThemeRegistry& themes) :
-    m_model(loadInitialSnapshot()),
+    m_repository(),
+    m_model(m_repository.load(), m_repository),
     m_mainBox(Gtk::Orientation::VERTICAL, 0),
     m_contentBox(Gtk::Orientation::HORIZONTAL, 0),
     m_rightBox(Gtk::Orientation::VERTICAL, 0),
@@ -19,11 +39,23 @@ MainWindow::MainWindow(const stapik::theme::ThemeRegistry& themes) :
     initLayout();
     initSignals();
     initCloud();
+    reportStorageProblem();
 }
 
-Snapshot MainWindow::loadInitialSnapshot()
+void MainWindow::reportStorageProblem()
 {
-    return Storage::load();
+    const auto problem = m_repository.problem();
+    if (problem == StorageProblem::None)
+        return;
+
+    if (!m_repository.isWritable())
+        m_mainBox.set_sensitive(false);
+
+    Glib::signal_idle().connect_once([this, problem]
+    {
+        const auto& loc = LocaleManager::instance();
+        showMessageDialog(*this, loc.translate("storage.problem.header"), loc.translate(storageProblemKey(problem)), Gtk::MessageType::ERROR);
+    });
 }
 
 void MainWindow::init()
@@ -90,6 +122,9 @@ void MainWindow::initSignals()
 
 void MainWindow::initCloud()
 {
+    if (!m_repository.isWritable())
+        return;
+
     const auto config = CloudStorageConfigStorage::load("stapikmedia");
     if (!config.has_value())
         return;

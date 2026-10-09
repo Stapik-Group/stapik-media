@@ -27,6 +27,7 @@ MediaEntryDialog::MediaEntryDialog(Window &parent, const MediaCategory category)
 MediaEntryDialog::MediaEntryDialog(Window &parent, const MediaEntry &existing) : Dialog(
         LocaleManager::instance().translate("dialog.entry.title.edit"), parent, true),
     m_category(existing.category),
+    m_id(existing.id),
     m_contentBox(Gtk::Orientation::VERTICAL, CONTENT_SPACING),
     m_detailsContainer(Gtk::Orientation::VERTICAL, CONTENT_SPACING)
 {
@@ -107,6 +108,7 @@ std::optional<MediaEntry> MediaEntryDialog::getResult() const
         std::string(title),
         m_releaseDatePicker.toReleaseDate(),
         m_consumedDatePicker.toConsumedDate(),
-        m_detailsForm->toDetails()
+        m_detailsForm->toDetails(),
+        m_id
     };
 }

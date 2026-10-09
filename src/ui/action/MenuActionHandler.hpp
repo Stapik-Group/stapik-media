@@ -3,6 +3,8 @@
 
 #include "../../core/model/MediaModel.hpp"
 
+#include "stapik/cloud/CloudStorageConfig.hpp"
+
 
 class MenuActionHandler
 {

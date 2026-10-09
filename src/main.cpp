@@ -7,7 +7,6 @@
 #include "stapik/ui/menu/StandardMenu.hpp"
 #include "stapik/ui/style/AppStyleProvider.hpp"
 
-#include "infrastructure/network/CloudSchemaMigrationGuard.hpp"
 #include "ui/window/MainWindow.hpp"
 
 namespace
@@ -32,7 +31,6 @@ int main(const int argc, char *argv[])
     if (instanceGuard == nullptr)
         return 0;
 
-    CloudSchemaMigrationGuard::ensureCompatible();
     const auto app = Gtk::Application::create(APPLICATION_ID);
 
     auto styleProvider = AppStyleProvider::withCommonThemes(AppPaths::resourcesDir());

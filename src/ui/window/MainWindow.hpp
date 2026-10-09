@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../widget/MainMenu.hpp"
+#include "../../core/model/MediaModel.hpp"
+#include "../../infrastructure/storage/MediaRepository.hpp"
 #include "../view/CategorySidebar.hpp"
 #include "../view/MediaListView.hpp"
 #include "../widget/EntryFilterBar.hpp"
@@ -31,6 +33,7 @@ private:
     PaginationBar m_paginationBar;
     std::size_t m_currentPage = 1;
 
+    MediaRepository m_repository;
     MediaModel m_model;
 
     Gtk::Box m_mainBox;
@@ -43,10 +46,9 @@ private:
     MainMenu m_mainMenu;
     Gtk::Label m_listHeaderLabel;
 
-    static Snapshot loadInitialSnapshot();
-
     void init();
     void initLayout();
+    void reportStorageProblem();
     void initSignals();
     void onCategorySelected(MediaCategory category);
     void onAddClicked();

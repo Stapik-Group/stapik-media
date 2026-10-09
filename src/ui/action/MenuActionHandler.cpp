@@ -1,5 +1,6 @@
 #include "MenuActionHandler.hpp"
 
+#include "stapik/cloud/CloudStorageClient.hpp"
 #include "stapik/cloud/CloudStorageException.hpp"
 #include "stapik/locale/LocaleManager.hpp"
 #include "stapik/log/Log.hpp"

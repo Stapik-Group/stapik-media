@@ -48,5 +48,10 @@
   "filter.year.label": "Rok",
   "filter.year.all": "Wszystkie",
   "filter.month.label": "Miesiąc",
-  "filter.month.all": "Wszystkie"
+  "filter.month.all": "Wszystkie",
+
+  "storage.problem.header": "Nie można użyć zapisanych danych",
+  "storage.problem.corrupted": "Plik z danymi był uszkodzony i został odłożony na bok; aplikacja uruchomiła się z pustą listą. Wpisy możesz odzyskać z kopii zapasowej (.bak) obok pliku albo przez synchronizację z chmurą.",
+  "storage.problem.newerVersion": "Plik z danymi zapisała nowsza wersja Stapik Media. Zaktualizuj aplikację. Plik nie został zmieniony, a edycja jest wyłączona.",
+  "storage.problem.migrationFailed": "Nie udało się przekonwertować pliku z danymi do bieżącego formatu. Plik nie został zmieniony, a edycja jest wyłączona."
 }

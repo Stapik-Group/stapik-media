@@ -36,11 +36,11 @@ stapik_add_application(
         LINK_LIBRARIES PkgConfig::GTKMM CURL::libcurl nlohmann_json::nlohmann_json
         SOURCES
                 src/core/model/ReleaseDate.cpp
+                src/core/model/MediaDocument.cpp
                 src/core/model/MediaModel.cpp
                 src/infrastructure/storage/MediaEntrySerializer.cpp
-                src/infrastructure/storage/MediaSyncCoordinator.cpp
-                src/infrastructure/storage/Storage.cpp
-                src/infrastructure/network/CloudSchemaMigrationGuard.cpp
+                src/infrastructure/storage/MediaDocumentSchema.cpp
+                src/infrastructure/storage/MediaRepository.cpp
                 src/ui/action/MenuActionHandler.cpp
                 src/ui/dialog/details/AlbumDetailsForm.cpp
                 src/ui/dialog/details/BookDetailsForm.cpp

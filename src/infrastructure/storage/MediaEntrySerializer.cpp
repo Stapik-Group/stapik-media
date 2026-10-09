@@ -1,5 +1,7 @@
 #include "MediaEntrySerializer.hpp"
 
+#include "stapik/domain/IdGenerator.hpp"
+
 #include <stdexcept>
 
 namespace
@@ -106,6 +108,7 @@ namespace
 nlohmann::json MediaEntrySerializer::toJson(const MediaEntry &entry)
 {
     return {
+        {"id", entry.id},
         {"category", categoryToString(entry.category)},
         {"title", entry.title},
         {
@@ -125,6 +128,10 @@ MediaEntry MediaEntrySerializer::fromJson(const nlohmann::json &json)
     const auto &rd = json.at("releaseDate");
     const auto precision = precisionFromString(rd.at("precision").get<std::string>());
 
+    auto id = json.value("id", std::string{});
+    if (id.empty())
+        id = stapik::domain::generateId();
+
     return MediaEntry{
         category,
         json.at("title").get<std::string>(),
@@ -133,6 +140,7 @@ MediaEntry MediaEntrySerializer::fromJson(const nlohmann::json &json)
             json.at("consumed").at("month").get<unsigned>(),
             json.at("consumed").at("year").get<unsigned>()
         },
-        detailsFromJson(category, json.at("details"))
+        detailsFromJson(category, json.at("details")),
+        std::move(id)
     };
 }
