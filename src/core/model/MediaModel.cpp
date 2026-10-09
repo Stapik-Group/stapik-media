@@ -2,15 +2,26 @@
 
 #include "stapik/domain/IdGenerator.hpp"
 #include "stapik/log/Log.hpp"
-#include "stapik/sync/SyncCoordinator.hpp"
 
 #include <chrono>
 #include <tuple>
 
 MediaModel::MediaModel(MediaDocument initial, MediaRepository& repository) :
     m_document(std::move(initial)),
-    m_repository(repository)
-{}
+    m_repository(repository),
+    m_session(stapik::sync::defaultCloudSessionHooks(CLOUD_DOCUMENT_NAME))
+{
+    m_session.signalDocumentReplaced().connect(sigc::mem_fun(*this, &MediaModel::onDocumentReplaced));
+    m_session.signalBaselineChanged().connect(sigc::mem_fun(*this, &MediaModel::onBaselineChanged));
+    m_session.signalOutcome().connect(sigc::mem_fun(*this, &MediaModel::onSyncOutcome));
+    m_session.signalStatusChanged().connect([this](const stapik::sync::SyncStatus status)
+    {
+        m_signalSyncStatusChanged.emit(status);
+    });
+
+    if (m_repository.isWritable())
+        m_session.syncNow(m_document);
+}
 
 const std::vector<MediaEntry>& MediaModel::entries() const
 {
@@ -56,20 +67,53 @@ void MediaModel::removeEntry(const std::size_t index)
     m_signalEntriesChanged.emit();
 }
 
-void MediaModel::setCloudClient(std::unique_ptr<ICloudStorage> storage)
+bool MediaModel::connectCloud(const CloudStorageConfig& config)
 {
-    m_cloudStorage = std::move(storage);
-    syncFromCloud();
+    if (!m_repository.isWritable())
+        return false;
+
+    return m_session.connectWith(config, m_document);
 }
 
-void MediaModel::retrySync()
+void MediaModel::syncNow()
 {
-    syncFromCloud();
+    if (m_repository.isWritable())
+        m_session.syncNow(m_document);
+}
+
+void MediaModel::flush()
+{
+    m_session.flush();
+}
+
+std::optional<CloudStorageConfig> MediaModel::cloudConfig() const
+{
+    return m_session.config();
+}
+
+bool MediaModel::isCloudConnected() const
+{
+    return m_repository.isWritable() && m_session.isConnected();
+}
+
+bool MediaModel::isSyncing() const
+{
+    return m_session.status() == stapik::sync::SyncStatus::Syncing;
+}
+
+stapik::sync::SyncStatus MediaModel::syncStatus() const
+{
+    return m_session.status();
 }
 
 sigc::signal<void()>& MediaModel::signalEntriesChanged()
 {
     return m_signalEntriesChanged;
+}
+
+sigc::signal<void(stapik::sync::SyncStatus)>& MediaModel::signalSyncStatusChanged()
+{
+    return m_signalSyncStatusChanged;
 }
 
 bool MediaModel::isValidIndex(const std::size_t index) const
@@ -80,24 +124,32 @@ bool MediaModel::isValidIndex(const std::size_t index) const
 void MediaModel::persist()
 {
     m_document.updatedAt = std::chrono::system_clock::now();
-
-    if (m_cloudStorage != nullptr)
-        applyOutcome(stapik::sync::SyncCoordinator<MediaDocument>(*m_cloudStorage).pushLocalChange(m_document));
-
     std::ignore = m_repository.save(m_document);
+
+    if (m_repository.isWritable())
+        m_session.pushChange(m_document);
 }
 
-void MediaModel::syncFromCloud()
+void MediaModel::onDocumentReplaced(const MediaDocument& document)
 {
-    if (m_cloudStorage == nullptr)
-        return;
-
-    applyOutcome(stapik::sync::SyncCoordinator<MediaDocument>(*m_cloudStorage).resolveOnConnect(m_document));
+    m_document = document;
     std::ignore = m_repository.save(m_document);
     m_signalEntriesChanged.emit();
 }
 
-void MediaModel::applyOutcome(const stapik::sync::SyncOutcome<MediaDocument>& outcome)
+void MediaModel::onBaselineChanged(const std::chrono::system_clock::time_point baseline)
 {
-    m_document = outcome.document;
+    m_document.cloudBaseline = baseline;
+    std::ignore = m_repository.save(m_document);
+}
+
+void MediaModel::onSyncOutcome(const stapik::sync::SyncOutcome<MediaDocument>& outcome)
+{
+    if (outcome.message.empty())
+        return;
+
+    if (outcome.state == stapik::sync::SyncState::RemoteUnreadable)
+        stapik::log::warning("[Cloud] {}", outcome.message);
+    else
+        stapik::log::debug("[Cloud] {}", outcome.message);
 }

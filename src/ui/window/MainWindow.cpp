@@ -3,10 +3,8 @@
 #include "../dialog/MediaEntryDialog.hpp"
 #include "../util/EntryFilterService.hpp"
 
-#include "stapik/cloud/CloudStorageClient.hpp"
 #include "stapik/locale/LocaleManager.hpp"
 #include "stapik/log/Log.hpp"
-#include "stapik/storage/CloudStorageConfigStorage.hpp"
 #include "stapik/ui/dialog/DialogUtils.hpp"
 
 #include <glibmm/main.h>
@@ -38,7 +36,6 @@ MainWindow::MainWindow(const stapik::theme::ThemeRegistry& themes) :
     init();
     initLayout();
     initSignals();
-    initCloud();
     reportStorageProblem();
 }
 
@@ -90,7 +87,12 @@ void MainWindow::initLayout()
     m_contentBox.append(m_rightBox);
 
     m_mainBox.append(m_mainMenu.getMenuBar());
+    m_statusIndicator.set_margin(STATUS_MARGIN);
+    m_statusIndicator.set_visible(m_model.isCloudConnected());
+    m_statusIndicator.setStatus(m_model.syncStatus());
+
     m_mainBox.append(m_contentBox);
+    m_mainBox.append(m_statusIndicator);
 }
 
 void MainWindow::initSignals()
@@ -102,6 +104,9 @@ void MainWindow::initSignals()
     m_filterBar.signalFilterChanged().connect(sigc::mem_fun(*this, &MainWindow::onFilterChanged));
     m_paginationBar.signalPreviousRequested().connect(sigc::mem_fun(*this, &MainWindow::onPreviousPageRequested));
     m_paginationBar.signalNextRequested().connect(sigc::mem_fun(*this, &MainWindow::onNextPageRequested));
+
+    m_model.signalSyncStatusChanged().connect(sigc::mem_fun(*this, &MainWindow::onSyncStatusChanged));
+    signal_close_request().connect(sigc::mem_fun(*this, &MainWindow::onCloseRequest), false);
 
     m_model.signalEntriesChanged().connect([this] {
         m_currentPage = 1;
@@ -120,17 +125,43 @@ void MainWindow::initSignals()
     onCategorySelected(m_sidebar.selectedCategory());
 }
 
-void MainWindow::initCloud()
+void MainWindow::onSyncStatusChanged(const stapik::sync::SyncStatus status)
 {
-    if (!m_repository.isWritable())
+    if (m_closed)
         return;
 
-    const auto config = CloudStorageConfigStorage::load("stapikmedia");
-    if (!config.has_value())
+    m_statusIndicator.set_visible(m_model.isCloudConnected());
+    m_statusIndicator.setStatus(status);
+}
+
+bool MainWindow::onCloseRequest()
+{
+    if (m_closing)
+        return true;
+
+    m_model.flush();
+    if (!m_model.isSyncing())
+        return false;
+
+    m_closing = true;
+    set_visible(false);
+
+    m_model.signalSyncStatusChanged().connect([this](const stapik::sync::SyncStatus)
+    {
+        if (!m_model.isSyncing())
+            closeNow();
+    });
+    Glib::signal_timeout().connect_once([this] { closeNow(); }, CLOSE_TIMEOUT_MS);
+    return true;
+}
+
+void MainWindow::closeNow()
+{
+    if (m_closed)
         return;
 
-    m_model.setCloudClient(
-        std::make_unique<CloudStorageClient>(config.value(), MEDIA_FILENAME));
+    m_closed = true;
+    destroy();
 }
 
 void MainWindow::onCategorySelected(const MediaCategory category)

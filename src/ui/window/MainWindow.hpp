@@ -8,7 +8,9 @@
 #include "../widget/EntryFilterBar.hpp"
 #include "../widget/PaginationBar.hpp"
 
+#include "stapik/sync/SyncStatus.hpp"
 #include "stapik/theme/ThemeRegistry.hpp"
+#include "stapik/ui/widget/StatusIndicator.hpp"
 
 #include <gtkmm/applicationwindow.h>
 #include <gtkmm/box.h>
@@ -20,13 +22,13 @@ class MainWindow : public Gtk::ApplicationWindow
 public:
     explicit MainWindow(const stapik::theme::ThemeRegistry& themes);
     ~MainWindow() override = default;
-    void initCloud();
 private:
     static constexpr int DEFAULT_WIDTH = 1280;
     static constexpr int DEFAULT_HEIGHT = 800;
     static constexpr int ADD_BUTTON_MARGIN = 8;
     static constexpr auto WINDOW_TITLE = "Stapik Media";
-    static constexpr auto MEDIA_FILENAME = "media.json";
+    static constexpr unsigned int CLOSE_TIMEOUT_MS = 5000;
+    static constexpr int STATUS_MARGIN = 4;
     static constexpr std::size_t PAGE_SIZE = 10;
 
     EntryFilterBar m_filterBar;
@@ -45,11 +47,17 @@ private:
     MediaListView m_listView;
     MainMenu m_mainMenu;
     Gtk::Label m_listHeaderLabel;
+    StatusIndicator m_statusIndicator;
+    bool m_closing = false;
+    bool m_closed = false;
 
     void init();
     void initLayout();
     void reportStorageProblem();
     void initSignals();
+    void onSyncStatusChanged(stapik::sync::SyncStatus status);
+    bool onCloseRequest();
+    void closeNow();
     void onCategorySelected(MediaCategory category);
     void onAddClicked();
     void onEntryEditRequested(std::size_t index);
