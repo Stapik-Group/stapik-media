@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../core/model/ConsumedDate.hpp"
+#include "stapik/domain/YearMonth.hpp"
 
 #include <gtkmm/box.h>
 #include <gtkmm/spinbutton.h>
@@ -11,8 +11,8 @@ class ConsumedDatePicker : public Gtk::Box
 public:
     ConsumedDatePicker();
 
-    void loadFrom(const ConsumedDate& date);
-    [[nodiscard]] ConsumedDate toConsumedDate() const;
+    void loadFrom(const stapik::domain::YearMonth& date);
+    [[nodiscard]] stapik::domain::YearMonth toYearMonth() const;
 
 private:
     static constexpr int FIELD_SPACING = 6;

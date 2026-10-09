@@ -2,17 +2,18 @@
 
 #include "details/DetailsFormWidget.hpp"
 
-#include <gtkmm/dialog.h>
+#include "stapik/ui/dialog/StapikDialog.hpp"
+
+#include <gtkmm/box.h>
 #include <gtkmm/entry.h>
 #include <gtkmm/label.h>
-#include <gtkmm/box.h>
 #include <optional>
 #include <memory>
 
 #include "../widget/ConsumedDatePicker.hpp"
 #include "../widget/ReleaseDatePicker.hpp"
 
-class MediaEntryDialog : public Gtk::Dialog
+class MediaEntryDialog : public StapikDialog
 {
 public:
     MediaEntryDialog(Window& parent, MediaCategory category);
@@ -21,13 +22,11 @@ public:
     [[nodiscard]] std::optional<MediaEntry> getResult() const;
 
 private:
-    static constexpr int CONTENT_SPACING = 8;
-    static constexpr int CONTENT_MARGIN = 16;
     static constexpr int DEFAULT_WIDTH = 420;
+    static constexpr int DETAILS_SPACING = 8;
 
     MediaCategory m_category;
     std::string m_id;
-    Gtk::Box m_contentBox;
     Gtk::Label m_titleLabel;
     Gtk::Entry m_titleEntry;
     ReleaseDatePicker m_releaseDatePicker;

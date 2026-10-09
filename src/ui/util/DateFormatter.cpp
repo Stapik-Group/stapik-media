@@ -1,5 +1,7 @@
 #include "DateFormatter.hpp"
 
+#include "stapik/locale/LocaleManager.hpp"
+
 namespace
 {
     std::string pad2(const unsigned value)
@@ -25,8 +27,8 @@ namespace DateFormatter
         return year;
     }
 
-    std::string formatConsumedDate(const ConsumedDate& date)
+    std::string formatConsumedDate(const stapik::domain::YearMonth& date)
     {
-        return pad2(date.month) + "." + std::to_string(date.year);
+        return date.label(LocaleManager::instance());
     }
 }

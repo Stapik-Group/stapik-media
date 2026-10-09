@@ -26,16 +26,13 @@ void ConsumedDatePicker::initLayout()
     append(m_yearSpin);
 }
 
-void ConsumedDatePicker::loadFrom(const ConsumedDate& date)
+void ConsumedDatePicker::loadFrom(const stapik::domain::YearMonth& date)
 {
-    m_monthSpin.set_value(date.month);
-    m_yearSpin.set_value(date.year);
+    m_monthSpin.set_value(date.month());
+    m_yearSpin.set_value(date.year());
 }
 
-ConsumedDate ConsumedDatePicker::toConsumedDate() const
+stapik::domain::YearMonth ConsumedDatePicker::toYearMonth() const
 {
-    return ConsumedDate{
-        static_cast<unsigned>(m_monthSpin.get_value()),
-        static_cast<unsigned>(m_yearSpin.get_value())
-    };
+    return stapik::domain::YearMonth(m_yearSpin.get_value_as_int(), m_monthSpin.get_value_as_int());
 }

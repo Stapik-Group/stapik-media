@@ -117,7 +117,7 @@ nlohmann::json MediaEntrySerializer::toJson(const MediaEntry &entry)
                 {"precision", precisionToString(entry.releaseDate.precision)}
             }
         },
-        {"consumed", {{"month", entry.consumed.month}, {"year", entry.consumed.year}}},
+        {"consumed", {{"month", entry.consumed.month()}, {"year", entry.consumed.year()}}},
         {"details", detailsToJson(entry.details)}
     };
 }
@@ -136,10 +136,10 @@ MediaEntry MediaEntrySerializer::fromJson(const nlohmann::json &json)
         category,
         json.at("title").get<std::string>(),
         ReleaseDate::fromIsoDateString(rd.at("date").get<std::string>(), precision),
-        ConsumedDate{
-            json.at("consumed").at("month").get<unsigned>(),
-            json.at("consumed").at("year").get<unsigned>()
-        },
+        stapik::domain::YearMonth(
+            json.at("consumed").at("year").get<int>(),
+            json.at("consumed").at("month").get<int>()
+        ),
         detailsFromJson(category, json.at("details")),
         std::move(id)
     };

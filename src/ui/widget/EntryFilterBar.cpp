@@ -1,5 +1,6 @@
 #include "EntryFilterBar.hpp"
 
+#include "stapik/domain/YearMonth.hpp"
 #include "stapik/locale/LocaleManager.hpp"
 
 #include <gtkmm/stringlist.h>
@@ -66,8 +67,8 @@ void EntryFilterBar::rebuildMonthOptions()
     const auto& loc = LocaleManager::instance();
 
     std::vector<Glib::ustring> labels{ loc.translate("filter.month.all") };
-    for (unsigned m = 1; m <= 12; ++m)
-        labels.emplace_back(std::to_string(m));
+    for (int month = 1; month <= stapik::domain::MONTHS_PER_YEAR; ++month)
+        labels.emplace_back(stapik::domain::YearMonth(stapik::domain::MIN_YEAR_MONTH_YEAR, month).monthName(loc));
 
     const auto model = Gtk::StringList::create(labels);
     m_monthDropDown.set_model(model);
