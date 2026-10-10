@@ -1,7 +1,7 @@
 #include "MediaModel.hpp"
 
 #include "../command/EntryCommands.hpp"
-#include "../../infrastructure/storage/MediaEntrySerializer.hpp"
+#include "YearPartitioning.hpp"
 
 #include "stapik/domain/IdGenerator.hpp"
 #include "stapik/domain/YearMonth.hpp"
@@ -12,16 +12,6 @@
 #include <chrono>
 #include <memory>
 #include <tuple>
-
-namespace
-{
-    nlohmann::json contentOf(const MediaEntry& entry)
-    {
-        auto json = MediaEntrySerializer::toJson(entry);
-        json.erase("id");
-        return json;
-    }
-}
 
 MediaModel::MediaModel(MediaDocument initial, MediaRepository& repository) :
     m_main(std::move(initial)),
@@ -264,10 +254,7 @@ int MediaModel::currentYear()
 
 std::optional<int> MediaModel::archiveYearOf(const MediaEntry& entry)
 {
-    if (entry.consumed.year() >= currentYear())
-        return std::nullopt;
-
-    return entry.consumed.year();
+    return YearPartitioning::archiveYearOf(entry, currentYear());
 }
 
 std::optional<std::size_t> MediaModel::indexIn(const MediaDocument& document, const std::string& id)
@@ -324,11 +311,7 @@ MediaModel::Touched MediaModel::normalize()
         const auto existed = m_archives.contains(entryYear);
         auto& archive = m_archives[entryYear];
 
-        const auto content = existed ? contentOf(entry) : nlohmann::json();
-        const auto duplicate = existed && std::ranges::any_of(archive.entries, [&content](const MediaEntry& candidate)
-        {
-            return contentOf(candidate) == content;
-        });
+        const auto duplicate = existed && YearPartitioning::containsSameContent(archive.entries, entry);
 
         if (!duplicate)
         {

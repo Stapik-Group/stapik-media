@@ -39,6 +39,7 @@ stapik_add_application(
                 src/core/command/EntryCommands.cpp
                 src/core/model/MediaDocument.cpp
                 src/core/model/MediaModel.cpp
+                src/core/model/YearPartitioning.cpp
                 src/infrastructure/storage/MediaEntrySerializer.cpp
                 src/infrastructure/storage/MediaDocumentSchema.cpp
                 src/infrastructure/storage/MediaRepository.cpp
@@ -61,3 +62,9 @@ stapik_add_application(
                 src/ui/window/MainWindow.cpp
                 src/main.cpp
 )
+
+option(STAPIK_MEDIA_BUILD_TESTS "Build the Stapik Media unit tests" OFF)
+if(STAPIK_MEDIA_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
