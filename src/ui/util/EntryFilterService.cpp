@@ -13,23 +13,15 @@ namespace EntryFilterService
             if (entry.category != filter.category)
                 continue;
 
-            if (filter.consumedYear.has_value() && entry.consumed.year != filter.consumedYear.value())
+            if (filter.consumedYear.has_value() && entry.consumed.year() != static_cast<int>(filter.consumedYear.value()))
                 continue;
 
-            if (filter.consumedMonth.has_value() && entry.consumed.month != filter.consumedMonth.value())
+            if (filter.consumedMonth.has_value() && entry.consumed.month() != static_cast<int>(filter.consumedMonth.value()))
                 continue;
 
             result.push_back(i);
         }
 
         return result;
-    }
-
-    std::set<unsigned> distinctConsumedYears(const std::vector<MediaEntry>& entries)
-    {
-        std::set<unsigned> years;
-        for (const auto& entry : entries)
-            years.insert(entry.consumed.year);
-        return years;
     }
 }

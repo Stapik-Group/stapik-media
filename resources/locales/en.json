@@ -35,12 +35,6 @@
   "dialog.entry.studio.label": "Studio",
   "dialog.entry.platform.label": "Platform",
 
-  "dialog.about.title": "About",
-  "dialog.about.version": "Version:",
-  "dialog.about.author": "Author:",
-  "dialog.button.ok": "OK",
-  "dialog.button.cancel": "Cancel",
-
   "picker.precision.label": "Release date precision",
   "picker.precision.day": "Day",
   "picker.precision.month": "Month",
@@ -49,37 +43,20 @@
   "picker.month.label": "Month",
   "picker.year.label": "Year",
 
-  "menu.file": "File",
-  "menu.file.connect": "Connect to cloud",
-  "menu.file.sync": "Sync",
-  "menu.file.quit": "Quit",
-  "menu.help": "Help",
-  "menu.help.about": "About",
-  "menu.settings": "Settings",
-  "menu.settings.language": "Language",
-  "menu.settings.language.pl": "Polish",
-  "menu.settings.language.en": "English",
-  "menu.settings.language.de": "German",
-
-  "menu.settings.theme": "Theme",
-  "menu.settings.theme.classic": "Classic",
-  "menu.settings.theme.classicPink": "Classic Pink",
-  "menu.settings.theme.modern": "Modern",
-  
-  "button.cancel": "Cancel",
-
-  "dialog.connect.title": "Connect to cloud",
-  "dialog.connect.url.label": "API URL",
-  "dialog.connect.key.label": "API key",
-  "dialog.connect.key.placeholder": "Enter key",
-  "dialog.connect.button.connect": "Connect",
-
-  "cloud.connected": "Connected",
-  "cloud.connected.secondary": "Successfully connected to the cloud.",
-  "cloud.failed.header": "Connection failed",
-
   "filter.year.label": "Year",
   "filter.year.all": "All",
   "filter.month.label": "Month",
-  "filter.month.all": "All"
+  "filter.month.all": "All",
+
+  "storage.problem.header": "Cannot use the saved data",
+  "storage.problem.corrupted": "The data file was damaged and has been moved aside; the application started with an empty list. You can restore your entries from the backup (.bak) next to it or by syncing with the cloud.",
+  "storage.problem.newerVersion": "The data file was saved by a newer version of Stapik Media. Update the application. The file has not been changed and editing is disabled.",
+  "storage.problem.migrationFailed": "The data file could not be converted to the current format. The file has not been changed and editing is disabled.",
+
+  "command.entry.add": "entry addition",
+  "command.entry.edit": "entry edit",
+  "command.entry.remove": "entry deletion",
+
+  "partition.notLoaded.header": "Archive not loaded",
+  "partition.notLoaded.message": "Entries from that year are stored in a cloud archive that has not been downloaded yet. Select the year in the filter first to load it, then try again."
 }

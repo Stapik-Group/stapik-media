@@ -2,24 +2,20 @@
 
 #include "../action/MenuActionHandler.hpp"
 
+#include "stapik/theme/ThemeRegistry.hpp"
+#include "stapik/ui/menu/StandardMenu.hpp"
+
 #include <gtkmm/applicationwindow.h>
 #include <gtkmm/popovermenubar.h>
-#include <giomm/menu.h>
 
 class MainMenu
 {
 public:
-    explicit MainMenu(Gtk::ApplicationWindow& window, MediaModel& model);
+    MainMenu(Gtk::ApplicationWindow& window, MediaModel& model, const stapik::theme::ThemeRegistry& themes);
     ~MainMenu() = default;
     Gtk::PopoverMenuBar& getMenuBar();
 
 private:
-    Gtk::ApplicationWindow& m_window;
     MenuActionHandler m_actionHandler;
-    Glib::RefPtr<Gio::Menu> m_menuModel;
-    Gtk::PopoverMenuBar m_menuBar;
-
-    void buildModel();
-    void initLanguageAction() const;
-    void initThemeAction() const;
+    StandardMenu m_menu;
 };

@@ -1,36 +1,13 @@
 #include "MediaEntrySerializer.hpp"
 
+#include "../../core/model/MediaCategoryKey.hpp"
+
+#include "stapik/domain/IdGenerator.hpp"
+
 #include <stdexcept>
 
 namespace
 {
-    std::string categoryToString(const MediaCategory category)
-    {
-        switch (category)
-        {
-            using enum MediaCategory;
-            case Movie: return "movie";
-            case Series: return "series";
-            case Cartoon: return "cartoon";
-            case Book: return "book";
-            case Album: return "album";
-            case Game: return "game";
-        }
-        throw std::invalid_argument("Unknown MediaCategory");
-    }
-
-    MediaCategory categoryFromString(const std::string &str)
-    {
-        using enum MediaCategory;
-        if (str == "movie") return Movie;
-        if (str == "series") return Series;
-        if (str == "cartoon") return Cartoon;
-        if (str == "book") return Book;
-        if (str == "album") return Album;
-        if (str == "game") return Game;
-        throw std::invalid_argument("Unknown category string: " + str);
-    }
-
     std::string precisionToString(const DatePrecision precision)
     {
         switch (precision)
@@ -106,7 +83,8 @@ namespace
 nlohmann::json MediaEntrySerializer::toJson(const MediaEntry &entry)
 {
     return {
-        {"category", categoryToString(entry.category)},
+        {"id", entry.id},
+        {"category", categoryToKey(entry.category)},
         {"title", entry.title},
         {
             "releaseDate", {
@@ -114,25 +92,35 @@ nlohmann::json MediaEntrySerializer::toJson(const MediaEntry &entry)
                 {"precision", precisionToString(entry.releaseDate.precision)}
             }
         },
-        {"consumed", {{"month", entry.consumed.month}, {"year", entry.consumed.year}}},
+        {"consumed", {{"month", entry.consumed.month()}, {"year", entry.consumed.year()}}},
         {"details", detailsToJson(entry.details)}
     };
 }
 
 MediaEntry MediaEntrySerializer::fromJson(const nlohmann::json &json)
 {
-    const auto category = categoryFromString(json.at("category").get<std::string>());
+    const auto categoryKey = json.at("category").get<std::string>();
+    const auto parsedCategory = categoryFromKey(categoryKey);
+    if (!parsedCategory.has_value())
+        throw std::invalid_argument("Unknown category string: " + categoryKey);
+
+    const auto category = *parsedCategory;
     const auto &rd = json.at("releaseDate");
     const auto precision = precisionFromString(rd.at("precision").get<std::string>());
+
+    auto id = json.value("id", std::string{});
+    if (id.empty())
+        id = stapik::domain::generateId();
 
     return MediaEntry{
         category,
         json.at("title").get<std::string>(),
         ReleaseDate::fromIsoDateString(rd.at("date").get<std::string>(), precision),
-        ConsumedDate{
-            json.at("consumed").at("month").get<unsigned>(),
-            json.at("consumed").at("year").get<unsigned>()
-        },
-        detailsFromJson(category, json.at("details"))
+        stapik::domain::YearMonth(
+            json.at("consumed").at("year").get<int>(),
+            json.at("consumed").at("month").get<int>()
+        ),
+        detailsFromJson(category, json.at("details")),
+        std::move(id)
     };
 }

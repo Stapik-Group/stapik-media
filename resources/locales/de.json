@@ -35,12 +35,6 @@
   "dialog.entry.studio.label": "Studio",
   "dialog.entry.platform.label": "Plattform",
 
-  "dialog.about.title": "Über",
-  "dialog.about.version": "Version:",
-  "dialog.about.author": "Autor:",
-  "dialog.button.ok": "OK",
-  "dialog.button.cancel": "Abbrechen",
-
   "picker.precision.label": "Genauigkeit des Erscheinungsdatums",
   "picker.precision.day": "Tag",
   "picker.precision.month": "Monat",
@@ -49,37 +43,20 @@
   "picker.month.label": "Monat",
   "picker.year.label": "Jahr",
 
-  "menu.file": "Datei",
-  "menu.file.connect": "Mit Cloud verbinden",
-  "menu.file.sync": "Synchronisieren",
-  "menu.file.quit": "Beenden",
-  "menu.help": "Hilfe",
-  "menu.help.about": "Über",
-  "menu.settings": "Einstellungen",
-  "menu.settings.language": "Sprache",
-  "menu.settings.language.pl": "Polnisch",
-  "menu.settings.language.en": "Englisch",
-  "menu.settings.language.de": "Deutsch",
-
-  "menu.settings.theme": "Design",
-  "menu.settings.theme.classic": "Klassisch",
-  "menu.settings.theme.classicPink": "Klassisch Pink",
-  "menu.settings.theme.modern": "Modern",
-  
-  "button.cancel": "Abbrechen",
-
-  "dialog.connect.title": "Mit Cloud verbinden",
-  "dialog.connect.url.label": "API-URL",
-  "dialog.connect.key.label": "API-Schlüssel",
-  "dialog.connect.key.placeholder": "Schlüssel eingeben",
-  "dialog.connect.button.connect": "Verbinden",
-
-  "cloud.connected": "Verbunden",
-  "cloud.connected.secondary": "Erfolgreich mit der Cloud verbunden.",
-  "cloud.failed.header": "Verbindung fehlgeschlagen",
-
   "filter.year.label": "Jahr",
   "filter.year.all": "Alle",
   "filter.month.label": "Monat",
-  "filter.month.all": "Alle"
+  "filter.month.all": "Alle",
+
+  "storage.problem.header": "Gespeicherte Daten können nicht verwendet werden",
+  "storage.problem.corrupted": "Die Datendatei war beschädigt und wurde beiseitegelegt; die Anwendung wurde mit einer leeren Liste gestartet. Die Einträge lassen sich aus der Sicherungskopie (.bak) neben der Datei oder per Cloud-Synchronisierung wiederherstellen.",
+  "storage.problem.newerVersion": "Die Datendatei wurde von einer neueren Version von Stapik Media gespeichert. Bitte aktualisieren Sie die Anwendung. Die Datei wurde nicht verändert, die Bearbeitung ist deaktiviert.",
+  "storage.problem.migrationFailed": "Die Datendatei konnte nicht in das aktuelle Format umgewandelt werden. Die Datei wurde nicht verändert, die Bearbeitung ist deaktiviert.",
+
+  "command.entry.add": "Hinzufügen des Eintrags",
+  "command.entry.edit": "Bearbeiten des Eintrags",
+  "command.entry.remove": "Löschen des Eintrags",
+
+  "partition.notLoaded.header": "Archiv nicht geladen",
+  "partition.notLoaded.message": "Die Einträge dieses Jahres liegen in einem Cloud-Archiv, das noch nicht heruntergeladen wurde. Wählen Sie das Jahr zuerst im Filter aus, um es zu laden, und versuchen Sie es dann erneut."
 }

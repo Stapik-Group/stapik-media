@@ -14,6 +14,7 @@ class CategorySidebar : public Gtk::Box
 public:
     CategorySidebar();
     [[nodiscard]] MediaCategory selectedCategory() const;
+    void selectCategory(MediaCategory category);
     void refreshLabels();
     [[nodiscard]] static std::string labelFor(MediaCategory category);
     sigc::signal<void(MediaCategory)>& signalCategorySelected();

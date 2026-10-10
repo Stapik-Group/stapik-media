@@ -35,12 +35,6 @@
   "dialog.entry.studio.label": "Studio",
   "dialog.entry.platform.label": "Platforma",
 
-  "dialog.about.title": "O programie",
-  "dialog.about.version": "Wersja:",
-  "dialog.about.author": "Autor:",
-  "dialog.button.ok": "OK",
-  "dialog.button.cancel": "Anuluj",
-
   "picker.precision.label": "Dokładność daty wydania",
   "picker.precision.day": "Dzień",
   "picker.precision.month": "Miesiąc",
@@ -49,37 +43,20 @@
   "picker.month.label": "Miesiąc",
   "picker.year.label": "Rok",
 
-  "menu.file": "Plik",
-  "menu.file.connect": "Połącz z chmurą",
-  "menu.file.sync": "Synchronizuj",
-  "menu.file.quit": "Zamknij",
-  "menu.help": "Pomoc",
-  "menu.help.about": "O programie",
-  "menu.settings": "Ustawienia",
-  "menu.settings.language": "Język",
-  "menu.settings.language.pl": "Polski",
-  "menu.settings.language.en": "Angielski",
-  "menu.settings.language.de": "Niemiecki",
-
-  "menu.settings.theme": "Motyw",
-  "menu.settings.theme.classic": "Klasyczny",
-  "menu.settings.theme.classicPink": "Klasyczny różowy",
-  "menu.settings.theme.modern": "Nowoczesny",
-  
-  "button.cancel": "Anuluj",
-
-  "dialog.connect.title": "Połącz z chmurą",
-  "dialog.connect.url.label": "Adres API",
-  "dialog.connect.key.label": "Klucz API",
-  "dialog.connect.key.placeholder": "Wprowadź klucz",
-  "dialog.connect.button.connect": "Połącz",
-
-  "cloud.connected": "Połączono",
-  "cloud.connected.secondary": "Pomyślnie połączono z chmurą.",
-  "cloud.failed.header": "Nie udało się połączyć",
-
   "filter.year.label": "Rok",
   "filter.year.all": "Wszystkie",
   "filter.month.label": "Miesiąc",
-  "filter.month.all": "Wszystkie"
+  "filter.month.all": "Wszystkie",
+
+  "storage.problem.header": "Nie można użyć zapisanych danych",
+  "storage.problem.corrupted": "Plik z danymi był uszkodzony i został odłożony na bok; aplikacja uruchomiła się z pustą listą. Wpisy możesz odzyskać z kopii zapasowej (.bak) obok pliku albo przez synchronizację z chmurą.",
+  "storage.problem.newerVersion": "Plik z danymi zapisała nowsza wersja Stapik Media. Zaktualizuj aplikację. Plik nie został zmieniony, a edycja jest wyłączona.",
+  "storage.problem.migrationFailed": "Nie udało się przekonwertować pliku z danymi do bieżącego formatu. Plik nie został zmieniony, a edycja jest wyłączona.",
+
+  "command.entry.add": "dodanie wpisu",
+  "command.entry.edit": "edycja wpisu",
+  "command.entry.remove": "usunięcie wpisu",
+
+  "partition.notLoaded.header": "Archiwum niezaładowane",
+  "partition.notLoaded.message": "Wpisy z tego roku są w archiwum w chmurze, które nie zostało jeszcze pobrane. Wybierz najpierw ten rok w filtrze, aby je wczytać, a potem spróbuj ponownie."
 }

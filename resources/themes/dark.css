@@ -1,0 +1,140 @@
+.category-sidebar {
+    background-color: #2c2c2e;
+    background-image: none;
+    border-right: 1px solid #3a3a3c;
+    min-width: 160px;
+}
+
+.category-sidebar list {
+    background-color: transparent;
+}
+
+.category-sidebar row {
+    padding: 10px 12px;
+    color: #f2f2f7;
+    font-weight: 600;
+    font-size: 13px;
+    border-radius: 8px;
+    margin: 2px 6px;
+}
+
+.category-sidebar row:selected {
+    background-color: #0a84ff;
+    color: #ffffff;
+}
+
+.category-sidebar row:hover {
+    background-color: #3a3a3c;
+    color: #f2f2f7;
+}
+
+.category-sidebar row:selected:hover {
+    background-color: #409cff;
+    color: #ffffff;
+}
+
+.add-entry-button {
+    min-height: 36px;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    border-radius: 8px;
+    background-color: #0a84ff;
+    color: #ffffff;
+    box-shadow: none;
+}
+
+.add-entry-button:hover {
+    background-color: #409cff;
+}
+
+.media-list-scroller {
+    background-color: #1c1c1e;
+}
+
+.media-entry-row {
+    border-bottom: 1px solid #3a3a3c;
+    padding: 10px 8px;
+    font-size: 12px;
+    background-color: #2c2c2e;
+    border-radius: 10px;
+    margin: 3px 6px;
+}
+
+.media-entry-row:hover {
+    background-color: #3a3a3c;
+}
+
+.media-entry-row button {
+    min-height: 28px;
+    min-width: 60px;
+    font-size: 11px;
+}
+
+.media-entry-dialog-content {
+    background-color: #1c1c1e;
+}
+
+.media-entry-dialog-content label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #f2f2f7;
+}
+
+.media-entry-dialog-content entry {
+    border: 1px solid #3a3a3c;
+    min-height: 28px;
+    padding: 4px 6px;
+}
+
+.details-form entry,
+.details-form checkbutton {
+    min-height: 28px;
+}
+
+.date-picker {
+    padding: 4px 0;
+}
+
+.date-picker label {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #f2f2f7;
+}
+
+.date-picker spinbutton,
+.date-picker dropdown {
+    min-height: 32px;
+    font-size: 12px;
+}
+
+.entry-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f2f2f7;
+}
+
+.entry-details {
+    font-size: 11px;
+    color: #98989f;
+}
+
+.entry-dates {
+    font-size: 11px;
+    color: #8a8a90;
+}
+
+.entry-filter-bar {
+    padding: 6px 8px;
+}
+
+.pagination-bar {
+    padding: 6px 8px;
+}
+
+.pagination-bar label {
+    min-width: 60px;
+    color: #f2f2f7;
+}

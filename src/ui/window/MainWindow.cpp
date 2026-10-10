@@ -1,34 +1,76 @@
 #include "MainWindow.hpp"
 
-#include "../../infrastructure/storage/Storage.hpp"
 #include "../dialog/MediaEntryDialog.hpp"
 #include "../util/EntryFilterService.hpp"
+#include "../../core/model/MediaCategoryKey.hpp"
 
-#include "stapik/storage/CloudStorageConfigStorage.hpp"
+#include "stapik/app/AppContext.hpp"
+
 #include "stapik/locale/LocaleManager.hpp"
+#include "stapik/log/Log.hpp"
+#include "stapik/ui/dialog/DialogUtils.hpp"
 
-MainWindow::MainWindow() :
-    m_model(loadInitialSnapshot()),
+#include <glibmm/main.h>
+
+namespace
+{
+    const char* storageProblemKey(const StorageProblem problem)
+    {
+        switch (problem)
+        {
+            using enum StorageProblem;
+            case Corrupted: return "storage.problem.corrupted";
+            case NewerVersion: return "storage.problem.newerVersion";
+            case MigrationFailed: return "storage.problem.migrationFailed";
+            case None: break;
+        }
+        return "";
+    }
+}
+
+MainWindow::MainWindow(const stapik::theme::ThemeRegistry& themes) :
+    m_repository(),
+    m_model(m_repository.load(), m_repository),
     m_mainBox(Gtk::Orientation::VERTICAL, 0),
     m_contentBox(Gtk::Orientation::HORIZONTAL, 0),
     m_rightBox(Gtk::Orientation::VERTICAL, 0),
-    m_mainMenu(*this, m_model)
+    m_mainMenu(*this, m_model, themes)
 {
     init();
     initLayout();
     initSignals();
-    initCloud();
+    reportStorageProblem();
 }
 
-Snapshot MainWindow::loadInitialSnapshot()
+void MainWindow::reportStorageProblem()
 {
-    return Storage::load();
+    const auto problem = m_repository.problem();
+    if (problem == StorageProblem::None)
+        return;
+
+    if (!m_repository.isWritable())
+        m_mainBox.set_sensitive(false);
+
+    Glib::signal_idle().connect_once([this, problem]
+    {
+        const auto& loc = LocaleManager::instance();
+        showMessageDialog(*this, loc.translate("storage.problem.header"), loc.translate(storageProblemKey(problem)), Gtk::MessageType::ERROR);
+    });
 }
 
 void MainWindow::init()
 {
+    const auto& settings = stapik::app::AppContext::instance().settings();
+    const auto storedWidth = settings.get(SETTING_WIDTH, DEFAULT_WIDTH);
+    const auto storedHeight = settings.get(SETTING_HEIGHT, DEFAULT_HEIGHT);
+    const auto sizeIsValid = storedWidth >= MIN_STORED_SIZE && storedHeight >= MIN_STORED_SIZE;
+
     set_title(WINDOW_TITLE);
-    set_default_size(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    set_default_size(sizeIsValid ? storedWidth : DEFAULT_WIDTH, sizeIsValid ? storedHeight : DEFAULT_HEIGHT);
+
+    if (settings.get(SETTING_MAXIMIZED, false))
+        maximize();
+
     set_child(m_mainBox);
 }
 
@@ -53,11 +95,20 @@ void MainWindow::initLayout()
     m_rightBox.append(m_paginationBar);
     m_rightBox.append(m_addButton);
 
+    const auto storedCategory = categoryFromKey(stapik::app::AppContext::instance().settings().get(SETTING_CATEGORY, std::string{}));
+    if (storedCategory.has_value())
+        m_sidebar.selectCategory(*storedCategory);
+
     m_contentBox.append(m_sidebar);
     m_contentBox.append(m_rightBox);
 
     m_mainBox.append(m_mainMenu.getMenuBar());
+    m_statusIndicator.set_margin(STATUS_MARGIN);
+    m_statusIndicator.set_visible(m_model.isCloudConnected());
+    m_statusIndicator.setStatus(m_model.syncStatus());
+
     m_mainBox.append(m_contentBox);
+    m_mainBox.append(m_statusIndicator);
 }
 
 void MainWindow::initSignals()
@@ -70,9 +121,13 @@ void MainWindow::initSignals()
     m_paginationBar.signalPreviousRequested().connect(sigc::mem_fun(*this, &MainWindow::onPreviousPageRequested));
     m_paginationBar.signalNextRequested().connect(sigc::mem_fun(*this, &MainWindow::onNextPageRequested));
 
+    m_model.signalSyncStatusChanged().connect(sigc::mem_fun(*this, &MainWindow::onSyncStatusChanged));
+    m_model.signalAvailableYearsChanged().connect([this] { m_filterBar.setAvailableYears(m_model.availableYears()); });
+    signal_close_request().connect(sigc::mem_fun(*this, &MainWindow::onCloseRequest), false);
+
     m_model.signalEntriesChanged().connect([this] {
         m_currentPage = 1;
-        m_filterBar.setAvailableYears(EntryFilterService::distinctConsumedYears(m_model.entries()));
+        m_filterBar.setAvailableYears(m_model.availableYears());
         applyFiltersAndRefresh();
     });
 
@@ -87,21 +142,69 @@ void MainWindow::initSignals()
     onCategorySelected(m_sidebar.selectedCategory());
 }
 
-void MainWindow::initCloud()
+void MainWindow::onSyncStatusChanged(const stapik::sync::SyncStatus status)
 {
-    const auto config = CloudStorageConfigStorage::load("stapikmedia");
-    if (!config.has_value())
+    if (m_closed)
         return;
 
-    m_model.setCloudClient(
-        std::make_unique<CloudStorageClient>(config.value(), MEDIA_FILENAME));
+    m_statusIndicator.set_visible(m_model.isCloudConnected());
+    m_statusIndicator.setStatus(status);
+}
+
+bool MainWindow::onCloseRequest()
+{
+    if (m_closing)
+        return true;
+
+    saveWindowState();
+    m_model.flush();
+    if (!m_model.isSyncing())
+        return false;
+
+    m_closing = true;
+    set_visible(false);
+
+    m_model.signalSyncStatusChanged().connect([this](const stapik::sync::SyncStatus)
+    {
+        if (!m_model.isSyncing())
+            closeNow();
+    });
+    Glib::signal_timeout().connect_once([this] { closeNow(); }, CLOSE_TIMEOUT_MS);
+    return true;
+}
+
+void MainWindow::saveWindowState() const
+{
+    auto& settings = stapik::app::AppContext::instance().settings();
+    const auto maximized = is_maximized();
+
+    settings.set(SETTING_MAXIMIZED, maximized);
+    settings.set(SETTING_CATEGORY, categoryToKey(m_sidebar.selectedCategory()));
+
+    if (!maximized && get_width() >= MIN_STORED_SIZE && get_height() >= MIN_STORED_SIZE)
+    {
+        settings.set(SETTING_WIDTH, get_width());
+        settings.set(SETTING_HEIGHT, get_height());
+    }
+
+    if (!settings.save())
+        stapik::log::warning("Cannot persist the window state");
+}
+
+void MainWindow::closeNow()
+{
+    if (m_closed)
+        return;
+
+    m_closed = true;
+    destroy();
 }
 
 void MainWindow::onCategorySelected(const MediaCategory category)
 {
     m_currentPage = 1;
     m_filterBar.reset();
-    m_filterBar.setAvailableYears(EntryFilterService::distinctConsumedYears(m_model.entries()));
+    m_filterBar.setAvailableYears(m_model.availableYears());
     m_listHeaderLabel.set_text(CategorySidebar::labelFor(category));
     applyFiltersAndRefresh();
 }
@@ -114,8 +217,8 @@ void MainWindow::onAddClicked()
     {
         if (responseId == Gtk::ResponseType::OK)
         {
-            if (const auto result = dialog->getResult(); result.has_value())
-                m_model.addEntry(*result);
+            if (const auto result = dialog->getResult(); result.has_value() && !m_model.addEntry(*result))
+                showArchiveNotLoaded();
         }
         dialog->hide();
     });
@@ -129,18 +232,19 @@ void MainWindow::onEntryEditRequested(const std::size_t index)
     const auto& entries = m_model.entries();
     if (index >= entries.size())
     {
-        g_warning("MainWindow::onEntryEditRequested: invalid index %zu", index);
+        stapik::log::warning("MainWindow::onEntryEditRequested: invalid index {}", index);
         return;
     }
 
+    const auto id = entries.at(index).id;
     auto* dialog = new MediaEntryDialog(*this, entries.at(index));
 
-    dialog->signal_response().connect([this, dialog, index](const int responseId)
+    dialog->signal_response().connect([this, dialog, id](const int responseId)
     {
         if (responseId == Gtk::ResponseType::OK)
         {
-            if (const auto result = dialog->getResult(); result.has_value())
-                m_model.updateEntry(index, *result);
+            if (const auto result = dialog->getResult(); result.has_value() && !m_model.updateEntry(id, *result))
+                showArchiveNotLoaded();
         }
         dialog->hide();
     });
@@ -151,11 +255,24 @@ void MainWindow::onEntryEditRequested(const std::size_t index)
 
 void MainWindow::onEntryDeleteRequested(const std::size_t index)
 {
-    m_model.removeEntry(index);
+    const auto& entries = m_model.entries();
+    if (index >= entries.size())
+        return;
+
+    m_model.removeEntry(entries.at(index).id);
+}
+
+void MainWindow::showArchiveNotLoaded()
+{
+    const auto& loc = LocaleManager::instance();
+    showMessageDialog(*this, loc.translate("partition.notLoaded.header"), loc.translate("partition.notLoaded.message"), Gtk::MessageType::WARNING);
 }
 
 void MainWindow::onFilterChanged()
 {
+    if (const auto year = m_filterBar.selectedYear(); year.has_value())
+        m_model.requestYear(static_cast<int>(*year));
+
     m_currentPage = 1;
     applyFiltersAndRefresh();
 }

@@ -8,27 +8,19 @@
 #include "stapik/locale/LocaleManager.hpp"
 
 MediaEntryDialog::MediaEntryDialog(Window &parent, const MediaCategory category) :
-    Dialog(LocaleManager::instance().translate("dialog.entry.title.add"), parent, true),
+    StapikDialog(parent, LocaleManager::instance().translate("dialog.entry.title.add")),
     m_category(category),
-    m_contentBox(Gtk::Orientation::VERTICAL, CONTENT_SPACING),
-    m_detailsContainer(Gtk::Orientation::VERTICAL, CONTENT_SPACING)
+    m_detailsContainer(Gtk::Orientation::VERTICAL, DETAILS_SPACING)
 {
     initLayout();
-
-    const auto today = std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now());
-    const std::chrono::year_month_day ymd{today};
-
-    m_consumedDatePicker.loadFrom(ConsumedDate{
-        static_cast<unsigned>(ymd.month()),
-        static_cast<unsigned>(static_cast<int>(ymd.year()))
-    });
+    m_consumedDatePicker.loadFrom(stapik::domain::YearMonth::current());
 }
 
-MediaEntryDialog::MediaEntryDialog(Window &parent, const MediaEntry &existing) : Dialog(
-        LocaleManager::instance().translate("dialog.entry.title.edit"), parent, true),
+MediaEntryDialog::MediaEntryDialog(Window &parent, const MediaEntry &existing) :
+    StapikDialog(parent, LocaleManager::instance().translate("dialog.entry.title.edit")),
     m_category(existing.category),
-    m_contentBox(Gtk::Orientation::VERTICAL, CONTENT_SPACING),
-    m_detailsContainer(Gtk::Orientation::VERTICAL, CONTENT_SPACING)
+    m_id(existing.id),
+    m_detailsContainer(Gtk::Orientation::VERTICAL, DETAILS_SPACING)
 {
     initLayout();
 
@@ -53,26 +45,22 @@ void MediaEntryDialog::initLayout()
     m_consumedDateLabel.set_halign(Gtk::Align::START);
     m_consumedDateLabel.add_css_class("panel-title");
 
-    m_contentBox.set_margin(CONTENT_MARGIN);
-    m_contentBox.add_css_class("media-entry-dialog-content");
-    m_contentBox.append(m_titleLabel);
-    m_contentBox.append(m_titleEntry);
-    m_contentBox.append(m_releaseDateLabel);
-    m_contentBox.append(m_releaseDatePicker);
-    m_contentBox.append(m_consumedDateLabel);
-    m_contentBox.append(m_consumedDatePicker);
+    contentBox().add_css_class("media-entry-dialog-content");
+    contentBox().append(m_titleLabel);
+    contentBox().append(m_titleEntry);
+    contentBox().append(m_releaseDateLabel);
+    contentBox().append(m_releaseDatePicker);
+    contentBox().append(m_consumedDateLabel);
+    contentBox().append(m_consumedDatePicker);
 
     m_detailsForm = createFormFor(m_category);
     m_detailsForm->add_css_class("details-form");
     m_detailsContainer.append(*m_detailsForm);
-    m_contentBox.append(m_detailsContainer);
+    contentBox().append(m_detailsContainer);
 
-    get_content_area()->append(m_contentBox);
+    addCancelButton();
+    addOkButton(loc.translate("dialog.entry.button.save"));
 
-    add_button(loc.translate("button.cancel"), Gtk::ResponseType::CANCEL);
-    add_button(loc.translate("dialog.entry.button.save"), Gtk::ResponseType::OK);
-
-    set_default_response(Gtk::ResponseType::OK);
     m_titleEntry.set_activates_default(true);
     set_default_size(DEFAULT_WIDTH, -1);
 }
@@ -106,7 +94,8 @@ std::optional<MediaEntry> MediaEntryDialog::getResult() const
         m_category,
         std::string(title),
         m_releaseDatePicker.toReleaseDate(),
-        m_consumedDatePicker.toConsumedDate(),
-        m_detailsForm->toDetails()
+        m_consumedDatePicker.toYearMonth(),
+        m_detailsForm->toDetails(),
+        m_id
     };
 }
