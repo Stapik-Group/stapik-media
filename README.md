@@ -51,7 +51,7 @@ cmake --build cmake-build-release
 
 ### Continuous integration
 
-GitHub Actions builds and tests every branch except `develop` and every pull request to `master`. Pushing a tag `vX.Y.Z` that matches the project version and lies on `master` attaches the `.deb` package and the Windows zip to a GitHub release.
+GitHub Actions builds and tests every branch except `develop` and every pull request to `main`. Pushing a tag `vX.Y.Z` that matches the project version and lies on `main` attaches the `.deb` package and the Windows zip to a GitHub release.
 
 ### Running the tests
 
