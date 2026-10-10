@@ -49,6 +49,10 @@ cmake -B cmake-build-release -DCMAKE_BUILD_TYPE=Release
 cmake --build cmake-build-release
 ```
 
+### Continuous integration
+
+GitHub Actions builds and tests every branch except `develop` and every pull request to `master`. Pushing a tag `vX.Y.Z` that matches the project version and lies on `master` attaches the `.deb` package and the Windows zip to a GitHub release.
+
 ### Running the tests
 
 ```bash
@@ -92,6 +96,19 @@ cmake --install cmake-build-release
 ```
 
 Installs the binary and resources to `~/.local/opt/stapikmedia/`, with a launcher at `~/.local/bin/stapikmedia`. Make sure `~/.local/bin` is in your `PATH`.
+
+## Windows
+
+A prebuilt, self-contained folder is attached to every release as `stapik-media-<version>-windows-x64.zip` (with a `.sha256` checksum). Unpack it anywhere and run `stapikmedia.exe` — there is no installer. Data is kept per user in `%APPDATA%\stapikmedia` (see the `README.txt` inside the zip for details).
+
+To build it yourself, use an MSYS2 UCRT64 shell with `gcc cmake ninja pkgconf gtkmm-4.0 curl adwaita-icon-theme hicolor-icon-theme` (prefixed `mingw-w64-ucrt-x86_64-`):
+
+```bash
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target stapikmedia_windows_bundle
+```
+
+The folder appears in `build/stapikmedia-windows/`. Running `stapikmedia.exe --self-test` checks the installation (resources, themes, translations, TLS) and exits with a non-zero code when something is missing; the result is written to `%LOCALAPPDATA%\stapikmedia\cache\stapik.log`.
 
 ## Uninstalling
 
