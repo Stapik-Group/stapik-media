@@ -231,23 +231,3 @@ Switch between five themes in **Settings → Settings…**: Classic (the origina
 
 ![Screenshot](screenshots/screenshot_2.png)
 ![Screenshot](screenshots/screenshot_3.png)
-
-## TODO
-
-- [x] Category-based sidebar with per-type entry fields
-- [x] Filtering by consumption year/month
-- [x] Pagination
-- [x] Search by title
-- [x] CSV export, printing and PDF export
-- [x] Windows installer and portable ZIP
-- [x] Built-in tutorial
-- [x] Cloud sync with conflict resolution
-- [x] `.deb` package for easier distribution
-- [x] Multiple themes (Classic / Modern / Classic Pink / Dark / Neoclassic)
-- [x] Undo / Redo
-- [x] Yearly archives in the cloud
-- [x] Unit tests
-- [x] Sort options (by title, release date, consumption date)
-- [x] CSV import with a preview and duplicate detection
-- [ ] Import from an XLSX file
-- [ ] Flatpak package
