@@ -99,5 +99,6 @@
   "dialog.entry.missing.message": "Wpis został w międzyczasie usunięty, na przykład przez synchronizację. Zmiany nie zostały zapisane.",
 
   "storage.unreadable.header": "Nie udało się wczytać części wpisów",
-  "storage.unreadable.message": "Liczba wpisów, których nie udało się wczytać: {count}. Mogą pochodzić z nowszej wersji programu albo zostać zmienione ręcznie. Nie są wyświetlane, ale pozostają w plikach z danymi bez zmian."
+  "storage.unreadable.message": "Liczba wpisów, których nie udało się wczytać: {count}. Mogą pochodzić z nowszej wersji programu albo zostać zmienione ręcznie. Nie są wyświetlane, ale pozostają w plikach z danymi bez zmian.",
+  "storage.readOnly.message": "Plików z danymi nie można zmieniać, więc lista jest tylko do odczytu."
 }

@@ -13,6 +13,7 @@ public:
     explicit MediaEntryRow(const MediaEntry& entry);
 
     void refreshLabels();
+    void setEditable(bool editable);
 
     sigc::signal<void()>& signalEditRequested();
     sigc::signal<void()>& signalDeleteRequested();

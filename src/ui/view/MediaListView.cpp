@@ -19,6 +19,7 @@ void MediaListView::refresh(const std::vector<MediaEntry>& allEntries, const std
         }
 
         auto row = std::make_unique<MediaEntryRow>(allEntries[index]);
+        row->setEditable(m_editable);
         row->signalEditRequested().connect([this, index] { m_signalEditRequested.emit(index); });
         row->signalDeleteRequested().connect([this, index] { m_signalDeleteRequested.emit(index); });
         append(*row);
@@ -27,6 +28,13 @@ void MediaListView::refresh(const std::vector<MediaEntry>& allEntries, const std
 
     if (indicesToShow.empty())
         append(m_emptyState);
+}
+
+void MediaListView::setEditable(const bool editable)
+{
+    m_editable = editable;
+    for (const auto& row : m_rows)
+        row->setEditable(editable);
 }
 
 void MediaListView::clearRows()

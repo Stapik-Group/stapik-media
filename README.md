@@ -217,7 +217,7 @@ A log file `stapik.log` is written to `~/.cache/stapikmedia/` when the program i
 
 A failed save is reported in the window, and the changes stay in the open window until the file can be written.
 
-A damaged data file is moved aside instead of being overwritten, and the app starts with an empty list that you can restore from a backup or from the cloud. An entry that cannot be read (for example one of a category added by a newer version, or one edited by hand into an invalid date) does not spoil the rest of the file: the other entries load normally, the unreadable ones are not shown but are written back unchanged, and the app tells you how many there are. A file written by a newer version of the app is never modified: the app shows a message and stays read-only.
+A damaged data file is moved aside instead of being overwritten, and the app starts with an empty list that you can restore from a backup or from the cloud. An entry that cannot be read (for example one of a category added by a newer version, or one edited by hand into an invalid date) does not spoil the rest of the file: the other entries load normally, the unreadable ones are not shown but are written back unchanged, and the app tells you how many there are. A file written by a newer version of the app is never modified: the app shows a message and stays read-only: adding, editing and deleting are disabled, while browsing, searching, exporting, the settings and the Help menu keep working.
 
 If you are upgrading from an older version, your existing `media.json` is converted automatically on first launch (the original is kept as a `.bak` file) and every entry gets a stable ID.
 

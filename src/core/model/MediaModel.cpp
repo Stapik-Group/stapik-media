@@ -122,6 +122,9 @@ std::size_t MediaModel::unreadableEntryCount() const
 
 MediaModel::EntryResult MediaModel::addEntry(MediaEntry entry)
 {
+    if (!isWritable())
+        return stapik::Failure(EntryError::ReadOnly);
+
     archiveClosedYears();
 
     if (!canWriteYear(entry.consumed.year()))
@@ -139,6 +142,9 @@ MediaModel::EntryResult MediaModel::addEntry(MediaEntry entry)
 
 MediaModel::EntryResult MediaModel::updateEntry(const std::string& id, MediaEntry entry)
 {
+    if (!isWritable())
+        return stapik::Failure(EntryError::ReadOnly);
+
     archiveClosedYears();
 
     auto before = entryById(id);
@@ -161,6 +167,9 @@ MediaModel::EntryResult MediaModel::updateEntry(const std::string& id, MediaEntr
 
 void MediaModel::removeEntry(const std::string& id)
 {
+    if (!isWritable())
+        return;
+
     archiveClosedYears();
 
     auto entry = entryById(id);
@@ -335,9 +344,19 @@ std::optional<CloudStorageConfig> MediaModel::cloudConfig() const
     return m_session.config();
 }
 
+bool MediaModel::isWritable() const
+{
+    return m_repository.isWritable();
+}
+
 bool MediaModel::isCloudConnected() const
 {
     return m_repository.isWritable() && m_session.isConnected();
+}
+
+bool MediaModel::hasCloudConnection() const
+{
+    return m_session.isConnected();
 }
 
 bool MediaModel::isSyncing() const

@@ -16,6 +16,7 @@ public:
 
     void refresh(const std::vector<MediaEntry>& allEntries, const std::vector<std::size_t>& indicesToShow);
     void refreshLabels();
+    void setEditable(bool editable);
 
     sigc::signal<void(std::size_t)>& signalEditRequested();
     sigc::signal<void(std::size_t)>& signalDeleteRequested();
@@ -24,6 +25,7 @@ private:
     static constexpr int LIST_SPACING = 2;
 
     std::vector<std::unique_ptr<MediaEntryRow>> m_rows;
+    bool m_editable = true;
     EmptyState m_emptyState;
 
     sigc::signal<void(std::size_t)> m_signalEditRequested;

@@ -34,7 +34,8 @@ public:
     {
         ArchiveNotLoaded,
         Duplicate,
-        UnknownEntry
+        UnknownEntry,
+        ReadOnly
     };
 
     using EntryResult = stapik::Result<void, EntryError>;
@@ -75,7 +76,9 @@ public:
     bool restoreBackup(const stapik::document::BackupInfo& backup);
 
     [[nodiscard]] std::optional<CloudStorageConfig> cloudConfig() const;
+    [[nodiscard]] bool isWritable() const;
     [[nodiscard]] bool isCloudConnected() const;
+    [[nodiscard]] bool hasCloudConnection() const;
     [[nodiscard]] bool isSyncing() const;
     [[nodiscard]] stapik::sync::SyncStatus syncStatus() const;
 

@@ -18,6 +18,7 @@
 #include <gtest/gtest.h>
 
 #include <chrono>
+#include <fstream>
 #include <memory>
 #include <optional>
 #include <utility>
@@ -184,4 +185,31 @@ TEST_F(MediaModelCloudTest, DisconnectingLiftsTheRestrictionOnYearsKeptOnlyInThe
     m_model->disconnectCloud();
 
     EXPECT_TRUE(m_model->addEntry(test::makeMovie("Alien", pastYear, 5, "local")));
+}
+
+TEST(MediaModelReadOnlyCloudTest, SavedConnectionCanStillBeDroppedWhenTheDataFileIsFromANewerVersion)
+{
+    stapik::test::TemporaryDirectory directory{ "stapik-media-readonly-cloud" };
+    stapik::test::FakeClock clock{ std::chrono::system_clock::now() };
+    stapik::test::FakeCloudStorage fake;
+    std::ofstream(directory.path() / "media.json") << R"({"schemaVersion": 99, "document": {"entries": []}})";
+    int clearedConfigs = 0;
+
+    stapik::sync::CloudSessionHooks hooks;
+    hooks.loadConfig = [] { return std::optional<CloudStorageConfig>{ validConfig() }; };
+    hooks.saveConfig = [](const CloudStorageConfig&) { return true; };
+    hooks.clearConfig = [&clearedConfigs] { ++clearedConfigs; };
+    hooks.createStorage = [&fake](const CloudStorageConfig&) { return std::make_unique<stapik::test::ForwardingCloudStorage>(fake); };
+
+    MediaRepository repository(directory.path(), clock);
+    MediaModel model(repository.load(), repository, std::move(hooks), stapik::sync::AsyncSyncOptions{ std::chrono::milliseconds{ 20 }, std::chrono::milliseconds{ 20 }, std::chrono::milliseconds{ 80 } }, clock);
+
+    EXPECT_FALSE(model.isCloudConnected());
+    EXPECT_TRUE(model.hasCloudConnection());
+
+    model.disconnectCloud();
+
+    EXPECT_FALSE(model.hasCloudConnection());
+    EXPECT_EQ(clearedConfigs, 1);
+    EXPECT_EQ(fake.saveCalls.load(), 0);
 }

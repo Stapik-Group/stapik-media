@@ -38,14 +38,18 @@ MenuActionHandler::~MenuActionHandler()
 
 void MenuActionHandler::registerActions()
 {
-    m_window.add_action("connect", sigc::mem_fun(*this, &MenuActionHandler::onActionConnect));
+    const auto connectAction = m_window.add_action("connect", sigc::mem_fun(*this, &MenuActionHandler::onActionConnect));
     m_disconnectAction = m_window.add_action("disconnect", sigc::mem_fun(*this, &MenuActionHandler::onActionDisconnect));
     m_window.add_action("quit", sigc::mem_fun(*this, &MenuActionHandler::onActionQuit));
-    m_window.add_action("sync", sigc::mem_fun(*this, &MenuActionHandler::onActionSync));
-    m_window.add_action("restoreBackup", sigc::mem_fun(*this, &MenuActionHandler::onActionRestoreBackup));
+    const auto syncAction = m_window.add_action("sync", sigc::mem_fun(*this, &MenuActionHandler::onActionSync));
+    const auto restoreBackupAction = m_window.add_action("restoreBackup", sigc::mem_fun(*this, &MenuActionHandler::onActionRestoreBackup));
 
-    m_disconnectAction->set_enabled(m_model.isCloudConnected());
-    m_statusConnection = m_model.signalSyncStatusChanged().connect([this](const stapik::sync::SyncStatus) { m_disconnectAction->set_enabled(m_model.isCloudConnected()); });
+    connectAction->set_enabled(m_model.isWritable());
+    syncAction->set_enabled(m_model.isWritable());
+    restoreBackupAction->set_enabled(m_model.isWritable());
+
+    m_disconnectAction->set_enabled(m_model.hasCloudConnection());
+    m_statusConnection = m_model.signalSyncStatusChanged().connect([this](const stapik::sync::SyncStatus) { m_disconnectAction->set_enabled(m_model.hasCloudConnection()); });
     m_outcomeConnection = m_model.signalCloudOutcome().connect(sigc::mem_fun(*this, &MenuActionHandler::showConnectFeedback));
 }
 

@@ -99,5 +99,6 @@
   "dialog.entry.missing.message": "Der Eintrag wurde inzwischen entfernt, zum Beispiel durch eine Synchronisierung. Ihre Änderungen wurden nicht gespeichert.",
 
   "storage.unreadable.header": "Einige Einträge konnten nicht gelesen werden",
-  "storage.unreadable.message": "Anzahl der Einträge, die nicht gelesen werden konnten: {count}. Sie stammen möglicherweise aus einer neueren Programmversion oder wurden von Hand bearbeitet. Sie werden nicht angezeigt, bleiben aber unverändert in den Datendateien erhalten."
+  "storage.unreadable.message": "Anzahl der Einträge, die nicht gelesen werden konnten: {count}. Sie stammen möglicherweise aus einer neueren Programmversion oder wurden von Hand bearbeitet. Sie werden nicht angezeigt, bleiben aber unverändert in den Datendateien erhalten.",
+  "storage.readOnly.message": "Die Datendateien können nicht geändert werden, die Liste ist daher schreibgeschützt."
 }

@@ -55,8 +55,11 @@ void MainWindow::reportStorageProblem()
     if (problem == StorageProblem::None)
         return;
 
-    if (!m_repository.isWritable())
-        m_mainBox.set_sensitive(false);
+    if (!m_model.isWritable())
+    {
+        m_addButton.set_sensitive(false);
+        m_listView.setEditable(false);
+    }
 
     Glib::signal_idle().connect_once([this, problem]
     {
@@ -252,6 +255,9 @@ void MainWindow::reportRejectedEntry(Gtk::Window& dialog, const MediaModel::Entr
             break;
         case UnknownEntry:
             showMessageDialog(*this, loc.translate("dialog.entry.missing.header"), loc.translate("dialog.entry.missing.message"));
+            break;
+        case ReadOnly:
+            showMessageDialog(*this, loc.translate("storage.problem.header"), loc.translate("storage.readOnly.message"));
             break;
     }
 }

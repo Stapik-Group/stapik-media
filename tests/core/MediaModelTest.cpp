@@ -14,6 +14,7 @@
 #include <chrono>
 #include <filesystem>
 #include <fstream>
+#include <iterator>
 #include <memory>
 #include <string>
 #include <vector>
@@ -378,4 +379,40 @@ TEST(MediaModelSaveFailureTest, FailureIsReportedOnceUntilASaveSucceedsAgain)
     blockWithAFile();
     ASSERT_TRUE(model.addEntry(test::makeMovie("Fourth", year, 4, "d")));
     EXPECT_EQ(failures.size(), 2U);
+}
+
+namespace
+{
+    constexpr auto NEWER_VERSION_FILE = R"({"schemaVersion": 99, "document": {"entries": []}})";
+}
+
+TEST(MediaModelReadOnlyTest, EntriesCannotBeChangedWhenTheDataFileIsFromANewerVersion)
+{
+    stapik::test::TemporaryDirectory directory{ "stapik-media-readonly" };
+    stapik::test::FakeClock clock{ std::chrono::system_clock::now() };
+    const auto path = directory.path() / "media.json";
+    std::ofstream(path) << NEWER_VERSION_FILE;
+    MediaRepository repository(directory.path(), clock);
+    MediaModel model(repository.load(), repository, stapik::sync::CloudSessionHooks{}, stapik::sync::AsyncSyncOptions{}, clock);
+    const auto year = stapik::domain::YearMonth::current(clock).year();
+
+    const auto added = model.addEntry(test::makeMovie("Heat", year, 3, "a"));
+    const auto updated = model.updateEntry("a", test::makeMovie("Heat", year, 4, "a"));
+    model.removeEntry("a");
+
+    EXPECT_FALSE(model.isWritable());
+    ASSERT_FALSE(added);
+    EXPECT_EQ(added.error(), MediaModel::EntryError::ReadOnly);
+    ASSERT_FALSE(updated);
+    EXPECT_EQ(updated.error(), MediaModel::EntryError::ReadOnly);
+    EXPECT_TRUE(model.entries().empty());
+
+    std::ifstream stream(path);
+    const std::string content{ std::istreambuf_iterator<char>(stream), std::istreambuf_iterator<char>() };
+    EXPECT_EQ(content, NEWER_VERSION_FILE);
+}
+
+TEST_F(MediaModelTest, ModelOfAWritableRepositoryIsWritable)
+{
+    EXPECT_TRUE(m_model->isWritable());
 }

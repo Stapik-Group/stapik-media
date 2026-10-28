@@ -50,6 +50,12 @@ void MediaEntryRow::initLayout(const MediaEntry& entry)
     append(m_buttonsBox);
 }
 
+void MediaEntryRow::setEditable(const bool editable)
+{
+    m_editButton.set_sensitive(editable);
+    m_deleteButton.set_sensitive(editable);
+}
+
 void MediaEntryRow::refreshLabels()
 {
     m_editButton.set_label(LocaleManager::instance().translate("list.entry.edit"));

@@ -99,5 +99,6 @@
   "dialog.entry.missing.message": "The entry was removed in the meantime, for example by a synchronization. Your changes were not saved.",
 
   "storage.unreadable.header": "Some entries could not be read",
-  "storage.unreadable.message": "Entries that could not be read: {count}. They may come from a newer version of the program or have been edited by hand. They are not shown, but they stay in the data files unchanged."
+  "storage.unreadable.message": "Entries that could not be read: {count}. They may come from a newer version of the program or have been edited by hand. They are not shown, but they stay in the data files unchanged.",
+  "storage.readOnly.message": "The data files cannot be changed, so the list is read-only."
 }
