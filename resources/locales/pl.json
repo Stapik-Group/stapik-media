@@ -125,6 +125,8 @@
 
   "dialog.entry.duplicate.header": "Taki wpis już istnieje",
   "dialog.entry.duplicate.message": "Na liście jest już „{title}” ({year}) w tej kategorii. Ten sam tytuł może wystąpić ponownie tylko z innym rokiem wydania.",
+  "dialog.entry.delete.title": "Usunąć wpis?",
+  "dialog.entry.delete.message": "Usunąć „{title}”? Usunięcie można cofnąć przyciskiem Cofnij.",
   "dialog.entry.missing.header": "Nie znaleziono wpisu",
   "dialog.entry.missing.message": "Wpis został w międzyczasie usunięty, na przykład przez synchronizację. Zmiany nie zostały zapisane.",
 

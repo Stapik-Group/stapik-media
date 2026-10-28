@@ -11,6 +11,7 @@
 #include "stapik/locale/DateFormatter.hpp"
 #include "stapik/locale/LocaleManager.hpp"
 #include "stapik/log/Log.hpp"
+#include "stapik/ui/dialog/ConfirmDialog.hpp"
 #include "stapik/ui/dialog/DialogUtils.hpp"
 
 #include <glibmm/main.h>
@@ -290,7 +291,18 @@ void MainWindow::onEntryDeleteRequested(const std::size_t index)
     if (index >= entries.size())
         return;
 
-    m_model.removeEntry(entries.at(index).id);
+    const auto& loc = LocaleManager::instance();
+    const auto& entry = entries.at(index);
+
+    showConfirmDialog(
+        *this,
+        ConfirmDialogOptions{
+            .title = loc.translate("dialog.entry.delete.title"),
+            .message = loc.translate("dialog.entry.delete.message", { { "title", entry.title } }),
+            .confirmLabel = loc.translate("list.entry.delete"),
+            .destructive = true
+        },
+        [this, id = entry.id] { m_model.removeEntry(id); });
 }
 
 void MainWindow::onSaveFailed(const std::string& message)

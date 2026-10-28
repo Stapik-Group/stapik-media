@@ -125,6 +125,8 @@
 
   "dialog.entry.duplicate.header": "Entry already exists",
   "dialog.entry.duplicate.message": "The list already has \"{title}\" ({year}) in this category. The same title can appear again only with a different release year.",
+  "dialog.entry.delete.title": "Delete the entry?",
+  "dialog.entry.delete.message": "Delete \"{title}\"? You can undo the deletion with Undo.",
   "dialog.entry.missing.header": "Entry not found",
   "dialog.entry.missing.message": "The entry was removed in the meantime, for example by a synchronization. Your changes were not saved.",
 
