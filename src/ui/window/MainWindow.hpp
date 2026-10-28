@@ -25,10 +25,6 @@ public:
 private:
     static constexpr int DEFAULT_WIDTH = 1280;
     static constexpr int DEFAULT_HEIGHT = 800;
-    static constexpr int MIN_STORED_SIZE = 400;
-    static constexpr auto SETTING_WIDTH = "window.width";
-    static constexpr auto SETTING_HEIGHT = "window.height";
-    static constexpr auto SETTING_MAXIMIZED = "window.maximized";
     static constexpr auto SETTING_CATEGORY = "sidebar.category";
     static constexpr int ADD_BUTTON_MARGIN = 8;
     static constexpr auto WINDOW_TITLE = "Stapik Media";

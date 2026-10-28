@@ -7,6 +7,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(PROJECT_NAME_DISPLAY "Stapik Media")
 set(PROJECT_AUTHOR "Sebastian Smoliński")
 set(PROJECT_GITHUB_URL "https://github.com/Stapik-Group/stapik-media")
+set(PROJECT_APPLICATION_ID "pl.stapik.media")
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET gtkmm-4.0)
@@ -26,7 +27,7 @@ stapik_add_application(
         DISPLAY_NAME "${PROJECT_NAME_DISPLAY}"
         DESCRIPTION "A retro-styled desktop media-tracking application"
         VERSION ${PROJECT_VERSION}
-        APPLICATION_ID pl.stapik.media
+        APPLICATION_ID "${PROJECT_APPLICATION_ID}"
         RESOURCES_DIRECTORY resources
         PACKAGING_DIRECTORY packaging
         MAINTAINER "${PROJECT_AUTHOR} <sebastian.smolinski6@gmail.com>"
@@ -35,6 +36,7 @@ stapik_add_application(
         DESKTOP_CATEGORIES Office
         LINK_LIBRARIES PkgConfig::GTKMM CURL::libcurl nlohmann_json::nlohmann_json
         SOURCES
+                src/app/MediaAppInfo.cpp
                 src/core/model/ReleaseDate.cpp
                 src/core/command/EntryCommands.cpp
                 src/core/model/MediaDocument.cpp
@@ -61,6 +63,12 @@ stapik_add_application(
                 src/ui/widget/PaginationBar.cpp
                 src/ui/window/MainWindow.cpp
                 src/main.cpp
+)
+
+target_compile_definitions(stapikmedia PRIVATE
+        STAPIK_APP_APPLICATION_ID="${PROJECT_APPLICATION_ID}"
+        STAPIK_APP_AUTHOR="${PROJECT_AUTHOR}"
+        STAPIK_APP_REPOSITORY_URL="${PROJECT_GITHUB_URL}"
 )
 
 option(STAPIK_MEDIA_BUILD_TESTS "Build the Stapik Media unit tests" OFF)

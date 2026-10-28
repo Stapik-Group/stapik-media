@@ -60,17 +60,8 @@ void MainWindow::reportStorageProblem()
 
 void MainWindow::init()
 {
-    const auto& settings = stapik::app::AppContext::instance().settings();
-    const auto storedWidth = settings.get(SETTING_WIDTH, DEFAULT_WIDTH);
-    const auto storedHeight = settings.get(SETTING_HEIGHT, DEFAULT_HEIGHT);
-    const auto sizeIsValid = storedWidth >= MIN_STORED_SIZE && storedHeight >= MIN_STORED_SIZE;
-
     set_title(WINDOW_TITLE);
-    set_default_size(sizeIsValid ? storedWidth : DEFAULT_WIDTH, sizeIsValid ? storedHeight : DEFAULT_HEIGHT);
-
-    if (settings.get(SETTING_MAXIMIZED, false))
-        maximize();
-
+    set_default_size(DEFAULT_WIDTH, DEFAULT_HEIGHT);
     set_child(m_mainBox);
 }
 
@@ -176,19 +167,10 @@ bool MainWindow::onCloseRequest()
 void MainWindow::saveWindowState() const
 {
     auto& settings = stapik::app::AppContext::instance().settings();
-    const auto maximized = is_maximized();
-
-    settings.set(SETTING_MAXIMIZED, maximized);
     settings.set(SETTING_CATEGORY, categoryToKey(m_sidebar.selectedCategory()));
 
-    if (!maximized && get_width() >= MIN_STORED_SIZE && get_height() >= MIN_STORED_SIZE)
-    {
-        settings.set(SETTING_WIDTH, get_width());
-        settings.set(SETTING_HEIGHT, get_height());
-    }
-
-    if (!settings.save())
-        stapik::log::warning("Cannot persist the window state");
+    if (const auto saved = settings.save(); !saved)
+        stapik::log::warning("Cannot persist the selected category: {}", saved.error().message());
 }
 
 void MainWindow::closeNow()
