@@ -65,6 +65,7 @@ stapik_add_application(
         LINK_LIBRARIES stapikmediacore PkgConfig::GTKMM CURL::libcurl nlohmann_json::nlohmann_json
         SOURCES
                 src/app/MediaAppInfo.cpp
+                src/ui/action/ArchiveActionHandler.cpp
                 src/ui/action/ExportActionHandler.cpp
                 src/ui/action/ImportActionHandler.cpp
                 src/ui/action/MenuActionHandler.cpp

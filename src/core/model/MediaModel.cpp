@@ -139,6 +139,52 @@ std::size_t MediaModel::unreadableEntryCount() const
     return count;
 }
 
+MediaDocument MediaModel::snapshot() const
+{
+    MediaDocument document;
+    document.entries = m_view;
+    document.unreadableEntries = m_main.unreadableEntries;
+    document.updatedAt = m_main.updatedAt;
+
+    for (const auto& [year, archive] : m_archives)
+        document.unreadableEntries.insert(document.unreadableEntries.end(), archive.unreadableEntries.begin(), archive.unreadableEntries.end());
+
+    return document;
+}
+
+bool MediaModel::replaceAll(MediaDocument imported)
+{
+    if (!isWritable())
+        return false;
+
+    m_undoStack.clear();
+
+    Touched touched;
+    touched.main = true;
+
+    for (auto& [year, archive] : m_archives)
+    {
+        archive.entries.clear();
+        archive.unreadableEntries.clear();
+        touched.archives.insert(year);
+    }
+
+    m_main.entries.clear();
+    m_main.unreadableEntries = std::move(imported.unreadableEntries);
+
+    for (auto& entry : imported.entries)
+    {
+        const auto archiveYear = archiveYearOf(entry);
+        documentFor(archiveYear).entries.push_back(std::move(entry));
+
+        if (archiveYear.has_value())
+            touched.archives.insert(*archiveYear);
+    }
+
+    commit(touched);
+    return true;
+}
+
 MediaModel::EntryResult MediaModel::addEntry(MediaEntry entry)
 {
     if (!isWritable())

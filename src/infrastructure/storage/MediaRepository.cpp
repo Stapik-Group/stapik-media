@@ -4,6 +4,7 @@
 
 #include "stapik/app/AppContext.hpp"
 #include "stapik/log/Log.hpp"
+#include "stapik/storage/PathText.hpp"
 #include "stapik/storage/AppPaths.hpp"
 #include "stapik/sync/PartitionKey.hpp"
 
@@ -11,6 +12,21 @@
 #include <system_error>
 #include <utility>
 #include <string_view>
+
+namespace
+{
+    stapik::archive::AppArchiveContext archiveContext()
+    {
+        const auto& context = stapik::app::AppContext::instance();
+
+        return {
+            .appName = context.info().internalName,
+            .appVersion = context.info().version,
+            .settings = &context.settings(),
+            .assets = nullptr
+        };
+    }
+}
 
 MediaRepository::MediaRepository() :
     MediaRepository(directoryPath())
@@ -123,6 +139,45 @@ std::vector<stapik::document::BackupInfo> MediaRepository::listBackups() const
 stapik::document::LoadResult<MediaDocument> MediaRepository::loadBackup(const stapik::document::BackupInfo& backup) const
 {
     return m_file.loadBackup(backup);
+}
+
+MediaRepository::ArchiveInfoResult MediaRepository::exportArchive(const MediaDocument& document, const std::filesystem::path& target) const
+{
+    return stapik::archive::exportAppArchive(m_file, document, archiveContext(), target, m_clock);
+}
+
+MediaRepository::ArchiveInfoResult MediaRepository::importArchive(const std::filesystem::path& source, const std::function<bool(MediaDocument)>& apply) const
+{
+    const auto context = archiveContext();
+
+    auto archive = stapik::archive::AppArchive::open(source, context.appName);
+    if (!archive)
+        return stapik::Failure(std::move(archive).error());
+
+    auto loaded = m_file.deserialize(archive->documentText(), "the archive " + stapik::storage::pathText(source));
+    switch (loaded.status)
+    {
+        using enum stapik::document::LoadStatus;
+        case Loaded:
+            break;
+        case NewerVersion:
+            return stapik::archive::archiveFailure(stapik::archive::ArchiveErrorKind::Unsupported,
+                "The archive was made by a newer version of the application");
+        case Missing:
+        case Corrupted:
+        case MigrationFailed:
+        default:
+            return stapik::archive::archiveFailure(stapik::archive::ArchiveErrorKind::Corrupted,
+                "The document in the archive cannot be read");
+    }
+
+    if (!apply(std::move(*loaded.document)))
+        return stapik::archive::archiveFailure(stapik::archive::ArchiveErrorKind::Io, "The entries from the archive could not be applied");
+
+    if (context.settings != nullptr)
+        static_cast<void>(archive->restoreSettings(*context.settings));
+
+    return archive->info();
 }
 
 StorageProblem MediaRepository::problem() const

@@ -39,6 +39,7 @@ MainWindow::MainWindow(const stapik::theme::ThemeRegistry& themes) :
     m_model(m_repository.load(), m_repository),
     m_exportActions(*this, m_model, [this] { return currentListing(); }),
     m_importActions(*this, m_model),
+    m_archiveActions(*this, m_model, m_repository),
     m_mainBox(Gtk::Orientation::VERTICAL, 0),
     m_contentBox(Gtk::Orientation::HORIZONTAL, 0),
     m_rightBox(Gtk::Orientation::VERTICAL, 0),
@@ -49,6 +50,7 @@ MainWindow::MainWindow(const stapik::theme::ThemeRegistry& themes) :
     initSignals();
     m_exportActions.registerActions();
     m_importActions.registerActions();
+    m_archiveActions.registerActions();
     reportStorageProblem();
     reportUnreadableEntries();
 }

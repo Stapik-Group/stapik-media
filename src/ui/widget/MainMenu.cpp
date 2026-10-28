@@ -35,8 +35,11 @@ namespace
 
     void buildRestoreBackupMenu(Gio::Menu& fileMenu)
     {
+        const auto& loc = LocaleManager::instance();
         const auto backupSection = Gio::Menu::create();
-        backupSection->append(LocaleManager::instance().translate("menu.file.restoreBackup"), "win.restoreBackup");
+        backupSection->append(loc.translate("menu.file.restoreBackup"), "win.restoreBackup");
+        backupSection->append(loc.translate("menu.file.exportArchive"), "win.exportArchive");
+        backupSection->append(loc.translate("menu.file.importArchive"), "win.importArchive");
         fileMenu.append_section(backupSection);
     }
 }

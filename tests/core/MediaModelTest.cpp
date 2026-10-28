@@ -457,6 +457,56 @@ TEST_F(MediaModelTest, WholeImportIsUndoneAndRedoneInOneStep)
     EXPECT_EQ(m_model->entries().size(), 3U);
 }
 
+TEST_F(MediaModelTest, SnapshotContainsTheEntriesOfAllLoadedYears)
+{
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year, 3, "a")));
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Alien", m_year - 2, 5, "b")));
+
+    const auto snapshot = m_model->snapshot();
+
+    EXPECT_EQ(idsOf(snapshot.entries), (std::vector<std::string>{ "b", "a" }));
+}
+
+TEST_F(MediaModelTest, ReplaceAllReplacesEveryYearAndEmptiesTheYearsMissingFromTheNewData)
+{
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year, 3, "a")));
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Alien", m_year - 2, 5, "b")));
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Ronin", m_year - 1, 7, "c")));
+
+    MediaDocument imported;
+    imported.entries = { test::makeBook("Dune", m_year, 1, "d"), test::makeMovie("Zodiac", m_year - 1, 2, "e") };
+
+    ASSERT_TRUE(m_model->replaceAll(std::move(imported)));
+
+    EXPECT_EQ(idsOf(m_model->entries()), (std::vector<std::string>{ "e", "d" }));
+    EXPECT_EQ(idsOf(m_repository.load().entries), std::vector<std::string>{ "d" });
+    const auto archives = m_repository.loadArchives();
+    EXPECT_TRUE(archives.at(m_year - 2).entries.empty());
+    EXPECT_EQ(idsOf(archives.at(m_year - 1).entries), std::vector<std::string>{ "e" });
+}
+
+TEST_F(MediaModelTest, ReplaceAllClearsTheUndoHistory)
+{
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year, 3, "a")));
+
+    ASSERT_TRUE(m_model->replaceAll(MediaDocument{}));
+
+    EXPECT_FALSE(m_model->undoStack().canUndo());
+    EXPECT_TRUE(m_model->entries().empty());
+}
+
+TEST_F(MediaModelTest, ReplacedEntriesRoundTripThroughASnapshot)
+{
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year, 3, "a")));
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Alien", m_year - 3, 5, "b")));
+    auto snapshot = m_model->snapshot();
+
+    ASSERT_TRUE(m_model->replaceAll(MediaDocument{}));
+    ASSERT_TRUE(m_model->replaceAll(std::move(snapshot)));
+
+    EXPECT_EQ(idsOf(m_model->entries()), (std::vector<std::string>{ "b", "a" }));
+}
+
 TEST(MediaModelSaveFailureTest, FailureIsReportedOnceUntilASaveSucceedsAgain)
 {
     stapik::test::TemporaryDirectory directory{ "stapik-media-model-failure" };

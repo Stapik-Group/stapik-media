@@ -2,12 +2,14 @@
 
 #include "../../core/model/MediaDocument.hpp"
 
+#include "stapik/archive/AppArchive.hpp"
 #include "stapik/document/DocumentFile.hpp"
 #include "stapik/storage/FileError.hpp"
 #include "stapik/time/Clock.hpp"
 
 #include <chrono>
 #include <filesystem>
+#include <functional>
 #include <map>
 #include <string>
 #include <vector>
@@ -23,6 +25,8 @@ enum class StorageProblem
 class MediaRepository
 {
 public:
+    using ArchiveInfoResult = stapik::archive::ArchiveResult<stapik::archive::ArchiveInfo>;
+
     MediaRepository();
     explicit MediaRepository(std::filesystem::path directory, const stapik::time::IClock& clock = stapik::time::systemClock());
 
@@ -32,6 +36,9 @@ public:
     [[nodiscard]] stapik::storage::FileResult saveArchive(int year, const MediaDocument& document) const;
     [[nodiscard]] std::vector<stapik::document::BackupInfo> listBackups() const;
     [[nodiscard]] stapik::document::LoadResult<MediaDocument> loadBackup(const stapik::document::BackupInfo& backup) const;
+
+    [[nodiscard]] ArchiveInfoResult exportArchive(const MediaDocument& document, const std::filesystem::path& target) const;
+    [[nodiscard]] ArchiveInfoResult importArchive(const std::filesystem::path& source, const std::function<bool(MediaDocument)>& apply) const;
 
     [[nodiscard]] StorageProblem problem() const;
     [[nodiscard]] bool isWritable() const;

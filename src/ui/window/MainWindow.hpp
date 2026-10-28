@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../action/ArchiveActionHandler.hpp"
 #include "../action/ExportActionHandler.hpp"
 #include "../action/ImportActionHandler.hpp"
 #include "../widget/MainMenu.hpp"
@@ -48,6 +49,7 @@ private:
     MediaModel m_model;
     ExportActionHandler m_exportActions;
     ImportActionHandler m_importActions;
+    ArchiveActionHandler m_archiveActions;
 
     Gtk::Box m_mainBox;
     Gtk::Box m_contentBox;
