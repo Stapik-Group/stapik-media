@@ -2,7 +2,7 @@
 
 ## Dodawanie wpisu
 
-Naciśnij **Dodaj**. Tytuł jest wymagany: wpis bez tytułu nie zostanie zapisany. Pozostałe pola zależą od kategorii:
+Naciśnij **Dodaj**. Tytuł jest wymagany: jeśli go nie wpiszesz, program poprosi o uzupełnienie. Pozostałe pola zależą od kategorii:
 
 - filmy, seriale i kreskówki: reżyser i gatunek,
 - książki: autor, gatunek i informacja, czy to audiobook,

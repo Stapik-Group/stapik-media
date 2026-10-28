@@ -1,6 +1,9 @@
 #include "ReleaseDatePicker.hpp"
+#include "stapik/domain/YearMonth.hpp"
 #include "stapik/locale/LocaleManager.hpp"
 #include <gtkmm/stringlist.h>
+
+#include <algorithm>
 
 ReleaseDatePicker::ReleaseDatePicker() : Box(Gtk::Orientation::VERTICAL, FIELD_SPACING)
 {
@@ -39,6 +42,10 @@ void ReleaseDatePicker::initLayout()
     m_yearLabel.set_text(loc.translate("picker.year.label"));
     m_yearSpin.set_range(MIN_YEAR, MAX_YEAR);
     m_yearSpin.set_increments(1, 10);
+    m_yearSpin.set_value(stapik::domain::YearMonth::current().year());
+
+    m_monthSpin.signal_value_changed().connect(sigc::mem_fun(*this, &ReleaseDatePicker::updateDayRange));
+    m_yearSpin.signal_value_changed().connect(sigc::mem_fun(*this, &ReleaseDatePicker::updateDayRange));
 
     append(m_precisionLabel);
     append(m_precisionDropDown);
@@ -50,6 +57,12 @@ void ReleaseDatePicker::initLayout()
     append(m_yearSpin);
 
     onPrecisionChanged();
+    updateDayRange();
+}
+
+void ReleaseDatePicker::updateDayRange()
+{
+    m_daySpin.set_range(1, ReleaseDate::daysInMonth(m_yearSpin.get_value_as_int(), static_cast<unsigned>(m_monthSpin.get_value_as_int())));
 }
 
 void ReleaseDatePicker::onPrecisionChanged()
@@ -76,22 +89,25 @@ DatePrecision ReleaseDatePicker::currentPrecision() const
 void ReleaseDatePicker::loadFrom(const ReleaseDate &date)
 {
     m_precisionDropDown.set_selected(static_cast<guint>(date.precision));
-    m_daySpin.set_value(static_cast<unsigned>(date.date.day()));
-    m_monthSpin.set_value(static_cast<unsigned>(date.date.month()));
     m_yearSpin.set_value(static_cast<int>(date.date.year()));
+    m_monthSpin.set_value(static_cast<unsigned>(date.date.month()));
+    updateDayRange();
+    m_daySpin.set_value(static_cast<unsigned>(date.date.day()));
     onPrecisionChanged();
 }
 
 ReleaseDate ReleaseDatePicker::toReleaseDate() const
 {
     const auto precision = currentPrecision();
-    const auto year = std::chrono::year{static_cast<int>(m_yearSpin.get_value())};
-    const auto month = precision == DatePrecision::Year
-                           ? std::chrono::month{1}
-                           : std::chrono::month{static_cast<unsigned>(m_monthSpin.get_value())};
-    const auto day = precision == DatePrecision::Day
-                         ? std::chrono::day{static_cast<unsigned>(m_daySpin.get_value())}
-                         : std::chrono::day{1};
+    const auto yearValue = m_yearSpin.get_value_as_int();
+    const auto monthValue = precision == DatePrecision::Year ? 1U : static_cast<unsigned>(m_monthSpin.get_value_as_int());
+    const auto dayValue = precision == DatePrecision::Day
+                              ? std::min(m_daySpin.get_value_as_int(), ReleaseDate::daysInMonth(yearValue, monthValue))
+                              : 1;
+
+    const auto year = std::chrono::year{yearValue};
+    const auto month = std::chrono::month{monthValue};
+    const auto day = std::chrono::day{static_cast<unsigned>(dayValue)};
 
     return ReleaseDate{year / month / day, precision};
 }

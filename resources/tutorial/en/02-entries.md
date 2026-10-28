@@ -2,7 +2,7 @@
 
 ## Adding an entry
 
-Press **Add**. The title is required: an entry without a title is not saved. The other fields depend on the category:
+Press **Add**. The title is required: if you leave it empty, the program asks you to fill it in. The other fields depend on the category:
 
 - movies, series and cartoons: director and genre,
 - books: author, genre and whether it is an audiobook,

@@ -214,15 +214,20 @@ void MainWindow::openEntryDialog(MediaEntryDialog* dialog, std::function<MediaMo
     {
         if (responseId == Gtk::ResponseType::OK)
         {
-            if (const auto entry = dialog->getResult(); entry.has_value())
+            const auto entry = dialog->getResult();
+            if (!entry.has_value())
             {
-                const auto outcome = submit(*entry);
-                if (!outcome)
-                {
-                    reportRejectedEntry(*dialog, outcome.error(), *entry);
-                    if (outcome.error() == MediaModel::EntryError::Duplicate)
-                        return;
-                }
+                const auto& loc = LocaleManager::instance();
+                showMessageDialog(*dialog, loc.translate("dialog.entry.error.title"), loc.translate("dialog.entry.error.emptyTitle"));
+                return;
+            }
+
+            const auto outcome = submit(*entry);
+            if (!outcome)
+            {
+                reportRejectedEntry(*dialog, outcome.error(), *entry);
+                if (outcome.error() == MediaModel::EntryError::Duplicate)
+                    return;
             }
         }
         dialog->hide();

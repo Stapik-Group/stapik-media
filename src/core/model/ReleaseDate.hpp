@@ -11,4 +11,5 @@ struct ReleaseDate {
 
     [[nodiscard]] std::string toIsoDateString() const;
     static ReleaseDate fromIsoDateString(const std::string& str, DatePrecision precision);
+    [[nodiscard]] static int daysInMonth(int year, unsigned month);
 };

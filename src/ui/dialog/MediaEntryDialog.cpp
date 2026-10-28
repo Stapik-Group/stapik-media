@@ -6,6 +6,7 @@
 #include "details/GameDetailsForm.hpp"
 
 #include "stapik/locale/LocaleManager.hpp"
+#include "stapik/text/Trim.hpp"
 
 MediaEntryDialog::MediaEntryDialog(Window &parent, const MediaCategory category) :
     StapikDialog(parent, LocaleManager::instance().translate("dialog.entry.title.add")),
@@ -85,13 +86,13 @@ std::unique_ptr<DetailsFormWidget> MediaEntryDialog::createFormFor(const MediaCa
 
 std::optional<MediaEntry> MediaEntryDialog::getResult() const
 {
-    const auto title = m_titleEntry.get_text();
+    const auto title = stapik::text::trim(m_titleEntry.get_text().raw());
     if (title.empty())
         return std::nullopt;
 
     return MediaEntry{
         m_category,
-        std::string(title),
+        title,
         m_releaseDatePicker.toReleaseDate(),
         m_consumedMonthPicker.month(),
         m_detailsForm->toDetails(),

@@ -2,7 +2,7 @@
 
 ## Eintrag hinzufügen
 
-Drücken Sie **Hinzufügen**. Der Titel ist erforderlich: Ein Eintrag ohne Titel wird nicht gespeichert. Die übrigen Felder hängen von der Kategorie ab:
+Drücken Sie **Hinzufügen**. Der Titel ist erforderlich: Lassen Sie ihn leer, bittet Sie das Programm, ihn auszufüllen. Die übrigen Felder hängen von der Kategorie ab:
 
 - Filme, Serien und Zeichentrickfilme: Regie und Genre,
 - Bücher: Autor, Genre und ob es ein Hörbuch ist,

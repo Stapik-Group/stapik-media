@@ -53,3 +53,12 @@ ReleaseDate ReleaseDate::fromIsoDateString(const std::string& str, const DatePre
 
     return ReleaseDate{date, precision};
 }
+
+int ReleaseDate::daysInMonth(const int year, const unsigned month)
+{
+    const auto last = std::chrono::year{year} / std::chrono::month{month} / std::chrono::last;
+    if (!last.ok())
+        throw std::invalid_argument(std::format("There is no month {} of the year {}", month, year));
+
+    return static_cast<int>(static_cast<unsigned>(last.day()));
+}
