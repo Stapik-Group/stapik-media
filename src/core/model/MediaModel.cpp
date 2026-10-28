@@ -64,6 +64,7 @@ MediaModel::MediaModel(
 {
     m_archives = m_repository.loadArchives();
     touch(normalize());
+    m_activeYear = currentYear();
     rebuildView();
 
     m_session.signalDocumentReplaced().connect(sigc::mem_fun(*this, &MediaModel::onDocumentReplaced));
@@ -121,6 +122,8 @@ std::size_t MediaModel::unreadableEntryCount() const
 
 MediaModel::EntryResult MediaModel::addEntry(MediaEntry entry)
 {
+    archiveClosedYears();
+
     if (!canWriteYear(entry.consumed.year()))
         return stapik::Failure(EntryError::ArchiveNotLoaded);
 
@@ -136,6 +139,8 @@ MediaModel::EntryResult MediaModel::addEntry(MediaEntry entry)
 
 MediaModel::EntryResult MediaModel::updateEntry(const std::string& id, MediaEntry entry)
 {
+    archiveClosedYears();
+
     auto before = entryById(id);
     if (!before.has_value())
     {
@@ -156,6 +161,8 @@ MediaModel::EntryResult MediaModel::updateEntry(const std::string& id, MediaEntr
 
 void MediaModel::removeEntry(const std::string& id)
 {
+    archiveClosedYears();
+
     auto entry = entryById(id);
     if (!entry.has_value())
     {
@@ -470,6 +477,19 @@ MediaModel::Touched MediaModel::normalize()
         m_main.entries = std::move(remaining);
 
     return touched;
+}
+
+void MediaModel::archiveClosedYears()
+{
+    const auto year = currentYear();
+    if (year == m_activeYear)
+        return;
+
+    m_activeYear = year;
+
+    const auto touched = normalize();
+    if (touched.main || !touched.archives.empty())
+        commit(touched);
 }
 
 void MediaModel::touch(const Touched& touched)

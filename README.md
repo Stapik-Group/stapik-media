@@ -196,7 +196,7 @@ At startup only the main document and the archives you already have locally are 
 
 If you try to add or move an entry into an archived year that exists in the cloud but has not been downloaded yet, the app asks you to select that year in the filter first, so a partial local copy can never overwrite the cloud archive.
 
-When a new year starts, the previous year is archived automatically on the next launch. The same happens once after upgrading from a version that kept all years in a single document.
+When a new year starts, the previous year is archived automatically: at the next launch, or as soon as you add, change or delete an entry in a program that stayed open over the turn of the year. The same happens once after upgrading from a version that kept all years in a single document.
 
 **Caution for multi-device use:** since conflict resolution is whole-document, editing the same year offline on two different machines before either one reconnects can still cause one set of changes to be discarded. Stapik Cloud keeps a version history of every write, so a discarded document isn't gone permanently, but the app itself doesn't yet expose a way to browse or restore old versions. After upgrading to a version with yearly archives, update the app on all your devices: older versions only know the single-document layout and will not see archived years.
 

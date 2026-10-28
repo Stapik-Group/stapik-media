@@ -289,6 +289,63 @@ TEST_F(MediaModelTest, UnreadableEntriesAreCountedAndKeptWhenTheListIsSaved)
     EXPECT_EQ(m_repository.load().unreadableEntries.size(), 1U);
 }
 
+TEST_F(MediaModelTest, YearThatEndedIsArchivedWithoutRestartingTheProgram)
+{
+    using namespace std::chrono;
+    m_clock.set(sys_days{ year{ m_year } / December / 31 } + hours{ 12 });
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year, 12, "a")));
+    ASSERT_TRUE(m_repository.loadArchives().empty());
+
+    m_clock.set(sys_days{ year{ m_year + 1 } / January / 2 } + hours{ 12 });
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Alien", m_year, 12, "b")));
+
+    EXPECT_TRUE(m_repository.load().entries.empty());
+    ASSERT_TRUE(m_repository.loadArchives().contains(m_year));
+    EXPECT_EQ(m_repository.loadArchives().at(m_year).entries.size(), 2U);
+    EXPECT_EQ(m_model->entries().size(), 2U);
+}
+
+TEST_F(MediaModelTest, ArchivingTheYearThatEndedIsReportedToTheList)
+{
+    using namespace std::chrono;
+    m_clock.set(sys_days{ year{ m_year } / December / 31 } + hours{ 12 });
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year, 12, "a")));
+    int changes = 0;
+    m_model->signalEntriesChanged().connect([&changes] { ++changes; });
+
+    m_clock.set(sys_days{ year{ m_year + 1 } / January / 2 } + hours{ 12 });
+    m_model->removeEntry("a");
+
+    EXPECT_EQ(changes, 2);
+    EXPECT_TRUE(m_model->entries().empty());
+}
+
+TEST_F(MediaModelTest, NoExtraChangeIsReportedWhileTheYearStaysTheSame)
+{
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year, 3, "a")));
+    int changes = 0;
+    m_model->signalEntriesChanged().connect([&changes] { ++changes; });
+
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Alien", m_year, 4, "b")));
+
+    EXPECT_EQ(changes, 1);
+}
+
+TEST_F(MediaModelTest, TurnOfTheYearWithoutEntriesToMoveChangesNothing)
+{
+    using namespace std::chrono;
+    m_clock.set(sys_days{ year{ m_year } / December / 31 } + hours{ 12 });
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year + 1, 1, "a")));
+    int changes = 0;
+    m_model->signalEntriesChanged().connect([&changes] { ++changes; });
+
+    m_clock.set(sys_days{ year{ m_year + 1 } / January / 2 } + hours{ 12 });
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Alien", m_year + 1, 2, "b")));
+
+    EXPECT_EQ(changes, 1);
+    EXPECT_TRUE(m_repository.loadArchives().empty());
+}
+
 TEST(MediaModelSaveFailureTest, FailureIsReportedOnceUntilASaveSucceedsAgain)
 {
     stapik::test::TemporaryDirectory directory{ "stapik-media-model-failure" };

@@ -106,6 +106,7 @@ private:
     std::vector<MediaEntry> m_view;
     std::set<int> m_remoteYears;
     bool m_remoteYearsKnown = false;
+    int m_activeYear = 0;
     std::set<std::string> m_syncingPartitions;
     MediaRepository& m_repository;
     const stapik::time::IClock& m_clock;
@@ -129,6 +130,7 @@ private:
     [[nodiscard]] bool hasConflictingWork(const MediaEntry& candidate) const;
 
     [[nodiscard]] Touched normalize();
+    void archiveClosedYears();
     void touch(const Touched& touched);
     void commit(const Touched& touched);
     void rebuildView();
