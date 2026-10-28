@@ -72,5 +72,6 @@
   "cloud.conflict.header": "Zachowano wersję z chmury",
   "cloud.conflict.secondary": "Inne urządzenie zapisało nowszą wersję listy mediów. Twoje ostatnie zmiany zostały przez nią zastąpione.",
   "cloud.plainFileSecrets": "Brak systemowego pęku kluczy, więc klucz API i fraza szyfrująca są przechowywane w pliku dostępnym tylko dla Twojego użytkownika.",
-  "cloud.apiKeyExpiring.header": "Klucz API chmury wkrótce wygaśnie"
+  "cloud.apiKeyExpiring.header": "Klucz API chmury wkrótce wygaśnie",
+  "settings.checkForUpdates": "Sprawdzaj aktualizacje"
 }

@@ -19,6 +19,7 @@ add_executable(stapikmedia_tests
         infrastructure/MediaDocumentSchemaTest.cpp
         infrastructure/MediaEntrySerializerTest.cpp
         infrastructure/MediaRepositoryTest.cpp
+        resources/MediaResourcesTest.cpp
         ui/EntryFilterServiceTest.cpp
 )
 
@@ -31,6 +32,11 @@ target_link_libraries(stapikmedia_tests PRIVATE
 target_include_directories(stapikmedia_tests PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${stapikcommon_SOURCE_DIR}/tests
+)
+
+target_compile_definitions(stapikmedia_tests PRIVATE
+        STAPIK_MEDIA_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+        STAPIK_COMMON_RESOURCES_DIR="${STAPIK_COMMON_RESOURCES_DIR}"
 )
 
 stapik_enable_warnings(stapikmedia_tests)

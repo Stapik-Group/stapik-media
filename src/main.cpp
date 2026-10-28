@@ -46,6 +46,7 @@ namespace
 
         std::error_code errorCode;
         check(std::filesystem::is_directory(AppPaths::resourcesDir() / "locales", errorCode), "application locales");
+        check(std::filesystem::is_directory(AppPaths::resourcesDir() / "tutorial" / "en", errorCode), "application tutorial");
         check(std::filesystem::is_directory(AppPaths::commonResourcesDir() / "themes", errorCode), "common themes");
         check(themes.themes().size() >= SELF_TEST_MIN_THEMES, "themes registered");
 

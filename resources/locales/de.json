@@ -72,5 +72,6 @@
   "cloud.conflict.header": "Cloud-Version beibehalten",
   "cloud.conflict.secondary": "Ein anderes Gerät hat eine neuere Version der Medienliste gespeichert. Ihre letzten Änderungen wurden dadurch ersetzt.",
   "cloud.plainFileSecrets": "Es ist kein System-Schlüsselbund verfügbar, daher werden der API-Schlüssel und die Passphrase in einer Datei gespeichert, die nur für Ihren Benutzer lesbar ist.",
-  "cloud.apiKeyExpiring.header": "Cloud-API-Schlüssel läuft bald ab"
+  "cloud.apiKeyExpiring.header": "Cloud-API-Schlüssel läuft bald ab",
+  "settings.checkForUpdates": "Nach Updates suchen"
 }
