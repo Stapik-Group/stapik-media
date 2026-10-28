@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.2)
-project(stapikmedia VERSION 1.2.0 LANGUAGES CXX)
+project(stapikmedia VERSION 1.3.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -44,6 +44,13 @@ stapik_add_application(
         NAME stapikmedia
         DISPLAY_NAME "${PROJECT_NAME_DISPLAY}"
         DESCRIPTION "A retro-styled desktop media-tracking application"
+        LOCALIZED_DESCRIPTIONS
+                "pl=Retro program do śledzenia obejrzanych filmów, przeczytanych książek i innych mediów"
+                "de=Ein Retro-Programm zum Festhalten von Filmen, Büchern und anderen Medien"
+        KEYWORDS media movies series books music albums games tracker
+        LOCALIZED_KEYWORDS
+                "pl=media,filmy,seriale,książki,muzyka,albumy,gry,dziennik"
+                "de=Medien,Filme,Serien,Bücher,Musik,Alben,Spiele,Tagebuch"
         VERSION ${PROJECT_VERSION}
         APPLICATION_ID "${PROJECT_APPLICATION_ID}"
         RESOURCES_DIRECTORY resources

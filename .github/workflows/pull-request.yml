@@ -1,0 +1,21 @@
+name: Pull request
+
+# Only a pull request that brings develop into main or master is built and tested.
+# Pushes to any branch and merges into main or master start nothing.
+on:
+  pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.head_ref == 'develop'
+    uses: Stapik-Group/stapik-common/.github/workflows/build.yml@v1.6.0
+    with:
+      cmake-args: -DSTAPIK_MEDIA_BUILD_TESTS=ON

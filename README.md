@@ -29,14 +29,17 @@ A desktop media-tracking application for Linux, written in C++20 using GTK4/gtkm
 
 ## Dependencies
 
+- CMake 4.2 or newer and a C++20 compiler
 - `gtkmm-4.0`
 - `libcurl`
+- `libsodium` and `zlib`
+- `libsecret` (Linux, optional: keeps the cloud API key in the system keyring) and `libx11` (Linux, optional: remembers the window position)
 - [`stapik-common`](https://github.com/stapik/stapik-common) (fetched automatically via CMake FetchContent)
 - `nlohmann/json` (fetched automatically via CMake FetchContent, transitively provided by `stapik-common`)
 
 On Ubuntu/Debian:
 ```bash
-sudo apt install libgtkmm-4.0-dev libcurl4-openssl-dev
+sudo apt install libgtkmm-4.0-dev libcurl4-openssl-dev libsodium-dev zlib1g-dev libsecret-1-dev libx11-dev
 ```
 
 Building a `.deb` package additionally requires `dpkg-dev` (used to auto-detect runtime dependencies):
@@ -57,7 +60,16 @@ cmake --build cmake-build-release
 
 ### Continuous integration
 
-GitHub Actions builds and tests every branch except `develop` and every pull request to `main`. Pushing a tag `vX.Y.Z` that matches the project version and lies on `main` attaches the `.deb` package and the Windows zip to a GitHub release.
+GitHub Actions use the reusable workflows of `stapik-common`:
+
+| Event | What happens |
+|-------|--------------|
+| push to any branch | nothing |
+| pull request from `develop` to `main` | build and unit tests on Linux and Windows |
+| merge into `main` | nothing |
+| release published (tag `vX.Y.Z`) | the tag is compared with the version in `CMakeLists.txt`, then a `.deb` for every supported distribution, the Windows installer and the portable ZIP are attached to the release |
+
+Bump the version in `CMakeLists.txt` before creating the release.
 
 ### Running the tests
 
@@ -71,10 +83,10 @@ ctest --test-dir cmake-build-debug --output-on-failure
 
 ### Option 1 — Download prebuilt `.deb` (recommended)
 
-Download the latest `.deb` package from the [Releases page](https://github.com/Stapik-Group/stapik-media/releases), then install it:
+Download the `.deb` package for your distribution from the [Releases page](https://github.com/Stapik-Group/stapik-media/releases), then install it:
 
 ```bash
-sudo dpkg -i stapikmedia_*.deb
+sudo dpkg -i stapikmedia*.deb
 sudo apt install -f   # resolves any missing runtime dependencies
 ```
 
@@ -85,7 +97,7 @@ If you'd rather build the package yourself:
 ```bash
 cd cmake-build-release
 cpack -G DEB
-sudo dpkg -i stapikmedia_*.deb
+sudo dpkg -i stapikmedia*.deb
 sudo apt install -f
 ```
 
@@ -105,16 +117,41 @@ Installs the binary and resources to `~/.local/opt/stapikmedia/`, with a launche
 
 ## Windows
 
-A prebuilt, self-contained folder is attached to every release as `stapik-media-<version>-windows-x64.zip` (with a `.sha256` checksum). Unpack it anywhere and run `stapikmedia.exe` — there is no installer. Data is kept per user in `%APPDATA%\stapikmedia` (see the `README.txt` inside the zip for details).
+Every release has two Windows assets:
 
-To build it yourself, use an MSYS2 UCRT64 shell with `gcc cmake ninja pkgconf gtkmm-4.0 curl adwaita-icon-theme hicolor-icon-theme` (prefixed `mingw-w64-ucrt-x86_64-`):
+- `stapikmedia-<version>-setup.exe` - an installer (per user by default, available in English, Polish and German);
+- `stapikmedia-<version>-windows-portable.zip` - a self-contained folder: unpack it anywhere and run `stapikmedia.exe`.
+
+Your data is kept per user and survives updates and uninstalling:
+
+| What | Where |
+|------|-------|
+| entries, backups, cloud connection | `%APPDATA%\stapikmedia\data` |
+| settings | `%APPDATA%\stapikmedia\config` |
+| log file | `%LOCALAPPDATA%\stapikmedia\cache\stapik.log` |
+
+Start the program with `--portable` to keep all of that in a `portable` folder next to the executable instead.
+
+To build it yourself, use an MSYS2 UCRT64 shell with `gcc cmake ninja pkgconf gtkmm-4.0 curl libsodium zlib adwaita-icon-theme hicolor-icon-theme` (prefixed `mingw-w64-ucrt-x86_64-`):
 
 ```bash
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build --target stapikmedia_windows_bundle
 ```
 
-The folder appears in `build/stapikmedia-windows/`. Running `stapikmedia.exe --self-test` checks the installation (resources, themes, translations, TLS) and exits with a non-zero code when something is missing; the result is written to `%LOCALAPPDATA%\stapikmedia\cache\stapik.log`.
+The folder appears in `build/stapikmedia-windows/`. The targets `stapikmedia_windows_portable` and `stapikmedia_windows_installer` (needs Inno Setup 6.3 or newer) pack it. Running `stapikmedia.exe --self-test` checks the installation (resources, themes, tutorial, translations, TLS) and exits with a non-zero code when something is missing; the result is written to the log file.
+
+## Command line
+
+| Flag | Effect |
+|------|--------|
+| `--version` | prints the name and the version and exits |
+| `--log-level=LEVEL` | `debug`, `info`, `warning` or `error` |
+| `--data-dir=DIR` | keeps data, settings and cache in `DIR/{data,config,cache}` |
+| `--portable` | the same, in a `portable` folder next to the executable |
+| `--reset-settings` | moves `settings.json` aside as a `.bak` file before starting |
+| `--safe-mode` | does not restore or save the window state |
+| `--self-test` | checks the installation and exits (see above) |
 
 ## Uninstalling
 
@@ -137,7 +174,11 @@ Either way, your media data and cloud config remain at `~/.local/share/stapikmed
 
 ## Cloud Sync
 
-The app supports synchronization via [Stapik Cloud](https://github.com/Stapik-Group/stapik-cloud) — the same server and protocol used by Stapik Calendar. Go to **File → Connect**, enter the server URL and API key. If a connection is already configured, the app reconnects automatically on startup. Plain HTTP is accepted, but the connection dialog warns that it is not secure.
+The app supports synchronization via [Stapik Cloud](https://github.com/Stapik-Group/stapik-cloud) — the same server and protocol used by Stapik Calendar. Go to **File → Connect to cloud**, enter the server URL and API key, and press **Check** to test the connection before you confirm. An optional passphrase turns on end-to-end encryption: the documents are encrypted on your device and the server only stores unreadable data. If a connection is already configured, the app reconnects automatically on startup. Plain HTTP is accepted, but the connection dialog warns that it is not secure. **File → Disconnect from cloud** removes the API key and the connection settings from the device and leaves your entries untouched.
+
+The API key and the passphrase are kept in the system keyring (Secret Service on Linux, Credential Manager on Windows); without a keyring they are kept in a file readable only by your user, and the app says so after connecting. When the API key is about to expire, the app warns you in time.
+
+**Version 1.3.0 requires Stapik Cloud 1.2.0 or newer.** Stay on an older Stapik Media if you use an older cloud.
 
 Synchronization runs in the background and never blocks the window. A status indicator at the bottom shows whether the data is up to date, being synchronized, offline, in conflict or failed. You can trigger a sync manually from **File → Sync**.
 
@@ -166,10 +207,14 @@ Local data is stored in `~/.local/share/stapikmedia/`:
 
 - `media.json` — the main document (current year), written atomically and wrapped with a schema version and a `lastUpdate` timestamp;
 - `media-YYYY.json` — one archive per earlier year, in the same format;
-- `*.bak` — the three most recent backups of each document;
-- `config.json` — the cloud connection.
+- `*.bak` — up to five backups of each document, at most one every five minutes; **File → Restore from backup…** restores the main document (the entries of the current year);
+- `config.json` — the cloud connection (the API key and the passphrase only when no system keyring is available).
 
-Language, theme, window size and the last selected category are kept in `~/.config/stapikmedia/settings.json`.
+Language, theme, font, window state, the last selected category and the update check are kept in `~/.config/stapikmedia/settings.json`.
+
+A log file `stapik.log` is written to `~/.cache/stapikmedia/` when the program is started from a launcher rather than from a terminal; **Help → View log** shows the same records in the window.
+
+A failed save is reported in the window, and the changes stay in the open window until the file can be written.
 
 A damaged data file is moved aside instead of being overwritten, and the app starts with an empty list that you can restore from a backup or from the cloud. A file written by a newer version of the app is never modified: the app shows a message and stays read-only.
 
@@ -177,7 +222,7 @@ If you are upgrading from an older version, your existing `media.json` is conver
 
 ## Themes
 
-Switch between five themes from **Settings → Theme**: Classic (the original retro look), Classic Pink, Modern (flat, minimal), Dark, and Neoclassic (a soft blue-and-beige look). The choice applies instantly and is remembered between launches.
+Switch between five themes in **Settings → Settings…**: Classic (the original retro look), Classic Pink, Modern (flat, minimal), Dark, and Neoclassic (a soft blue-and-beige look). The choice applies instantly and is remembered between launches.
 
 ![Screenshot](screenshots/screenshot_2.png)
 ![Screenshot](screenshots/screenshot_3.png)
@@ -188,6 +233,9 @@ Switch between five themes from **Settings → Theme**: Classic (the original re
 - [x] Filtering by consumption year/month
 - [x] Pagination
 - [x] Search by title
+- [x] CSV export, printing and PDF export
+- [x] Windows installer and portable ZIP
+- [x] Built-in tutorial
 - [x] Cloud sync with conflict resolution
 - [x] `.deb` package for easier distribution
 - [x] Multiple themes (Classic / Modern / Classic Pink / Dark / Neoclassic)
@@ -195,6 +243,5 @@ Switch between five themes from **Settings → Theme**: Classic (the original re
 - [x] Yearly archives in the cloud
 - [x] Unit tests
 - [ ] Import from an existing spreadsheet (CSV/XLSX)
-- [ ] Entry search by title
 - [ ] Sort options (by title, release date, consumption date)
 - [ ] Flatpak package
