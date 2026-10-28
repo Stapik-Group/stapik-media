@@ -20,6 +20,7 @@
 #include <gtkmm/scrolledwindow.h>
 
 #include <functional>
+#include <vector>
 
 class MediaEntryDialog;
 
@@ -32,6 +33,8 @@ private:
     static constexpr int DEFAULT_WIDTH = 1280;
     static constexpr int DEFAULT_HEIGHT = 800;
     static constexpr auto SETTING_CATEGORY = "sidebar.category";
+    static constexpr auto SETTING_SORT_FIELD = "list.sort.field";
+    static constexpr auto SETTING_SORT_DIRECTION = "list.sort.direction";
     static constexpr int ADD_BUTTON_MARGIN = 8;
     static constexpr int STATUS_MARGIN = 4;
     static constexpr std::size_t PAGE_SIZE = 10;
@@ -66,6 +69,7 @@ private:
     void onApiKeyExpiring(MediaModel::TimePoint expiresAt);
     bool onCloseRequest();
     void saveWindowState() const;
+    [[nodiscard]] EntrySort storedSort() const;
     void onCategorySelected(MediaCategory category);
     void onAddClicked();
     void openEntryDialog(MediaEntryDialog* dialog, std::function<MediaModel::EntryResult(MediaEntry)> submit);
@@ -74,6 +78,7 @@ private:
     void onEntryDeleteRequested(std::size_t index);
 
     [[nodiscard]] EntryFilter currentFilter() const;
+    [[nodiscard]] std::vector<std::size_t> visibleIndices() const;
     [[nodiscard]] ExportActionHandler::Listing currentListing() const;
     void applyFiltersAndRefresh();
     void onFilterChanged();

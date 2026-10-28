@@ -2,6 +2,7 @@
 
 #include "../dialog/MediaEntryDialog.hpp"
 #include "../util/EntryFilterService.hpp"
+#include "../util/EntrySort.hpp"
 #include "../util/Pagination.hpp"
 #include "../../core/model/MediaCategoryKey.hpp"
 
@@ -113,6 +114,8 @@ void MainWindow::initLayout()
     if (storedCategory.has_value())
         m_sidebar.selectCategory(*storedCategory);
 
+    m_filterBar.setSort(storedSort());
+
     m_contentBox.append(m_sidebar);
     m_contentBox.append(m_rightBox);
 
@@ -176,8 +179,25 @@ void MainWindow::saveWindowState() const
     auto& settings = stapik::app::AppContext::instance().settings();
     settings.set(SETTING_CATEGORY, categoryToKey(m_sidebar.selectedCategory()));
 
+    const auto sort = m_filterBar.selectedSort();
+    settings.set(SETTING_SORT_FIELD, sortFieldToKey(sort.field));
+    settings.set(SETTING_SORT_DIRECTION, sortDirectionToKey(sort.direction));
+
     if (const auto saved = settings.save(); !saved)
-        stapik::log::warning("Cannot persist the selected category: {}", saved.error().message());
+        stapik::log::warning("Cannot persist the window state: {}", saved.error().message());
+}
+
+EntrySort MainWindow::storedSort() const
+{
+    const auto& settings = stapik::app::AppContext::instance().settings();
+
+    EntrySort sort;
+    if (const auto field = sortFieldFromKey(settings.get(SETTING_SORT_FIELD, std::string{})); field.has_value())
+        sort.field = *field;
+    if (const auto direction = sortDirectionFromKey(settings.get(SETTING_SORT_DIRECTION, std::string{})); direction.has_value())
+        sort.direction = *direction;
+
+    return sort;
 }
 
 void MainWindow::onCategorySelected(const MediaCategory category)
@@ -332,7 +352,7 @@ EntryFilter MainWindow::currentFilter() const
 ExportActionHandler::Listing MainWindow::currentListing() const
 {
     const auto& entries = m_model.entries();
-    const auto matchingIndices = EntryFilterService::filterIndices(entries, currentFilter());
+    const auto matchingIndices = visibleIndices();
 
     ExportActionHandler::Listing listing{
         .heading = std::format("{} \u2013 {}", get_title().raw(), CategorySidebar::labelFor(m_sidebar.selectedCategory())),
@@ -345,9 +365,16 @@ ExportActionHandler::Listing MainWindow::currentListing() const
     return listing;
 }
 
+std::vector<std::size_t> MainWindow::visibleIndices() const
+{
+    auto indices = EntryFilterService::filterIndices(m_model.entries(), currentFilter());
+    EntryFilterService::sortIndices(m_model.entries(), indices, m_filterBar.selectedSort());
+    return indices;
+}
+
 void MainWindow::applyFiltersAndRefresh()
 {
-    const auto matchingIndices = EntryFilterService::filterIndices(m_model.entries(), currentFilter());
+    const auto matchingIndices = visibleIndices();
     const auto slice = Pagination::sliceFor(matchingIndices.size(), m_currentPage, PAGE_SIZE);
     m_currentPage = slice.page;
 

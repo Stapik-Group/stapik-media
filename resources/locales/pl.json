@@ -74,6 +74,12 @@
   "cloud.apiKeyExpiring.header": "Klucz API chmury wkrótce wygaśnie",
   "settings.checkForUpdates": "Sprawdzaj aktualizacje",
   "filter.search.placeholder": "Szukaj po tytule",
+  "filter.sort.label": "Sortuj wg",
+  "filter.sort.title": "Tytuł",
+  "filter.sort.releaseDate": "Data wydania",
+  "filter.sort.consumed": "Data skonsumowania",
+  "filter.sort.ascending": "Rosnąco",
+  "filter.sort.descending": "Malejąco",
 
   "menu.file.exportCsv": "Eksportuj wszystkie wpisy do CSV…",
   "menu.file.print": "Drukuj listę…",

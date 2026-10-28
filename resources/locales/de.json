@@ -74,6 +74,12 @@
   "cloud.apiKeyExpiring.header": "Cloud-API-Schlüssel läuft bald ab",
   "settings.checkForUpdates": "Nach Updates suchen",
   "filter.search.placeholder": "Nach Titel suchen",
+  "filter.sort.label": "Sortieren nach",
+  "filter.sort.title": "Titel",
+  "filter.sort.releaseDate": "Erscheinungsdatum",
+  "filter.sort.consumed": "Konsumiert",
+  "filter.sort.ascending": "Aufsteigend",
+  "filter.sort.descending": "Absteigend",
 
   "menu.file.exportCsv": "Alle Einträge als CSV exportieren…",
   "menu.file.print": "Liste drucken…",

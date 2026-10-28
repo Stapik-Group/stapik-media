@@ -74,6 +74,12 @@
   "cloud.apiKeyExpiring.header": "Cloud API key expires soon",
   "settings.checkForUpdates": "Check for updates",
   "filter.search.placeholder": "Search by title",
+  "filter.sort.label": "Sort by",
+  "filter.sort.title": "Title",
+  "filter.sort.releaseDate": "Release date",
+  "filter.sort.consumed": "Consumed",
+  "filter.sort.ascending": "Ascending",
+  "filter.sort.descending": "Descending",
 
   "menu.file.exportCsv": "Export all entries to CSV…",
   "menu.file.print": "Print the list…",

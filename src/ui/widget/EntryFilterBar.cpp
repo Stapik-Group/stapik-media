@@ -5,6 +5,8 @@
 
 #include <gtkmm/stringlist.h>
 
+#include <algorithm>
+
 namespace
 {
     class ScopedFlag
@@ -55,10 +57,20 @@ void EntryFilterBar::initLayout()
     m_searchEntry.signalQueryChanged().connect([this] { m_signalFilterChanged.emit(); });
     append(m_searchEntry);
 
+    m_sortLabel.set_text(loc.translate("filter.sort.label"));
+    append(m_sortLabel);
+    append(m_sortDropDown);
+    append(m_sortDirectionButton);
+
     m_yearDropDown.property_selected().signal_changed().connect(sigc::mem_fun(*this, &EntryFilterBar::onYearChanged));
     m_monthDropDown.property_selected().signal_changed().connect(sigc::mem_fun(*this, &EntryFilterBar::onMonthChanged));
 
+    m_sortDropDown.property_selected().signal_changed().connect(sigc::mem_fun(*this, &EntryFilterBar::onSortFieldChanged));
+    m_sortDirectionButton.signal_clicked().connect(sigc::mem_fun(*this, &EntryFilterBar::onSortDirectionClicked));
+
     rebuildMonthOptions();
+    rebuildSortOptions();
+    refreshSortDirection();
 }
 
 void EntryFilterBar::setAvailableYears(const std::set<unsigned>& years)
@@ -110,6 +122,65 @@ void EntryFilterBar::rebuildMonthOptions()
 
     m_monthDropDown.set_model(Gtk::StringList::create(labels));
     m_monthDropDown.set_selected(ALL_MONTHS_INDEX);
+}
+
+void EntryFilterBar::rebuildSortOptions()
+{
+    const auto& loc = LocaleManager::instance();
+
+    const std::vector<Glib::ustring> labels{
+        loc.translate("filter.sort.title"),
+        loc.translate("filter.sort.releaseDate"),
+        loc.translate("filter.sort.consumed")
+    };
+
+    const ScopedFlag updating(m_updating);
+
+    m_sortDropDown.set_model(Gtk::StringList::create(labels));
+
+    const auto it = std::ranges::find(SORT_FIELDS, m_sort.field);
+    m_sortDropDown.set_selected(static_cast<guint>(std::distance(SORT_FIELDS.begin(), it)));
+}
+
+void EntryFilterBar::refreshSortDirection()
+{
+    const auto& loc = LocaleManager::instance();
+    const auto ascending = m_sort.direction == SortDirection::Ascending;
+
+    m_sortDirectionButton.set_label(ascending ? "\u2191" : "\u2193");
+    m_sortDirectionButton.set_tooltip_text(loc.translate(ascending ? "filter.sort.ascending" : "filter.sort.descending"));
+}
+
+void EntryFilterBar::onSortFieldChanged()
+{
+    if (m_updating)
+        return;
+
+    const auto index = m_sortDropDown.get_selected();
+    if (index >= SORT_FIELDS.size())
+        return;
+
+    m_sort.field = SORT_FIELDS[index];
+    m_signalFilterChanged.emit();
+}
+
+void EntryFilterBar::onSortDirectionClicked()
+{
+    m_sort.direction = m_sort.direction == SortDirection::Ascending ? SortDirection::Descending : SortDirection::Ascending;
+    refreshSortDirection();
+    m_signalFilterChanged.emit();
+}
+
+EntrySort EntryFilterBar::selectedSort() const
+{
+    return m_sort;
+}
+
+void EntryFilterBar::setSort(const EntrySort& sort)
+{
+    m_sort = sort;
+    rebuildSortOptions();
+    refreshSortDirection();
 }
 
 void EntryFilterBar::onYearChanged()
@@ -171,6 +242,9 @@ void EntryFilterBar::refreshLabels()
     m_yearLabel.set_text(loc.translate("filter.year.label"));
     m_monthLabel.set_text(loc.translate("filter.month.label"));
     m_searchEntry.set_placeholder_text(loc.translate("filter.search.placeholder"));
+    m_sortLabel.set_text(loc.translate("filter.sort.label"));
+    rebuildSortOptions();
+    refreshSortDirection();
 
     const auto previousMonth = selectedMonth();
 
