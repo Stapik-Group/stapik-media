@@ -22,6 +22,22 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(stapikcommon)
 
+add_library(stapikmediacore STATIC
+        src/core/command/EntryCommands.cpp
+        src/core/model/MediaDocument.cpp
+        src/core/model/MediaModel.cpp
+        src/core/model/ReleaseDate.cpp
+        src/core/model/YearPartitioning.cpp
+        src/infrastructure/storage/MediaDocumentSchema.cpp
+        src/infrastructure/storage/MediaEntrySerializer.cpp
+        src/infrastructure/storage/MediaRepository.cpp
+        src/ui/util/EntryFilterService.cpp
+)
+
+target_include_directories(stapikmediacore PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_link_libraries(stapikmediacore PUBLIC stapikcommon PkgConfig::GTKMM CURL::libcurl nlohmann_json::nlohmann_json)
+stapik_enable_warnings(stapikmediacore)
+
 stapik_add_application(
         NAME stapikmedia
         DISPLAY_NAME "${PROJECT_NAME_DISPLAY}"
@@ -34,17 +50,9 @@ stapik_add_application(
         HOMEPAGE ${PROJECT_GITHUB_URL}
         SECTION utils
         DESKTOP_CATEGORIES Office
-        LINK_LIBRARIES PkgConfig::GTKMM CURL::libcurl nlohmann_json::nlohmann_json
+        LINK_LIBRARIES stapikmediacore PkgConfig::GTKMM CURL::libcurl nlohmann_json::nlohmann_json
         SOURCES
                 src/app/MediaAppInfo.cpp
-                src/core/model/ReleaseDate.cpp
-                src/core/command/EntryCommands.cpp
-                src/core/model/MediaDocument.cpp
-                src/core/model/MediaModel.cpp
-                src/core/model/YearPartitioning.cpp
-                src/infrastructure/storage/MediaEntrySerializer.cpp
-                src/infrastructure/storage/MediaDocumentSchema.cpp
-                src/infrastructure/storage/MediaRepository.cpp
                 src/ui/action/MenuActionHandler.cpp
                 src/ui/dialog/details/AlbumDetailsForm.cpp
                 src/ui/dialog/details/BookDetailsForm.cpp
@@ -52,7 +60,6 @@ stapik_add_application(
                 src/ui/dialog/details/ScreenDetailsForm.cpp
                 src/ui/dialog/MediaEntryDialog.cpp
                 src/ui/util/DateFormatter.cpp
-                src/ui/util/EntryFilterService.cpp
                 src/ui/view/CategorySidebar.cpp
                 src/ui/view/MediaListView.cpp
                 src/ui/widget/ConsumedDatePicker.cpp

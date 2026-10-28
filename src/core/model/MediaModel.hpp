@@ -9,6 +9,7 @@
 #include "stapik/document/BackupInfo.hpp"
 #include "stapik/storage/FileError.hpp"
 #include "stapik/sync/CloudSession.hpp"
+#include "stapik/sync/CloudSessionHooks.hpp"
 #include "stapik/sync/SyncStatus.hpp"
 #include "stapik/time/Clock.hpp"
 
@@ -22,7 +23,13 @@
 class MediaModel
 {
 public:
-    MediaModel(MediaDocument initial, MediaRepository& repository, const stapik::time::IClock& clock = stapik::time::systemClock());
+    MediaModel(MediaDocument initial, MediaRepository& repository);
+    MediaModel(
+        MediaDocument initial,
+        MediaRepository& repository,
+        stapik::sync::CloudSessionHooks cloudHooks,
+        const stapik::sync::AsyncSyncOptions& syncOptions = {},
+        const stapik::time::IClock& clock = stapik::time::systemClock());
     MediaModel(const MediaModel&) = delete;
     MediaModel& operator=(const MediaModel&) = delete;
 

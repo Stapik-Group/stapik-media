@@ -13,11 +13,20 @@
 #include <memory>
 #include <utility>
 
-MediaModel::MediaModel(MediaDocument initial, MediaRepository& repository, const stapik::time::IClock& clock) :
+MediaModel::MediaModel(MediaDocument initial, MediaRepository& repository) :
+    MediaModel(std::move(initial), repository, stapik::sync::defaultCloudSessionHooks(CLOUD_DOCUMENT_NAME))
+{}
+
+MediaModel::MediaModel(
+    MediaDocument initial,
+    MediaRepository& repository,
+    stapik::sync::CloudSessionHooks cloudHooks,
+    const stapik::sync::AsyncSyncOptions& syncOptions,
+    const stapik::time::IClock& clock) :
     m_main(std::move(initial)),
     m_repository(repository),
     m_clock(clock),
-    m_session(stapik::sync::defaultCloudSessionHooks(CLOUD_DOCUMENT_NAME))
+    m_session(std::move(cloudHooks), syncOptions)
 {
     m_archives = m_repository.loadArchives();
     touch(normalize());

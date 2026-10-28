@@ -10,25 +10,29 @@ FetchContent_MakeAvailable(googletest)
 
 include(GoogleTest)
 
-set(MEDIA_SOURCES ${PROJECT_SOURCE_DIR}/src)
-
 add_executable(stapikmedia_tests
         core/MediaCategoryKeyTest.cpp
         core/MediaDocumentTest.cpp
+        core/MediaModelCloudTest.cpp
+        core/MediaModelTest.cpp
         core/YearPartitioningTest.cpp
         infrastructure/MediaDocumentSchemaTest.cpp
         infrastructure/MediaEntrySerializerTest.cpp
+        infrastructure/MediaRepositoryTest.cpp
         ui/EntryFilterServiceTest.cpp
-        ${MEDIA_SOURCES}/core/model/MediaDocument.cpp
-        ${MEDIA_SOURCES}/core/model/ReleaseDate.cpp
-        ${MEDIA_SOURCES}/core/model/YearPartitioning.cpp
-        ${MEDIA_SOURCES}/infrastructure/storage/MediaDocumentSchema.cpp
-        ${MEDIA_SOURCES}/infrastructure/storage/MediaEntrySerializer.cpp
-        ${MEDIA_SOURCES}/ui/util/EntryFilterService.cpp
 )
 
-target_include_directories(stapikmedia_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${MEDIA_SOURCES})
-target_link_libraries(stapikmedia_tests PRIVATE stapik::common GTest::gtest_main)
-target_compile_options(stapikmedia_tests PRIVATE -Wall -Wextra -Wpedantic)
+target_link_libraries(stapikmedia_tests PRIVATE
+        stapikmediacore
+        GTest::gtest_main
+)
+
+# The fake cloud storage, the fake clock and the other helpers are shared with the stapik-common tests.
+target_include_directories(stapikmedia_tests PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${stapikcommon_SOURCE_DIR}/tests
+)
+
+stapik_enable_warnings(stapikmedia_tests)
 
 gtest_discover_tests(stapikmedia_tests)
