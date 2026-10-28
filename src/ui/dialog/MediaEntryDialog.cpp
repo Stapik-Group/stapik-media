@@ -115,6 +115,11 @@ std::unique_ptr<DetailsFormWidget> MediaEntryDialog::createFormFor(const MediaCa
     throw std::invalid_argument("Unknown MediaCategory in createFormFor");
 }
 
+void MediaEntryDialog::setSuggestions(const std::vector<MediaEntry>& entries)
+{
+    m_detailsForm->setSuggestions(EntrySuggestions::collect(entries, m_category));
+}
+
 std::optional<MediaEntry> MediaEntryDialog::getResult() const
 {
     const auto title = stapik::text::trim(m_titleEntry.get_text().raw());

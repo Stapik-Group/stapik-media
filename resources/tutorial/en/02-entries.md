@@ -13,6 +13,8 @@ Press **Add**. The title is required: if you leave it empty, the program asks yo
 
 **When consumed** is the month and year you watched, read, listened to or played it. For a new entry it starts as the current month.
 
+**Suggestions.** While you type a director, author, performer, studio, publisher, genre or platform, the program offers values you have already entered for the same kind of entries (movies, series and cartoons share theirs), the most used first. Pick one to avoid typing it again and keep the spelling the same.
+
 ## Rating and note
 
 Both are optional. **Rating** is a number from 1 to 10; choose *No rating* to leave it empty. **Note** is free text of any length, for example what you thought or who recommended it. The rating is shown in the list next to the dates, the first line of the note under them (hover over it to read all of it), and both are included in the CSV export and import and in the printed list (the rating only).

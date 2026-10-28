@@ -13,6 +13,8 @@ Naciśnij **Dodaj**. Tytuł jest wymagany: jeśli go nie wpiszesz, program popro
 
 **Kiedy skonsumowano** to miesiąc i rok, w którym obejrzałeś, przeczytałeś, przesłuchałeś lub przeszedłeś pozycję. Dla nowego wpisu jest to bieżący miesiąc.
 
+**Podpowiedzi.** Podczas wpisywania reżysera, autora, wykonawcy, studia, wydawcy, gatunku lub platformy program podpowiada wartości, które wpisałeś już przy takich samych wpisach (filmy, seriale i kreskówki mają wspólne), najczęściej używane na początku. Wybierz jedną, aby nie pisać jej ponownie i zachować tę samą pisownię.
+
 ## Ocena i notatka
 
 Oba pola są opcjonalne. **Ocena** to liczba od 1 do 10; wybierz *Brak oceny*, aby zostawić ją pustą. **Notatka** to dowolny tekst dowolnej długości, na przykład wrażenia albo kto polecił. Ocena jest widoczna na liście obok dat, pierwsza linia notatki pod nimi (najedź na nią, aby przeczytać całość), a oba pola są w eksporcie i imporcie CSV oraz w drukowanej liście (tylko ocena).

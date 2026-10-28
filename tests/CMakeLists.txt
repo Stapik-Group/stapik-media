@@ -27,6 +27,7 @@ add_executable(stapikmedia_tests
         resources/MediaResourcesTest.cpp
         ui/EntryFilterServiceTest.cpp
         ui/EntrySortTest.cpp
+        ui/EntrySuggestionsTest.cpp
         ui/PaginationTest.cpp
 )
 

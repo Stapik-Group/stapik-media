@@ -36,6 +36,7 @@ add_library(stapikmediacore STATIC
         src/infrastructure/storage/MediaEntrySerializer.cpp
         src/infrastructure/storage/MediaRepository.cpp
         src/ui/util/EntryFilterService.cpp
+        src/ui/util/EntrySuggestions.cpp
         src/ui/util/Pagination.cpp
 )
 
@@ -85,6 +86,7 @@ stapik_add_application(
                 src/ui/widget/ReleaseDatePicker.cpp
                 src/ui/widget/EntryFilterBar.cpp
                 src/ui/widget/PaginationBar.cpp
+                src/ui/widget/SuggestionCompletion.cpp
                 src/ui/window/MainWindow.cpp
                 src/main.cpp
 )

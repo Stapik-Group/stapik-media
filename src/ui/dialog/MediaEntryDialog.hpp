@@ -14,6 +14,7 @@
 #include <gtkmm/textview.h>
 #include <optional>
 #include <memory>
+#include <vector>
 
 #include "../widget/ReleaseDatePicker.hpp"
 
@@ -24,6 +25,7 @@ public:
     MediaEntryDialog(Window& parent, const MediaEntry& existing);
 
     [[nodiscard]] std::optional<MediaEntry> getResult() const;
+    void setSuggestions(const std::vector<MediaEntry>& entries);
 
 private:
     static constexpr int DEFAULT_WIDTH = 420;

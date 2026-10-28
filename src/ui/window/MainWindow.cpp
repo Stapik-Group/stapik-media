@@ -238,6 +238,8 @@ void MainWindow::onEntryEditRequested(const std::size_t index)
 
 void MainWindow::openEntryDialog(MediaEntryDialog* dialog, std::function<MediaModel::EntryResult(MediaEntry)> submit)
 {
+    dialog->setSuggestions(m_model.entries());
+
     dialog->signal_response().connect([this, dialog, submit = std::move(submit)](const int responseId)
     {
         if (responseId == Gtk::ResponseType::OK)

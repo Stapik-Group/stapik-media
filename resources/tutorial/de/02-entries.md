@@ -13,6 +13,8 @@ Das **Erscheinungsdatum** kann so genau sein, wie Sie es kennen. Wählen Sie die
 
 **Wann konsumiert** ist der Monat und das Jahr, in dem Sie es gesehen, gelesen, gehört oder gespielt haben. Bei einem neuen Eintrag ist es der aktuelle Monat.
 
+**Vorschläge.** Beim Eingeben von Regisseur, Autor, Interpret, Studio, Herausgeber, Genre oder Plattform bietet das Programm Werte an, die Sie bei gleichartigen Einträgen schon eingegeben haben (Filme, Serien und Zeichentrickfilme teilen sich ihre), die am häufigsten verwendeten zuerst. Wählen Sie einen aus, um ihn nicht erneut zu tippen und die Schreibweise einheitlich zu halten.
+
 ## Bewertung und Notiz
 
 Beide Felder sind optional. Die **Bewertung** ist eine Zahl von 1 bis 10; wählen Sie *Keine Bewertung*, um sie leer zu lassen. Die **Notiz** ist freier Text beliebiger Länge, zum Beispiel Ihr Eindruck oder wer es empfohlen hat. Die Bewertung steht in der Liste neben den Datumsangaben, die erste Zeile der Notiz darunter (fahren Sie mit der Maus darüber, um sie ganz zu lesen), und beide Felder sind im CSV-Export und -Import enthalten, in der gedruckten Liste nur die Bewertung.
