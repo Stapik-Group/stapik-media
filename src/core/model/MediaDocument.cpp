@@ -2,13 +2,19 @@
 
 #include "../../infrastructure/storage/MediaEntrySerializer.hpp"
 
+#include "stapik/log/Log.hpp"
 #include "stapik/sync/Timestamp.hpp"
+
+#include <stdexcept>
 
 nlohmann::json MediaDocument::toJson() const
 {
     auto entriesJson = nlohmann::json::array();
     for (const auto& entry : entries)
         entriesJson.push_back(MediaEntrySerializer::toJson(entry));
+
+    for (const auto& entry : unreadableEntries)
+        entriesJson.push_back(entry);
 
     nlohmann::json json = {
         { "lastUpdate", stapik::sync::toIso8601(updatedAt) },
@@ -31,8 +37,22 @@ MediaDocument MediaDocument::fromJson(const nlohmann::json& json)
     if (json.contains("lastKnownCloudUpdate") && json.at("lastKnownCloudUpdate").is_string())
         document.cloudBaseline = stapik::sync::parseIso8601(json.at("lastKnownCloudUpdate").get<std::string>());
 
-    for (const auto& entryJson : json.at("entries"))
-        document.entries.push_back(MediaEntrySerializer::fromJson(entryJson));
+    const auto& entriesJson = json.at("entries");
+    if (!entriesJson.is_array())
+        throw std::invalid_argument("The entries of the media document are not a list");
+
+    for (const auto& entryJson : entriesJson)
+    {
+        try
+        {
+            document.entries.push_back(MediaEntrySerializer::fromJson(entryJson));
+        }
+        catch (const std::exception& exception)
+        {
+            stapik::log::warning("An entry of the media document cannot be read and is kept as it is: {}", exception.what());
+            document.unreadableEntries.push_back(entryJson);
+        }
+    }
 
     return document;
 }

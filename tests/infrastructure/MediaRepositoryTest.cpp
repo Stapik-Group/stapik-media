@@ -1,10 +1,14 @@
 #include "infrastructure/storage/MediaRepository.hpp"
 
+#include "infrastructure/storage/MediaEntrySerializer.hpp"
+
 #include "support/EntryFactory.hpp"
 #include "support/FakeClock.hpp"
 #include "support/TemporaryDirectory.hpp"
 
 #include <gtest/gtest.h>
+
+#include <nlohmann/json.hpp>
 
 #include <chrono>
 #include <filesystem>
@@ -163,4 +167,32 @@ TEST_F(MediaRepositoryTest, FailedSaveReportsWhyAndWhere)
 
     ASSERT_FALSE(saved);
     EXPECT_FALSE(saved.error().message().empty());
+}
+
+TEST_F(MediaRepositoryTest, FileWithOneUnreadableEntryIsLoadedAndNotSetAside)
+{
+    auto unknown = MediaEntrySerializer::toJson(test::makeMovie("Future", 2026, 1, "future"));
+    unknown["category"] = "podcast";
+    const nlohmann::json envelope = {
+        { "schemaVersion", 1 },
+        { "document", {
+            { "lastUpdate", "2026-09-30T12:34:56Z" },
+            { "entries", nlohmann::json::array({ MediaEntrySerializer::toJson(test::makeMovie("Heat", 2026, 3, "heat")), unknown }) }
+        } }
+    };
+    const auto path = m_directory.path() / "media.json";
+    writeText(path, envelope.dump());
+    MediaRepository repository(m_directory.path(), m_clock);
+
+    const auto loaded = repository.load();
+
+    ASSERT_EQ(loaded.entries.size(), 1U);
+    EXPECT_EQ(loaded.entries[0].title, "Heat");
+    EXPECT_EQ(loaded.unreadableEntries.size(), 1U);
+    EXPECT_EQ(repository.problem(), StorageProblem::None);
+    EXPECT_TRUE(fs::exists(path));
+
+    ASSERT_TRUE(repository.save(loaded));
+    EXPECT_NE(readText(path).find("podcast"), std::string::npos);
+    EXPECT_EQ(repository.load().unreadableEntries.size(), 1U);
 }

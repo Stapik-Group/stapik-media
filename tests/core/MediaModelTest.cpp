@@ -275,6 +275,20 @@ TEST_F(MediaModelTest, EntriesWithTheSameTitleButAnotherMonthAreBothArchived)
     EXPECT_EQ(m_repository.loadArchives().at(m_year - 3).entries.size(), 2U);
 }
 
+TEST_F(MediaModelTest, UnreadableEntriesAreCountedAndKeptWhenTheListIsSaved)
+{
+    MediaDocument stored;
+    stored.entries = { test::makeMovie("Heat", m_year, 3, "a") };
+    stored.unreadableEntries = { nlohmann::json{ { "category", "podcast" } } };
+    m_model = std::make_unique<MediaModel>(std::move(stored), m_repository, stapik::sync::CloudSessionHooks{}, stapik::sync::AsyncSyncOptions{}, m_clock);
+    EXPECT_EQ(m_model->unreadableEntryCount(), 1U);
+
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Alien", m_year, 4, "b")));
+
+    EXPECT_EQ(m_model->entries().size(), 2U);
+    EXPECT_EQ(m_repository.load().unreadableEntries.size(), 1U);
+}
+
 TEST(MediaModelSaveFailureTest, FailureIsReportedOnceUntilASaveSucceedsAgain)
 {
     stapik::test::TemporaryDirectory directory{ "stapik-media-model-failure" };

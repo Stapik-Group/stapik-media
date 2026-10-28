@@ -11,6 +11,7 @@
 struct MediaDocument
 {
     std::vector<MediaEntry> entries;
+    std::vector<nlohmann::json> unreadableEntries;
     std::chrono::system_clock::time_point updatedAt{};
     std::optional<std::chrono::system_clock::time_point> cloudBaseline;
 

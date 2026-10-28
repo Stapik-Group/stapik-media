@@ -52,6 +52,7 @@ public:
     [[nodiscard]] const std::vector<MediaEntry>& entries() const;
     [[nodiscard]] std::optional<MediaEntry> entryById(const std::string& id) const;
     [[nodiscard]] std::set<unsigned> availableYears() const;
+    [[nodiscard]] std::size_t unreadableEntryCount() const;
 
     [[nodiscard]] EntryResult addEntry(MediaEntry entry);
     [[nodiscard]] EntryResult updateEntry(const std::string& id, MediaEntry entry);

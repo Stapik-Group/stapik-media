@@ -96,5 +96,8 @@
   "dialog.entry.duplicate.header": "Taki wpis już istnieje",
   "dialog.entry.duplicate.message": "Na liście jest już „{title}” ({year}) w tej kategorii. Ten sam tytuł może wystąpić ponownie tylko z innym rokiem wydania.",
   "dialog.entry.missing.header": "Nie znaleziono wpisu",
-  "dialog.entry.missing.message": "Wpis został w międzyczasie usunięty, na przykład przez synchronizację. Zmiany nie zostały zapisane."
+  "dialog.entry.missing.message": "Wpis został w międzyczasie usunięty, na przykład przez synchronizację. Zmiany nie zostały zapisane.",
+
+  "storage.unreadable.header": "Nie udało się wczytać części wpisów",
+  "storage.unreadable.message": "Liczba wpisów, których nie udało się wczytać: {count}. Mogą pochodzić z nowszej wersji programu albo zostać zmienione ręcznie. Nie są wyświetlane, ale pozostają w plikach z danymi bez zmian."
 }

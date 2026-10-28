@@ -96,5 +96,8 @@
   "dialog.entry.duplicate.header": "Entry already exists",
   "dialog.entry.duplicate.message": "The list already has \"{title}\" ({year}) in this category. The same title can appear again only with a different release year.",
   "dialog.entry.missing.header": "Entry not found",
-  "dialog.entry.missing.message": "The entry was removed in the meantime, for example by a synchronization. Your changes were not saved."
+  "dialog.entry.missing.message": "The entry was removed in the meantime, for example by a synchronization. Your changes were not saved.",
+
+  "storage.unreadable.header": "Some entries could not be read",
+  "storage.unreadable.message": "Entries that could not be read: {count}. They may come from a newer version of the program or have been edited by hand. They are not shown, but they stay in the data files unchanged."
 }

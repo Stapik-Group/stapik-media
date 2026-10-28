@@ -58,6 +58,7 @@ private:
     void init();
     void initLayout();
     void reportStorageProblem();
+    void reportUnreadableEntries();
     void initSignals();
     void onSyncStatusChanged(stapik::sync::SyncStatus status);
     void onSaveFailed(const std::string& message);

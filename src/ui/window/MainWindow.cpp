@@ -46,6 +46,7 @@ MainWindow::MainWindow(const stapik::theme::ThemeRegistry& themes) :
     initSignals();
     m_exportActions.registerActions();
     reportStorageProblem();
+    reportUnreadableEntries();
 }
 
 void MainWindow::reportStorageProblem()
@@ -61,6 +62,19 @@ void MainWindow::reportStorageProblem()
     {
         const auto& loc = LocaleManager::instance();
         showMessageDialog(*this, loc.translate("storage.problem.header"), loc.translate(storageProblemKey(problem)));
+    });
+}
+
+void MainWindow::reportUnreadableEntries()
+{
+    const auto count = m_model.unreadableEntryCount();
+    if (count == 0)
+        return;
+
+    Glib::signal_idle().connect_once([this, count]
+    {
+        const auto& loc = LocaleManager::instance();
+        showMessageDialog(*this, loc.translate("storage.unreadable.header"), loc.translate("storage.unreadable.message", { { "count", std::to_string(count) } }));
     });
 }
 

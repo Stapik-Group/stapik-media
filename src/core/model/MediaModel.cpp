@@ -110,6 +110,15 @@ std::set<unsigned> MediaModel::availableYears() const
     return years;
 }
 
+std::size_t MediaModel::unreadableEntryCount() const
+{
+    auto count = m_main.unreadableEntries.size();
+    for (const auto& archive : m_archives)
+        count += archive.second.unreadableEntries.size();
+
+    return count;
+}
+
 MediaModel::EntryResult MediaModel::addEntry(MediaEntry entry)
 {
     if (!canWriteYear(entry.consumed.year()))

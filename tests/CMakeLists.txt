@@ -17,6 +17,7 @@ add_executable(stapikmedia_tests
         core/MediaDocumentTest.cpp
         core/MediaModelCloudTest.cpp
         core/MediaModelTest.cpp
+        core/ReleaseDateTest.cpp
         core/YearPartitioningTest.cpp
         infrastructure/MediaDocumentSchemaTest.cpp
         infrastructure/MediaEntrySerializerTest.cpp
