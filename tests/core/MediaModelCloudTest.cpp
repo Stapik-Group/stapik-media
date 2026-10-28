@@ -12,6 +12,7 @@
 #include "stapik/domain/YearMonth.hpp"
 #include "stapik/sync/CloudSessionHooks.hpp"
 #include "stapik/sync/PartitionKey.hpp"
+#include "stapik/sync/SyncOutcome.hpp"
 #include "stapik/sync/SyncEnvelope.hpp"
 
 #include <gtest/gtest.h>
@@ -20,6 +21,7 @@
 #include <memory>
 #include <optional>
 #include <utility>
+#include <vector>
 
 namespace
 {
@@ -61,10 +63,12 @@ namespace
             stapik::sync::CloudSessionHooks hooks;
             hooks.loadConfig = [] { return std::optional<CloudStorageConfig>{}; };
             hooks.saveConfig = [](const CloudStorageConfig&) { return true; };
+            hooks.clearConfig = [this] { ++m_clearedConfigs; };
             hooks.createStorage = [this](const CloudStorageConfig&) { return std::make_unique<stapik::test::ForwardingCloudStorage>(m_fake); };
 
             m_model = std::make_unique<MediaModel>(m_repository.load(), m_repository, std::move(hooks), stapik::sync::AsyncSyncOptions{ 20ms, 20ms, 80ms }, m_clock);
             m_model->signalAvailableYearsChanged().connect([this] { m_yearsKnown = true; });
+            m_model->signalCloudOutcome().connect([this](const MediaModel::CloudOutcome& outcome) { m_outcomes.push_back(outcome.state); });
         }
 
         void TearDown() override
@@ -78,6 +82,8 @@ namespace
         MediaRepository m_repository;
         int m_year;
         bool m_yearsKnown = false;
+        int m_clearedConfigs = 0;
+        std::vector<stapik::sync::SyncState> m_outcomes;
         std::unique_ptr<MediaModel> m_model;
     };
 }
@@ -139,4 +145,43 @@ TEST_F(MediaModelCloudTest, EntryOfAYearUnknownToTheCloudIsAccepted)
     ASSERT_TRUE(pumpUntil([this] { return m_yearsKnown; }));
 
     EXPECT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year - 4, 3, "a")));
+}
+
+TEST_F(MediaModelCloudTest, ConnectingReportsTheOutcomeOfTheMainDocument)
+{
+    ASSERT_TRUE(m_model->connectCloud(validConfig()));
+    ASSERT_TRUE(pumpUntil([this] { return !m_outcomes.empty(); }));
+
+    EXPECT_EQ(m_outcomes.front(), stapik::sync::SyncState::Synchronized);
+}
+
+TEST_F(MediaModelCloudTest, DisconnectingForgetsTheConnectionAndTheCloudBaseline)
+{
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year, 3, "a")));
+    ASSERT_TRUE(m_model->connectCloud(validConfig()));
+    ASSERT_TRUE(pumpUntil([this] { return m_fake.saveCalls >= 1 && !m_model->isSyncing(); }));
+    ASSERT_TRUE(pumpUntil([this] { return m_repository.load().cloudBaseline.has_value(); }));
+
+    m_model->disconnectCloud();
+
+    EXPECT_FALSE(m_model->isCloudConnected());
+    EXPECT_EQ(m_clearedConfigs, 1);
+    EXPECT_FALSE(m_repository.load().cloudBaseline.has_value());
+    EXPECT_EQ(m_model->entries().size(), 1U);
+}
+
+TEST_F(MediaModelCloudTest, DisconnectingLiftsTheRestrictionOnYearsKeptOnlyInTheCloud)
+{
+    const auto pastYear = m_year - 2;
+    MediaDocument remote;
+    remote.entries = { test::makeMovie("Heat", pastYear, 3, "remote") };
+    remote.updatedAt = at(500);
+    m_fake.partitions[stapik::sync::partitionKeyForYear(pastYear)] = cloudDocumentOf(remote, 600);
+    ASSERT_TRUE(m_model->connectCloud(validConfig()));
+    ASSERT_TRUE(pumpUntil([this] { return m_yearsKnown; }));
+    ASSERT_FALSE(m_model->addEntry(test::makeMovie("Alien", pastYear, 5, "local")));
+
+    m_model->disconnectCloud();
+
+    EXPECT_TRUE(m_model->addEntry(test::makeMovie("Alien", pastYear, 5, "local")));
 }

@@ -6,6 +6,7 @@
 
 #include "stapik/app/AppContext.hpp"
 
+#include "stapik/locale/DateFormatter.hpp"
 #include "stapik/locale/LocaleManager.hpp"
 #include "stapik/log/Log.hpp"
 #include "stapik/ui/dialog/DialogUtils.hpp"
@@ -114,6 +115,8 @@ void MainWindow::initSignals()
 
     m_model.signalSyncStatusChanged().connect(sigc::mem_fun(*this, &MainWindow::onSyncStatusChanged));
     m_model.signalSaveFailed().connect(sigc::mem_fun(*this, &MainWindow::onSaveFailed));
+    m_model.signalCloudConflict().connect(sigc::mem_fun(*this, &MainWindow::onCloudConflict));
+    m_model.signalCloudApiKeyExpiring().connect(sigc::mem_fun(*this, &MainWindow::onApiKeyExpiring));
     m_model.signalAvailableYearsChanged().connect([this] { m_filterBar.setAvailableYears(m_model.availableYears()); });
     signal_close_request().connect(sigc::mem_fun(*this, &MainWindow::onCloseRequest), false);
 
@@ -136,33 +139,15 @@ void MainWindow::initSignals()
 
 void MainWindow::onSyncStatusChanged(const stapik::sync::SyncStatus status)
 {
-    if (m_closed)
-        return;
-
     m_statusIndicator.set_visible(m_model.isCloudConnected());
     m_statusIndicator.setStatus(status);
 }
 
 bool MainWindow::onCloseRequest()
 {
-    if (m_closing)
-        return true;
-
     saveWindowState();
-    m_model.flush();
-    if (!m_model.isSyncing())
-        return false;
-
-    m_closing = true;
-    set_visible(false);
-
-    m_model.signalSyncStatusChanged().connect([this](const stapik::sync::SyncStatus)
-    {
-        if (!m_model.isSyncing())
-            closeNow();
-    });
-    Glib::signal_timeout().connect_once([this] { closeNow(); }, CLOSE_TIMEOUT_MS);
-    return true;
+    m_model.flushCloud();
+    return false;
 }
 
 void MainWindow::saveWindowState() const
@@ -172,15 +157,6 @@ void MainWindow::saveWindowState() const
 
     if (const auto saved = settings.save(); !saved)
         stapik::log::warning("Cannot persist the selected category: {}", saved.error().message());
-}
-
-void MainWindow::closeNow()
-{
-    if (m_closed)
-        return;
-
-    m_closed = true;
-    destroy();
 }
 
 void MainWindow::onCategorySelected(const MediaCategory category)
@@ -249,6 +225,20 @@ void MainWindow::onSaveFailed(const std::string& message)
 {
     const auto& loc = LocaleManager::instance();
     showMessageDialog(*this, loc.translate("dialog.save.failed.title"), loc.translate("dialog.save.failed.text", { { "error", message } }));
+}
+
+void MainWindow::onCloudConflict()
+{
+    const auto& loc = LocaleManager::instance();
+    showMessageDialog(*this, loc.translate("cloud.conflict.header"), loc.translate("cloud.conflict.secondary"));
+}
+
+void MainWindow::onApiKeyExpiring(const MediaModel::TimePoint expiresAt)
+{
+    const auto& loc = LocaleManager::instance();
+    const auto date = stapik::locale::formatDate(stapik::locale::toLocalTime(expiresAt), loc.languageCode());
+
+    showMessageDialog(*this, loc.translate("cloud.apiKeyExpiring.header"), loc.translate("cloud.apiKeyExpiring", { { "date", date } }));
 }
 
 void MainWindow::showArchiveNotLoaded()

@@ -14,6 +14,7 @@
 #include "stapik/time/Clock.hpp"
 
 #include <sigc++/signal.h>
+#include <chrono>
 #include <map>
 #include <optional>
 #include <set>
@@ -23,6 +24,11 @@
 class MediaModel
 {
 public:
+    using TimePoint = std::chrono::system_clock::time_point;
+    using CloudOutcome = stapik::sync::SyncOutcome<MediaDocument>;
+
+    static constexpr std::chrono::milliseconds CLOUD_FLUSH_TIMEOUT{ 5000 };
+
     MediaModel(MediaDocument initial, MediaRepository& repository);
     MediaModel(
         MediaDocument initial,
@@ -51,7 +57,8 @@ public:
 
     bool connectCloud(const CloudStorageConfig& config);
     void syncNow();
-    void flush();
+    void disconnectCloud();
+    void flushCloud(std::chrono::milliseconds timeout = CLOUD_FLUSH_TIMEOUT);
 
     [[nodiscard]] std::vector<stapik::document::BackupInfo> listBackups() const;
     bool restoreBackup(const stapik::document::BackupInfo& backup);
@@ -65,6 +72,9 @@ public:
     sigc::signal<void()>& signalAvailableYearsChanged();
     sigc::signal<void(stapik::sync::SyncStatus)>& signalSyncStatusChanged();
     sigc::signal<void(const std::string&)>& signalSaveFailed();
+    sigc::signal<void(const CloudOutcome&)>& signalCloudOutcome();
+    sigc::signal<void()>& signalCloudConflict();
+    sigc::signal<void(TimePoint)>& signalCloudApiKeyExpiring();
 private:
     static constexpr auto CLOUD_DOCUMENT_NAME = "media.json";
 
@@ -95,6 +105,9 @@ private:
     sigc::signal<void()> m_signalAvailableYearsChanged;
     sigc::signal<void(stapik::sync::SyncStatus)> m_signalSyncStatusChanged;
     sigc::signal<void(const std::string&)> m_signalSaveFailed;
+    sigc::signal<void(const CloudOutcome&)> m_signalCloudOutcome;
+    sigc::signal<void()> m_signalCloudConflict;
+    sigc::signal<void(TimePoint)> m_signalCloudApiKeyExpiring;
 
     [[nodiscard]] int currentYear() const;
     [[nodiscard]] std::optional<int> archiveYearOf(const MediaEntry& entry) const;

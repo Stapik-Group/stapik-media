@@ -6,6 +6,13 @@
 
 namespace
 {
+    void buildDisconnectMenu(Gio::Menu& fileMenu)
+    {
+        const auto disconnectSection = Gio::Menu::create();
+        disconnectSection->append(LocaleManager::instance().translate("menu.file.disconnect"), "win.disconnect");
+        fileMenu.append_section(disconnectSection);
+    }
+
     void buildRestoreBackupMenu(Gio::Menu& fileMenu)
     {
         const auto backupSection = Gio::Menu::create();
@@ -25,6 +32,7 @@ MainMenu::MainMenu(Gtk::ApplicationWindow& window, MediaModel& model, const stap
     })
 {
     m_actionHandler.registerActions();
+    m_menu.addToMenu(StandardMenu::Target::File, buildDisconnectMenu);
     m_menu.addToMenu(StandardMenu::Target::File, buildRestoreBackupMenu);
 }
 

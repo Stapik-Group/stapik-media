@@ -28,7 +28,6 @@ private:
     static constexpr auto SETTING_CATEGORY = "sidebar.category";
     static constexpr int ADD_BUTTON_MARGIN = 8;
     static constexpr auto WINDOW_TITLE = "Stapik Media";
-    static constexpr unsigned int CLOSE_TIMEOUT_MS = 5000;
     static constexpr int STATUS_MARGIN = 4;
     static constexpr std::size_t PAGE_SIZE = 10;
 
@@ -49,8 +48,6 @@ private:
     MainMenu m_mainMenu;
     Gtk::Label m_listHeaderLabel;
     StatusIndicator m_statusIndicator;
-    bool m_closing = false;
-    bool m_closed = false;
 
     void init();
     void initLayout();
@@ -58,8 +55,9 @@ private:
     void initSignals();
     void onSyncStatusChanged(stapik::sync::SyncStatus status);
     void onSaveFailed(const std::string& message);
+    void onCloudConflict();
+    void onApiKeyExpiring(MediaModel::TimePoint expiresAt);
     bool onCloseRequest();
-    void closeNow();
     void saveWindowState() const;
     void onCategorySelected(MediaCategory category);
     void onAddClicked();

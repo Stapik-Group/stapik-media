@@ -63,5 +63,14 @@
   "dialog.backup.restoreFailed.title": "The backup could not be restored",
   "dialog.backup.restoreFailed.text": "The file is unreadable or was written by a newer version of Stapik Media.",
   "dialog.save.failed.title": "The media list could not be saved",
-  "dialog.save.failed.text": "Your changes stay in the open window but are not on disk: {error}"
+  "dialog.save.failed.text": "Your changes stay in the open window but are not on disk: {error}",
+
+  "menu.file.disconnect": "Disconnect from cloud",
+  "dialog.disconnect.title": "Disconnect from cloud?",
+  "dialog.disconnect.message": "The API key and the connection settings will be removed from this device. The media list on this device and in the cloud stays as it is.",
+  "dialog.disconnect.button": "Disconnect",
+  "cloud.conflict.header": "Cloud version kept",
+  "cloud.conflict.secondary": "Another device saved a newer version of the media list. Your latest changes were replaced by it.",
+  "cloud.plainFileSecrets": "No system keyring is available, so the API key and the passphrase are kept in a file readable only by your user.",
+  "cloud.apiKeyExpiring.header": "Cloud API key expires soon"
 }

@@ -10,8 +10,41 @@
 
 #include <algorithm>
 #include <chrono>
+#include <format>
 #include <memory>
 #include <utility>
+
+namespace
+{
+    bool isConflict(const MediaModel::CloudOutcome& outcome)
+    {
+        return outcome.state == stapik::sync::SyncState::LostRaceAcceptedServer || outcome.discardedLocalChange;
+    }
+
+    void logOutcome(const std::string& subject, const MediaModel::CloudOutcome& outcome)
+    {
+        if (outcome.message.empty())
+            return;
+
+        switch (outcome.state)
+        {
+            using enum stapik::sync::SyncState;
+            case RemoteUnreadable:
+            case AuthRejected:
+            case DecryptionFailed:
+            case DocumentTooLarge:
+                stapik::log::warning("[Cloud] {}: {}", subject, outcome.message);
+                break;
+            case Synchronized:
+            case OfflineKeptLocal:
+            case ServerWon:
+            case LostRaceAcceptedServer:
+            case LostRaceKeptLocal:
+                stapik::log::debug("[Cloud] {}: {}", subject, outcome.message);
+                break;
+        }
+    }
+}
 
 MediaModel::MediaModel(MediaDocument initial, MediaRepository& repository) :
     MediaModel(std::move(initial), repository, stapik::sync::defaultCloudSessionHooks(CLOUD_DOCUMENT_NAME))
@@ -44,6 +77,7 @@ MediaModel::MediaModel(
     m_session.signalPartitionStatusChanged().connect(sigc::mem_fun(*this, &MediaModel::onPartitionStatusChanged));
     m_session.signalPartitionOutcome().connect(sigc::mem_fun(*this, &MediaModel::onPartitionOutcome));
     m_session.signalAvailableYears().connect(sigc::mem_fun(*this, &MediaModel::onAvailableYears));
+    m_session.signalApiKeyExpiring().connect([this](const TimePoint expiresAt) { m_signalCloudApiKeyExpiring.emit(expiresAt); });
 
     startCloudSync();
 }
@@ -217,9 +251,35 @@ void MediaModel::syncNow()
     startCloudSync();
 }
 
-void MediaModel::flush()
+void MediaModel::disconnectCloud()
 {
-    m_session.flush();
+    m_session.disconnect();
+
+    m_remoteYears.clear();
+    m_remoteYearsKnown = false;
+    m_syncingPartitions.clear();
+
+    if (m_main.cloudBaseline.has_value())
+    {
+        m_main.cloudBaseline.reset();
+        saveMain();
+    }
+
+    for (auto& [year, archive] : m_archives)
+    {
+        if (!archive.cloudBaseline.has_value())
+            continue;
+
+        archive.cloudBaseline.reset();
+        saveArchive(year, archive);
+    }
+
+    m_signalAvailableYearsChanged.emit();
+}
+
+void MediaModel::flushCloud(const std::chrono::milliseconds timeout)
+{
+    m_session.flushAndWait(timeout);
 }
 
 std::vector<stapik::document::BackupInfo> MediaModel::listBackups() const
@@ -275,6 +335,21 @@ sigc::signal<void()>& MediaModel::signalEntriesChanged()
 sigc::signal<void(const std::string&)>& MediaModel::signalSaveFailed()
 {
     return m_signalSaveFailed;
+}
+
+sigc::signal<void(const MediaModel::CloudOutcome&)>& MediaModel::signalCloudOutcome()
+{
+    return m_signalCloudOutcome;
+}
+
+sigc::signal<void()>& MediaModel::signalCloudConflict()
+{
+    return m_signalCloudConflict;
+}
+
+sigc::signal<void(MediaModel::TimePoint)>& MediaModel::signalCloudApiKeyExpiring()
+{
+    return m_signalCloudApiKeyExpiring;
 }
 
 sigc::signal<void()>& MediaModel::signalAvailableYearsChanged()
@@ -468,15 +543,13 @@ void MediaModel::onBaselineChanged(const std::chrono::system_clock::time_point b
     saveMain();
 }
 
-void MediaModel::onSyncOutcome(const stapik::sync::SyncOutcome<MediaDocument>& outcome)
+void MediaModel::onSyncOutcome(const CloudOutcome& outcome)
 {
-    if (outcome.message.empty())
-        return;
+    logOutcome("main document", outcome);
+    m_signalCloudOutcome.emit(outcome);
 
-    if (outcome.state == stapik::sync::SyncState::RemoteUnreadable)
-        stapik::log::warning("[Cloud] {}", outcome.message);
-    else
-        stapik::log::debug("[Cloud] {}", outcome.message);
+    if (isConflict(outcome))
+        m_signalCloudConflict.emit();
 }
 
 void MediaModel::onPartitionReplaced(const std::string& partition, const MediaDocument& document)
@@ -516,15 +589,12 @@ void MediaModel::onPartitionStatusChanged(const std::string& partition, const st
     m_signalSyncStatusChanged.emit(m_session.status());
 }
 
-void MediaModel::onPartitionOutcome(const std::string& partition, const stapik::sync::SyncOutcome<MediaDocument>& outcome)
+void MediaModel::onPartitionOutcome(const std::string& partition, const CloudOutcome& outcome)
 {
-    if (outcome.message.empty())
-        return;
+    logOutcome(std::format("partition {}", partition), outcome);
 
-    if (outcome.state == stapik::sync::SyncState::RemoteUnreadable)
-        stapik::log::warning("[Cloud] Partition {}: {}", partition, outcome.message);
-    else
-        stapik::log::debug("[Cloud] Partition {}: {}", partition, outcome.message);
+    if (isConflict(outcome))
+        m_signalCloudConflict.emit();
 }
 
 void MediaModel::onAvailableYears(const std::optional<std::vector<int>>& years)

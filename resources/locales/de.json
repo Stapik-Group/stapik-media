@@ -63,5 +63,14 @@
   "dialog.backup.restoreFailed.title": "Die Sicherung konnte nicht wiederhergestellt werden",
   "dialog.backup.restoreFailed.text": "Die Datei ist nicht lesbar oder stammt von einer neueren Version von Stapik Media.",
   "dialog.save.failed.title": "Die Medienliste konnte nicht gespeichert werden",
-  "dialog.save.failed.text": "Ihre Änderungen sind nur im geöffneten Fenster, aber nicht auf der Festplatte: {error}"
+  "dialog.save.failed.text": "Ihre Änderungen sind nur im geöffneten Fenster, aber nicht auf der Festplatte: {error}",
+
+  "menu.file.disconnect": "Von der Cloud trennen",
+  "dialog.disconnect.title": "Von der Cloud trennen?",
+  "dialog.disconnect.message": "Der API-Schlüssel und die Verbindungseinstellungen werden von diesem Gerät entfernt. Die Medienliste auf diesem Gerät und in der Cloud bleibt unverändert.",
+  "dialog.disconnect.button": "Trennen",
+  "cloud.conflict.header": "Cloud-Version beibehalten",
+  "cloud.conflict.secondary": "Ein anderes Gerät hat eine neuere Version der Medienliste gespeichert. Ihre letzten Änderungen wurden dadurch ersetzt.",
+  "cloud.plainFileSecrets": "Es ist kein System-Schlüsselbund verfügbar, daher werden der API-Schlüssel und die Passphrase in einer Datei gespeichert, die nur für Ihren Benutzer lesbar ist.",
+  "cloud.apiKeyExpiring.header": "Cloud-API-Schlüssel läuft bald ab"
 }
