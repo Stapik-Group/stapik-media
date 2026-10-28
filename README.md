@@ -35,7 +35,7 @@ A desktop media-tracking application for Linux, written in C++20 using GTK4/gtkm
 - `libcurl`
 - `libsodium` and `zlib`
 - `libsecret` (Linux, optional: keeps the cloud API key in the system keyring) and `libx11` (Linux, optional: remembers the window position)
-- [`stapik-common`](https://github.com/stapik/stapik-common) (fetched automatically via CMake FetchContent)
+- [`stapik-common`](https://github.com/Stapik-Group/stapik-common) (fetched automatically via CMake FetchContent)
 - `nlohmann/json` (fetched automatically via CMake FetchContent, transitively provided by `stapik-common`)
 
 On Ubuntu/Debian:
