@@ -140,7 +140,6 @@ void MainWindow::initSignals()
     signal_close_request().connect(sigc::mem_fun(*this, &MainWindow::onCloseRequest), false);
 
     m_model.signalEntriesChanged().connect([this] {
-        m_currentPage = 1;
         m_filterBar.setAvailableYears(m_model.availableYears());
         applyFiltersAndRefresh();
     });

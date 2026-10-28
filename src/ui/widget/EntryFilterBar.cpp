@@ -5,6 +5,32 @@
 
 #include <gtkmm/stringlist.h>
 
+namespace
+{
+    class ScopedFlag
+    {
+    public:
+        explicit ScopedFlag(bool& flag) :
+            m_flag(flag),
+            m_previous(flag)
+        {
+            m_flag = true;
+        }
+
+        ~ScopedFlag()
+        {
+            m_flag = m_previous;
+        }
+
+        ScopedFlag(const ScopedFlag&) = delete;
+        ScopedFlag& operator=(const ScopedFlag&) = delete;
+
+    private:
+        bool& m_flag;
+        bool m_previous;
+    };
+}
+
 EntryFilterBar::EntryFilterBar() : Box(Gtk::Orientation::HORIZONTAL, BAR_SPACING)
 {
     initLayout();
@@ -52,19 +78,24 @@ void EntryFilterBar::setAvailableYears(const std::set<unsigned>& years)
         m_yearValues.push_back(year);
     }
 
-    const auto model = Gtk::StringList::create(labels);
-    m_yearDropDown.set_model(model);
-    if (previousSelection.has_value())
     {
-        const auto it = std::ranges::find(m_yearValues, previousSelection.value());
+        const ScopedFlag updating(m_updating);
+
+        m_yearDropDown.set_model(Gtk::StringList::create(labels));
+
+        const auto it = previousSelection.has_value() ? std::ranges::find(m_yearValues, previousSelection.value()) : m_yearValues.end();
         m_yearDropDown.set_selected(it != m_yearValues.end()
             ? static_cast<guint>(std::distance(m_yearValues.begin(), it))
             : ALL_YEARS_INDEX);
+
+        const auto yearSelected = selectedYear().has_value();
+        m_monthDropDown.set_sensitive(yearSelected);
+        if (!yearSelected)
+            m_monthDropDown.set_selected(ALL_MONTHS_INDEX);
     }
-    else
-    {
-        m_yearDropDown.set_selected(ALL_YEARS_INDEX);
-    }
+
+    if (selectedYear() != previousSelection)
+        m_signalFilterChanged.emit();
 }
 
 void EntryFilterBar::rebuildMonthOptions()
@@ -75,13 +106,17 @@ void EntryFilterBar::rebuildMonthOptions()
     for (int month = 1; month <= stapik::domain::MONTHS_PER_YEAR; ++month)
         labels.emplace_back(stapik::domain::YearMonth(stapik::domain::MIN_YEAR_MONTH_YEAR, month).monthName(loc));
 
-    const auto model = Gtk::StringList::create(labels);
-    m_monthDropDown.set_model(model);
+    const ScopedFlag updating(m_updating);
+
+    m_monthDropDown.set_model(Gtk::StringList::create(labels));
     m_monthDropDown.set_selected(ALL_MONTHS_INDEX);
 }
 
 void EntryFilterBar::onYearChanged()
 {
+    if (m_updating)
+        return;
+
     const bool yearSelected = m_yearDropDown.get_selected() != ALL_YEARS_INDEX;
 
     m_monthDropDown.set_sensitive(yearSelected);
@@ -93,6 +128,9 @@ void EntryFilterBar::onYearChanged()
 
 void EntryFilterBar::onMonthChanged() const
 {
+    if (m_updating)
+        return;
+
     m_signalFilterChanged.emit();
 }
 
@@ -140,8 +178,10 @@ void EntryFilterBar::refreshLabels()
     rebuildMonthOptions();
 
     if (previousMonth.has_value())
+    {
+        const ScopedFlag updating(m_updating);
         m_monthDropDown.set_selected(previousMonth.value());
-
+    }
 }
 
 sigc::signal<void()> & EntryFilterBar::signalFilterChanged()

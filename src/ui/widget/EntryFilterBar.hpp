@@ -40,6 +40,8 @@ private:
     std::vector<unsigned> m_yearValues;
     std::set<unsigned> m_lastAvailableYears;
 
+    bool m_updating = false;
+
     sigc::signal<void()> m_signalFilterChanged;
 
     void initLayout();
