@@ -58,5 +58,10 @@
   "command.entry.remove": "entry deletion",
 
   "partition.notLoaded.header": "Archive not loaded",
-  "partition.notLoaded.message": "Entries from that year are stored in a cloud archive that has not been downloaded yet. Select the year in the filter first to load it, then try again."
+  "partition.notLoaded.message": "Entries from that year are stored in a cloud archive that has not been downloaded yet. Select the year in the filter first to load it, then try again.",
+
+  "dialog.backup.restoreFailed.title": "The backup could not be restored",
+  "dialog.backup.restoreFailed.text": "The file is unreadable or was written by a newer version of Stapik Media.",
+  "dialog.save.failed.title": "The media list could not be saved",
+  "dialog.save.failed.text": "Your changes stay in the open window but are not on disk: {error}"
 }

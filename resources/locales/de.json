@@ -58,5 +58,10 @@
   "command.entry.remove": "Löschen des Eintrags",
 
   "partition.notLoaded.header": "Archiv nicht geladen",
-  "partition.notLoaded.message": "Die Einträge dieses Jahres liegen in einem Cloud-Archiv, das noch nicht heruntergeladen wurde. Wählen Sie das Jahr zuerst im Filter aus, um es zu laden, und versuchen Sie es dann erneut."
+  "partition.notLoaded.message": "Die Einträge dieses Jahres liegen in einem Cloud-Archiv, das noch nicht heruntergeladen wurde. Wählen Sie das Jahr zuerst im Filter aus, um es zu laden, und versuchen Sie es dann erneut.",
+
+  "dialog.backup.restoreFailed.title": "Die Sicherung konnte nicht wiederhergestellt werden",
+  "dialog.backup.restoreFailed.text": "Die Datei ist nicht lesbar oder stammt von einer neueren Version von Stapik Media.",
+  "dialog.save.failed.title": "Die Medienliste konnte nicht gespeichert werden",
+  "dialog.save.failed.text": "Ihre Änderungen sind nur im geöffneten Fenster, aber nicht auf der Festplatte: {error}"
 }

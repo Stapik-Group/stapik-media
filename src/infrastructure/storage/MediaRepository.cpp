@@ -8,11 +8,18 @@
 #include "stapik/sync/PartitionKey.hpp"
 
 #include <format>
+#include <system_error>
+#include <utility>
 #include <string_view>
 
 MediaRepository::MediaRepository() :
-    m_directory(directoryPath()),
-    m_file(m_directory / FILE_NAME, createMediaSchemaMigrator())
+    MediaRepository(directoryPath())
+{}
+
+MediaRepository::MediaRepository(std::filesystem::path directory, const stapik::time::IClock& clock) :
+    m_directory(std::move(directory)),
+    m_file(m_directory / FILE_NAME, createMediaSchemaMigrator(), clock),
+    m_clock(clock)
 {
     m_file.setBackupCount(BACKUP_COUNT);
 }
@@ -25,8 +32,11 @@ MediaDocument MediaRepository::load()
     {
         using enum stapik::document::LoadStatus;
         case Loaded:
-            if (result.migrated && !m_file.save(*result.document))
-                stapik::log::warning("Cannot save the migrated media document");
+            if (result.migrated)
+            {
+                if (const auto saved = m_file.save(*result.document); !saved)
+                    stapik::log::warning("Cannot save the migrated media document: {}", saved.error().message());
+            }
 
             return std::move(*result.document);
         case Missing:
@@ -63,8 +73,11 @@ std::map<int, MediaDocument> MediaRepository::loadArchives()
         {
             using enum stapik::document::LoadStatus;
             case Loaded:
-                if (result.migrated && !file.save(*result.document))
-                    stapik::log::warning("Cannot save the migrated media archive {}", *year);
+                if (result.migrated)
+                {
+                    if (const auto saved = file.save(*result.document); !saved)
+                        stapik::log::warning("Cannot save the migrated media archive {}: {}", *year, saved.error().message());
+                }
 
                 archives.emplace(*year, std::move(*result.document));
                 break;
@@ -85,32 +98,31 @@ std::map<int, MediaDocument> MediaRepository::loadArchives()
     return archives;
 }
 
-bool MediaRepository::save(const MediaDocument& document) const
+stapik::storage::FileResult MediaRepository::save(const MediaDocument& document) const
 {
     if (!isWritable())
-        return false;
+        return notWritable(m_file.filePath());
 
-    if (!m_file.save(document))
-    {
-        stapik::log::warning("Cannot save the media document");
-        return false;
-    }
-
-    return true;
+    return write(m_file, document);
 }
 
-bool MediaRepository::saveArchive(const int year, const MediaDocument& document) const
+stapik::storage::FileResult MediaRepository::saveArchive(const int year, const MediaDocument& document) const
 {
+    const auto path = archivePath(year);
     if (!isWritable())
-        return false;
+        return notWritable(path);
 
-    if (!archiveFile(archivePath(year)).save(document))
-    {
-        stapik::log::warning("Cannot save the media archive {}", year);
-        return false;
-    }
+    return write(archiveFile(path), document);
+}
 
-    return true;
+std::vector<stapik::document::BackupInfo> MediaRepository::listBackups() const
+{
+    return m_file.listBackups();
+}
+
+stapik::document::LoadResult<MediaDocument> MediaRepository::loadBackup(const stapik::document::BackupInfo& backup) const
+{
+    return m_file.loadBackup(backup);
 }
 
 StorageProblem MediaRepository::problem() const
@@ -131,9 +143,32 @@ void MediaRepository::raiseProblem(const StorageProblem problem)
 
 stapik::document::DocumentFile<MediaDocument> MediaRepository::archiveFile(const std::filesystem::path& path) const
 {
-    stapik::document::DocumentFile<MediaDocument> file(path, createMediaSchemaMigrator());
+    stapik::document::DocumentFile<MediaDocument> file(path, createMediaSchemaMigrator(), m_clock);
     file.setBackupCount(BACKUP_COUNT);
     return file;
+}
+
+bool MediaRepository::isBackupDue(const stapik::document::DocumentFile<MediaDocument>& file) const
+{
+    const auto backups = file.listBackups();
+    return backups.empty() || m_clock.now() - backups.front().savedAt >= BACKUP_INTERVAL;
+}
+
+stapik::storage::FileResult MediaRepository::write(const stapik::document::DocumentFile<MediaDocument>& file, const MediaDocument& document) const
+{
+    if (isBackupDue(file))
+        return file.save(document);
+
+    return file.exportTo(document, file.filePath());
+}
+
+stapik::storage::FileResult MediaRepository::notWritable(const std::filesystem::path& path) const
+{
+    return stapik::Failure(stapik::storage::FileError{
+        .path = path,
+        .step = "save",
+        .code = std::make_error_code(std::errc::read_only_file_system)
+    });
 }
 
 std::filesystem::path MediaRepository::archivePath(const int year) const

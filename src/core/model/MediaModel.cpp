@@ -11,11 +11,12 @@
 #include <algorithm>
 #include <chrono>
 #include <memory>
-#include <tuple>
+#include <utility>
 
-MediaModel::MediaModel(MediaDocument initial, MediaRepository& repository) :
+MediaModel::MediaModel(MediaDocument initial, MediaRepository& repository, const stapik::time::IClock& clock) :
     m_main(std::move(initial)),
     m_repository(repository),
+    m_clock(clock),
     m_session(stapik::sync::defaultCloudSessionHooks(CLOUD_DOCUMENT_NAME))
 {
     m_archives = m_repository.loadArchives();
@@ -212,6 +213,31 @@ void MediaModel::flush()
     m_session.flush();
 }
 
+std::vector<stapik::document::BackupInfo> MediaModel::listBackups() const
+{
+    return m_repository.listBackups();
+}
+
+bool MediaModel::restoreBackup(const stapik::document::BackupInfo& backup)
+{
+    if (!m_repository.isWritable())
+        return false;
+
+    auto loaded = m_repository.loadBackup(backup);
+    if (loaded.status != stapik::document::LoadStatus::Loaded)
+        return false;
+
+    const auto baseline = m_main.cloudBaseline;
+    m_main = std::move(*loaded.document);
+    m_main.cloudBaseline = baseline;
+    m_undoStack.clear();
+
+    auto touched = normalize();
+    touched.main = true;
+    commit(touched);
+    return true;
+}
+
 std::optional<CloudStorageConfig> MediaModel::cloudConfig() const
 {
     return m_session.config();
@@ -237,6 +263,11 @@ sigc::signal<void()>& MediaModel::signalEntriesChanged()
     return m_signalEntriesChanged;
 }
 
+sigc::signal<void(const std::string&)>& MediaModel::signalSaveFailed()
+{
+    return m_signalSaveFailed;
+}
+
 sigc::signal<void()>& MediaModel::signalAvailableYearsChanged()
 {
     return m_signalAvailableYearsChanged;
@@ -247,12 +278,12 @@ sigc::signal<void(stapik::sync::SyncStatus)>& MediaModel::signalSyncStatusChange
     return m_signalSyncStatusChanged;
 }
 
-int MediaModel::currentYear()
+int MediaModel::currentYear() const
 {
-    return stapik::domain::YearMonth::current().year();
+    return stapik::domain::YearMonth::current(m_clock).year();
 }
 
-std::optional<int> MediaModel::archiveYearOf(const MediaEntry& entry)
+std::optional<int> MediaModel::archiveYearOf(const MediaEntry& entry) const
 {
     return YearPartitioning::archiveYearOf(entry, currentYear());
 }
@@ -330,14 +361,14 @@ MediaModel::Touched MediaModel::normalize()
 
 void MediaModel::touch(const Touched& touched)
 {
-    const auto now = std::chrono::system_clock::now();
+    const auto now = m_clock.now();
     const auto writable = m_repository.isWritable();
 
     for (const auto year : touched.archives)
     {
         auto& archive = m_archives[year];
         archive.updatedAt = now;
-        std::ignore = m_repository.saveArchive(year, archive);
+        saveArchive(year, archive);
 
         if (writable)
             m_session.pushPartitionChange(stapik::sync::partitionKeyForYear(year), archive);
@@ -346,7 +377,7 @@ void MediaModel::touch(const Touched& touched)
     if (touched.main)
     {
         m_main.updatedAt = now;
-        std::ignore = m_repository.save(m_main);
+        saveMain();
 
         if (writable)
             m_session.pushChange(m_main);
@@ -370,6 +401,34 @@ void MediaModel::rebuildView()
     m_view.insert(m_view.end(), m_main.entries.begin(), m_main.entries.end());
 }
 
+void MediaModel::saveMain()
+{
+    if (!m_repository.isWritable())
+        return;
+
+    reportSave(m_repository.save(m_main));
+}
+
+void MediaModel::saveArchive(const int year, const MediaDocument& document)
+{
+    if (!m_repository.isWritable())
+        return;
+
+    reportSave(m_repository.saveArchive(year, document));
+}
+
+void MediaModel::reportSave(const stapik::storage::FileResult& result)
+{
+    if (result)
+    {
+        m_saveFailureReported = false;
+        return;
+    }
+
+    if (!std::exchange(m_saveFailureReported, true))
+        m_signalSaveFailed.emit(result.error().message());
+}
+
 void MediaModel::startCloudSync()
 {
     if (!isCloudConnected())
@@ -389,7 +448,7 @@ void MediaModel::reconcileArchives()
 void MediaModel::onDocumentReplaced(const MediaDocument& document)
 {
     m_main = document;
-    std::ignore = m_repository.save(m_main);
+    saveMain();
     m_undoStack.clear();
     commit(normalize());
 }
@@ -397,7 +456,7 @@ void MediaModel::onDocumentReplaced(const MediaDocument& document)
 void MediaModel::onBaselineChanged(const std::chrono::system_clock::time_point baseline)
 {
     m_main.cloudBaseline = baseline;
-    std::ignore = m_repository.save(m_main);
+    saveMain();
 }
 
 void MediaModel::onSyncOutcome(const stapik::sync::SyncOutcome<MediaDocument>& outcome)
@@ -418,7 +477,7 @@ void MediaModel::onPartitionReplaced(const std::string& partition, const MediaDo
         return;
 
     m_archives[*year] = document;
-    std::ignore = m_repository.saveArchive(*year, document);
+    saveArchive(*year, document);
     m_undoStack.clear();
     rebuildView();
     m_signalEntriesChanged.emit();
@@ -435,7 +494,7 @@ void MediaModel::onPartitionBaselineChanged(const std::string& partition, const 
         return;
 
     found->second.cloudBaseline = baseline;
-    std::ignore = m_repository.saveArchive(*year, found->second);
+    saveArchive(*year, found->second);
 }
 
 void MediaModel::onPartitionStatusChanged(const std::string& partition, const stapik::sync::SyncStatus status)

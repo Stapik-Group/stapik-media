@@ -113,6 +113,7 @@ void MainWindow::initSignals()
     m_paginationBar.signalNextRequested().connect(sigc::mem_fun(*this, &MainWindow::onNextPageRequested));
 
     m_model.signalSyncStatusChanged().connect(sigc::mem_fun(*this, &MainWindow::onSyncStatusChanged));
+    m_model.signalSaveFailed().connect(sigc::mem_fun(*this, &MainWindow::onSaveFailed));
     m_model.signalAvailableYearsChanged().connect([this] { m_filterBar.setAvailableYears(m_model.availableYears()); });
     signal_close_request().connect(sigc::mem_fun(*this, &MainWindow::onCloseRequest), false);
 
@@ -242,6 +243,12 @@ void MainWindow::onEntryDeleteRequested(const std::size_t index)
         return;
 
     m_model.removeEntry(entries.at(index).id);
+}
+
+void MainWindow::onSaveFailed(const std::string& message)
+{
+    const auto& loc = LocaleManager::instance();
+    showMessageDialog(*this, loc.translate("dialog.save.failed.title"), loc.translate("dialog.save.failed.text", { { "error", message } }));
 }
 
 void MainWindow::showArchiveNotLoaded()

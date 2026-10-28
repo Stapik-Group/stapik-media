@@ -3,6 +3,8 @@
 
 #include "../../core/model/MediaModel.hpp"
 
+#include "stapik/document/BackupInfo.hpp"
+
 class MenuActionHandler
 {
 public:
@@ -17,4 +19,6 @@ private:
     void onActionConnect() const;
     void onActionQuit() const;
     void onActionSync() const;
+    void onActionRestoreBackup() const;
+    void handleChosenBackup(const stapik::document::BackupInfo& backup) const;
 };

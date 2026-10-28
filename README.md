@@ -16,7 +16,7 @@ A desktop media-tracking application for Linux, written in C++20 using GTK4/gtkm
 - **Cloud sync** - background synchronization with a self-hosted Stapik Cloud server, with automatic conflict resolution based on timestamps and a status indicator in the window.
 - **Yearly archives** - only the current year is kept in the main cloud document; older years are archived separately and downloaded on demand.
 - **Multilingual UI** - Polish, English and German interface with instant switching.
-- **Auto-save** - data saved locally after every change, with atomic writes and rotating backups.
+- **Auto-save** - data saved locally after every change, with atomic writes and rotating backups (at most one every five minutes) that can be restored from the File menu.
 - **Remembers your setup** - window size, last selected category, language and theme.
 - **Retro aesthetic** — classic look with raised buttons, blue navigation bar and grey cells.
 - **Five themes** - Classic, Classic Pink, Modern, Dark and Neoclassic, switchable live from the menu.

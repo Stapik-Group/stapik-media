@@ -6,8 +6,11 @@
 
 #include "stapik/cloud/CloudStorageConfig.hpp"
 #include "stapik/command/UndoStack.hpp"
+#include "stapik/document/BackupInfo.hpp"
+#include "stapik/storage/FileError.hpp"
 #include "stapik/sync/CloudSession.hpp"
 #include "stapik/sync/SyncStatus.hpp"
+#include "stapik/time/Clock.hpp"
 
 #include <sigc++/signal.h>
 #include <map>
@@ -19,7 +22,7 @@
 class MediaModel
 {
 public:
-    MediaModel(MediaDocument initial, MediaRepository& repository);
+    MediaModel(MediaDocument initial, MediaRepository& repository, const stapik::time::IClock& clock = stapik::time::systemClock());
     MediaModel(const MediaModel&) = delete;
     MediaModel& operator=(const MediaModel&) = delete;
 
@@ -43,6 +46,9 @@ public:
     void syncNow();
     void flush();
 
+    [[nodiscard]] std::vector<stapik::document::BackupInfo> listBackups() const;
+    bool restoreBackup(const stapik::document::BackupInfo& backup);
+
     [[nodiscard]] std::optional<CloudStorageConfig> cloudConfig() const;
     [[nodiscard]] bool isCloudConnected() const;
     [[nodiscard]] bool isSyncing() const;
@@ -51,6 +57,7 @@ public:
     sigc::signal<void()>& signalEntriesChanged();
     sigc::signal<void()>& signalAvailableYearsChanged();
     sigc::signal<void(stapik::sync::SyncStatus)>& signalSyncStatusChanged();
+    sigc::signal<void(const std::string&)>& signalSaveFailed();
 private:
     static constexpr auto CLOUD_DOCUMENT_NAME = "media.json";
 
@@ -73,14 +80,17 @@ private:
     bool m_remoteYearsKnown = false;
     std::set<std::string> m_syncingPartitions;
     MediaRepository& m_repository;
+    const stapik::time::IClock& m_clock;
+    bool m_saveFailureReported = false;
     stapik::sync::CloudSession<MediaDocument> m_session;
     stapik::command::UndoStack m_undoStack;
     sigc::signal<void()> m_signalEntriesChanged;
     sigc::signal<void()> m_signalAvailableYearsChanged;
     sigc::signal<void(stapik::sync::SyncStatus)> m_signalSyncStatusChanged;
+    sigc::signal<void(const std::string&)> m_signalSaveFailed;
 
-    [[nodiscard]] static int currentYear();
-    [[nodiscard]] static std::optional<int> archiveYearOf(const MediaEntry& entry);
+    [[nodiscard]] int currentYear() const;
+    [[nodiscard]] std::optional<int> archiveYearOf(const MediaEntry& entry) const;
     [[nodiscard]] static std::optional<std::size_t> indexIn(const MediaDocument& document, const std::string& id);
     [[nodiscard]] std::optional<Location> locate(const std::string& id) const;
     [[nodiscard]] MediaDocument& documentFor(const std::optional<int>& archiveYear);
@@ -90,6 +100,9 @@ private:
     void touch(const Touched& touched);
     void commit(const Touched& touched);
     void rebuildView();
+    void saveMain();
+    void saveArchive(int year, const MediaDocument& document);
+    void reportSave(const stapik::storage::FileResult& result);
 
     void startCloudSync();
     void reconcileArchives();

@@ -58,5 +58,10 @@
   "command.entry.remove": "usunięcie wpisu",
 
   "partition.notLoaded.header": "Archiwum niezaładowane",
-  "partition.notLoaded.message": "Wpisy z tego roku są w archiwum w chmurze, które nie zostało jeszcze pobrane. Wybierz najpierw ten rok w filtrze, aby je wczytać, a potem spróbuj ponownie."
+  "partition.notLoaded.message": "Wpisy z tego roku są w archiwum w chmurze, które nie zostało jeszcze pobrane. Wybierz najpierw ten rok w filtrze, aby je wczytać, a potem spróbuj ponownie.",
+
+  "dialog.backup.restoreFailed.title": "Nie udało się przywrócić kopii zapasowej",
+  "dialog.backup.restoreFailed.text": "Plik jest nieczytelny albo zapisała go nowsza wersja Stapik Media.",
+  "dialog.save.failed.title": "Nie udało się zapisać listy mediów",
+  "dialog.save.failed.text": "Zmiany są tylko w otwartym oknie, ale nie na dysku: {error}"
 }

@@ -57,6 +57,7 @@ private:
     void reportStorageProblem();
     void initSignals();
     void onSyncStatusChanged(stapik::sync::SyncStatus status);
+    void onSaveFailed(const std::string& message);
     bool onCloseRequest();
     void closeNow();
     void saveWindowState() const;
