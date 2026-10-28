@@ -17,6 +17,7 @@
 #include <iterator>
 #include <memory>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace
@@ -345,6 +346,52 @@ TEST_F(MediaModelTest, TurnOfTheYearWithoutEntriesToMoveChangesNothing)
 
     EXPECT_EQ(changes, 1);
     EXPECT_TRUE(m_repository.loadArchives().empty());
+}
+
+TEST_F(MediaModelTest, EntriesOfTheCurrentYearStayIntactWhenNothingIsArchived)
+{
+    MediaDocument stored;
+    stored.entries = { test::makeMovie("Heat", m_year, 3, "a"), test::makeBook("Dune", m_year, 4, "b") };
+
+    m_model = std::make_unique<MediaModel>(std::move(stored), m_repository, stapik::sync::CloudSessionHooks{}, stapik::sync::AsyncSyncOptions{}, m_clock);
+
+    ASSERT_EQ(m_model->entries().size(), 2U);
+    EXPECT_EQ(m_model->entries()[0].title, "Heat");
+    EXPECT_EQ(m_model->entries()[0].id, "a");
+    EXPECT_EQ(std::get<ScreenDetails>(m_model->entries()[0].details).director, "Director");
+    EXPECT_EQ(m_model->entries()[1].title, "Dune");
+    EXPECT_EQ(m_model->entries()[1].id, "b");
+    EXPECT_EQ(std::get<BookDetails>(m_model->entries()[1].details).author, "Author");
+}
+
+TEST_F(MediaModelTest, EntriesOfTheCurrentYearAreWrittenWithTheirContentAfterTheNextChange)
+{
+    MediaDocument stored;
+    stored.entries = { test::makeMovie("Heat", m_year, 3, "a") };
+    m_model = std::make_unique<MediaModel>(std::move(stored), m_repository, stapik::sync::CloudSessionHooks{}, stapik::sync::AsyncSyncOptions{}, m_clock);
+
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Alien", m_year, 4, "b")));
+
+    const auto saved = m_repository.load();
+    ASSERT_EQ(saved.entries.size(), 2U);
+    EXPECT_EQ(saved.entries[0].title, "Heat");
+    EXPECT_EQ(saved.entries[0].id, "a");
+    EXPECT_EQ(saved.entries[1].title, "Alien");
+}
+
+TEST_F(MediaModelTest, EntriesOfTheNewCurrentYearStayIntactWhenTheYearTurns)
+{
+    using namespace std::chrono;
+    m_clock.set(sys_days{ year{ m_year } / December / 31 } + hours{ 12 });
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year + 1, 1, "a")));
+
+    m_clock.set(sys_days{ year{ m_year + 1 } / January / 2 } + hours{ 12 });
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Alien", m_year + 1, 2, "b")));
+
+    ASSERT_EQ(m_model->entries().size(), 2U);
+    EXPECT_EQ(m_model->entries()[0].title, "Heat");
+    EXPECT_EQ(m_model->entries()[0].id, "a");
+    EXPECT_EQ(m_repository.load().entries.at(0).title, "Heat");
 }
 
 TEST(MediaModelSaveFailureTest, FailureIsReportedOnceUntilASaveSucceedsAgain)

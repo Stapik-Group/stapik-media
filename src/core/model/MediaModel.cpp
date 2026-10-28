@@ -8,6 +8,7 @@
 #include "stapik/domain/YearMonth.hpp"
 #include "stapik/log/Log.hpp"
 #include "stapik/sync/PartitionKey.hpp"
+#include "stapik/sync/Timestamp.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -22,10 +23,27 @@ namespace
         return outcome.state == stapik::sync::SyncState::LostRaceAcceptedServer || outcome.discardedLocalChange;
     }
 
+    const char* stateName(const stapik::sync::SyncState state)
+    {
+        switch (state)
+        {
+            using enum stapik::sync::SyncState;
+            case Synchronized: return "synchronized";
+            case OfflineKeptLocal: return "offline, local version kept";
+            case ServerWon: return "cloud version is newer";
+            case LostRaceAcceptedServer: return "conflict, cloud version accepted";
+            case LostRaceKeptLocal: return "conflict, local version kept";
+            case RemoteUnreadable: return "cloud document unreadable";
+            case AuthRejected: return "API key rejected";
+            case DecryptionFailed: return "decryption failed";
+            case DocumentTooLarge: return "document too large";
+        }
+        return "unknown";
+    }
+
     void logOutcome(const std::string& subject, const MediaModel::CloudOutcome& outcome)
     {
-        if (outcome.message.empty())
-            return;
+        const auto details = outcome.message.empty() ? std::string{} : std::format(" ({})", outcome.message);
 
         switch (outcome.state)
         {
@@ -34,14 +52,14 @@ namespace
             case AuthRejected:
             case DecryptionFailed:
             case DocumentTooLarge:
-                stapik::log::warning("[Cloud] {}: {}", subject, outcome.message);
+                stapik::log::warning("[Cloud] {}: {}{}", subject, stateName(outcome.state), details);
                 break;
             case Synchronized:
             case OfflineKeptLocal:
             case ServerWon:
             case LostRaceAcceptedServer:
             case LostRaceKeptLocal:
-                stapik::log::debug("[Cloud] {}: {}", subject, outcome.message);
+                stapik::log::info("[Cloud] {}: {}{}", subject, stateName(outcome.state), details);
                 break;
         }
     }
@@ -492,8 +510,7 @@ MediaModel::Touched MediaModel::normalize()
         touched.main = true;
     }
 
-    if (touched.main)
-        m_main.entries = std::move(remaining);
+    m_main.entries = std::move(remaining);
 
     return touched;
 }
@@ -523,7 +540,10 @@ void MediaModel::touch(const Touched& touched)
         saveArchive(year, archive);
 
         if (writable)
+        {
+            stapik::log::debug("[Cloud] The archive of {} was saved and queued, updated {}", year, stapik::sync::toIso8601(archive.updatedAt));
             m_session.pushPartitionChange(stapik::sync::partitionKeyForYear(year), archive);
+        }
     }
 
     if (touched.main)
@@ -532,7 +552,10 @@ void MediaModel::touch(const Touched& touched)
         saveMain();
 
         if (writable)
+        {
+            stapik::log::debug("[Cloud] The main document was saved and queued, updated {}", stapik::sync::toIso8601(m_main.updatedAt));
             m_session.pushChange(m_main);
+        }
     }
 }
 
@@ -599,6 +622,9 @@ void MediaModel::reconcileArchives()
 
 void MediaModel::onDocumentReplaced(const MediaDocument& document)
 {
+    stapik::log::info("[Cloud] The main document was replaced by the cloud version: {} entries, updated {}",
+        document.entries.size(), stapik::sync::toIso8601(document.lastUpdate()));
+
     m_main = document;
     saveMain();
     m_undoStack.clear();
@@ -625,6 +651,9 @@ void MediaModel::onPartitionReplaced(const std::string& partition, const MediaDo
     const auto year = stapik::sync::yearFromPartitionKey(partition);
     if (!year.has_value())
         return;
+
+    stapik::log::info("[Cloud] The archive of {} was replaced by the cloud version: {} entries, updated {}",
+        *year, document.entries.size(), stapik::sync::toIso8601(document.lastUpdate()));
 
     m_archives[*year] = document;
     saveArchive(*year, document);
