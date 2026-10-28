@@ -34,7 +34,7 @@ A desktop media-tracking application for Linux, written in C++20 using GTK4/gtkm
 
 ## Dependencies
 
-- CMake 4.2 or newer and a C++20 compiler
+- CMake 4.2 or newer and a C++20 compiler with `<format>` (GCC 13 or newer, so Ubuntu 24.04 or Debian 13 and newer)
 - `gtkmm-4.0`
 - `libcurl`
 - `libsodium` and `zlib`
