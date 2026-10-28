@@ -23,7 +23,7 @@ void MenuActionHandler::onActionConnect() const
             return;
 
         const auto& loc = LocaleManager::instance();
-        showMessageDialog(m_window, loc.translate("cloud.failed.header"), loc.translate("sync.status.error"), Gtk::MessageType::ERROR);
+        showMessageDialog(m_window, loc.translate("cloud.failed.header"), loc.translate("sync.status.error"));
     });
 }
 

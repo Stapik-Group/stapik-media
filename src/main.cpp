@@ -3,6 +3,7 @@
 #include <curl/curl.h>
 
 #include "stapik/app/AppContext.hpp"
+#include "stapik/app/version.hpp"
 #include "stapik/app/SingleInstanceGuard.hpp"
 #include "stapik/locale/LocaleManager.hpp"
 #include "stapik/log/Log.hpp"
@@ -16,6 +17,7 @@
 
 #include <algorithm>
 #include <filesystem>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -69,14 +71,18 @@ int main(const int argc, char *argv[])
 {
     stapik::app::AppContext::initialize({
         .applicationId = APPLICATION_ID,
-        .internalName = STAPIK_APP_NAME,
-        .displayName = STAPIK_APP_DISPLAY_NAME,
-        .version = STAPIK_APP_VERSION,
+        .internalName = std::string{ stapik::app::build::NAME },
+        .displayName = std::string{ stapik::app::build::DISPLAY_NAME },
+        .version = std::string{ stapik::app::build::VERSION },
         .author = AUTHOR,
         .repositoryUrl = REPOSITORY_URL
     });
 
-    const auto instanceGuard = stapik::app::SingleInstanceGuard::acquire(APPLICATION_ID, STAPIK_APP_DISPLAY_NAME);
+    const auto instanceGuard = stapik::app::SingleInstanceGuard::acquire(
+        APPLICATION_ID,
+        std::string{ stapik::app::build::DISPLAY_NAME },
+        {},
+        [](const std::vector<std::filesystem::path>&) {});
     if (instanceGuard == nullptr)
         return 0;
 

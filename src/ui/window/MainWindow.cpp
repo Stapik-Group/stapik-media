@@ -54,7 +54,7 @@ void MainWindow::reportStorageProblem()
     Glib::signal_idle().connect_once([this, problem]
     {
         const auto& loc = LocaleManager::instance();
-        showMessageDialog(*this, loc.translate("storage.problem.header"), loc.translate(storageProblemKey(problem)), Gtk::MessageType::ERROR);
+        showMessageDialog(*this, loc.translate("storage.problem.header"), loc.translate(storageProblemKey(problem)));
     });
 }
 
@@ -265,7 +265,7 @@ void MainWindow::onEntryDeleteRequested(const std::size_t index)
 void MainWindow::showArchiveNotLoaded()
 {
     const auto& loc = LocaleManager::instance();
-    showMessageDialog(*this, loc.translate("partition.notLoaded.header"), loc.translate("partition.notLoaded.message"), Gtk::MessageType::WARNING);
+    showMessageDialog(*this, loc.translate("partition.notLoaded.header"), loc.translate("partition.notLoaded.message"));
 }
 
 void MainWindow::onFilterChanged()
