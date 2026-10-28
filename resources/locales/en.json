@@ -91,5 +91,10 @@
   "export.column.publisher": "Publisher",
   "export.column.genre": "Genre",
   "export.column.platform": "Platform",
-  "export.column.audiobook": "Audiobook"
+  "export.column.audiobook": "Audiobook",
+
+  "dialog.entry.duplicate.header": "Entry already exists",
+  "dialog.entry.duplicate.message": "The list already has \"{title}\" ({year}) in this category. The same title can appear again only with a different release year.",
+  "dialog.entry.missing.header": "Entry not found",
+  "dialog.entry.missing.message": "The entry was removed in the meantime, for example by a synchronization. Your changes were not saved."
 }

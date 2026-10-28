@@ -22,6 +22,12 @@ namespace
 {
     namespace fs = std::filesystem;
 
+    MediaEntry releasedIn(MediaEntry entry, const int year)
+    {
+        entry.releaseDate = ReleaseDate{ std::chrono::year{ year } / std::chrono::month{ 1 } / std::chrono::day{ 1 }, DatePrecision::Day };
+        return entry;
+    }
+
     std::vector<std::string> idsOf(const std::vector<MediaEntry>& entries)
     {
         std::vector<std::string> ids;
@@ -139,6 +145,134 @@ TEST_F(MediaModelTest, AnUnreadableBackupIsRefusedAndLeavesTheDocumentAlone)
 
     EXPECT_FALSE(m_model->restoreBackup(backups.front()));
     EXPECT_EQ(m_model->entries().size(), 2U);
+}
+
+TEST_F(MediaModelTest, TitleAlreadyInTheCategoryIsRefused)
+{
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year, 3, "a")));
+
+    const auto second = m_model->addEntry(test::makeMovie("Heat", m_year, 5, "b"));
+
+    ASSERT_FALSE(second);
+    EXPECT_EQ(second.error(), MediaModel::EntryError::Duplicate);
+    EXPECT_EQ(idsOf(m_model->entries()), std::vector<std::string>{ "a" });
+    EXPECT_EQ(m_repository.load().entries.size(), 1U);
+}
+
+TEST_F(MediaModelTest, TitleComparisonIgnoresCaseAndSurroundingSpaces)
+{
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year, 3, "a")));
+
+    const auto second = m_model->addEntry(test::makeMovie("  hEAT ", m_year, 5, "b"));
+
+    ASSERT_FALSE(second);
+    EXPECT_EQ(second.error(), MediaModel::EntryError::Duplicate);
+}
+
+TEST_F(MediaModelTest, SameTitleInAnotherCategoryIsAccepted)
+{
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Dune", m_year, 3, "a")));
+
+    EXPECT_TRUE(m_model->addEntry(test::makeBook("Dune", m_year, 3, "b")));
+}
+
+TEST_F(MediaModelTest, DuplicateIsFoundAmongArchivedYears)
+{
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year - 2, 3, "a")));
+
+    const auto second = m_model->addEntry(test::makeMovie("Heat", m_year, 3, "b"));
+
+    ASSERT_FALSE(second);
+    EXPECT_EQ(second.error(), MediaModel::EntryError::Duplicate);
+}
+
+TEST_F(MediaModelTest, SameTitleReleasedInAnotherYearIsAccepted)
+{
+    ASSERT_TRUE(m_model->addEntry(releasedIn(test::makeMovie("Superman", m_year, 3, "a"), 1978)));
+
+    EXPECT_TRUE(m_model->addEntry(releasedIn(test::makeMovie("Superman", m_year, 3, "b"), 2025)));
+    EXPECT_EQ(m_model->entries().size(), 2U);
+}
+
+TEST_F(MediaModelTest, SameTitleReleasedInTheSameYearIsRefusedEvenWithADifferentDay)
+{
+    ASSERT_TRUE(m_model->addEntry(releasedIn(test::makeMovie("Superman", m_year, 3, "a"), 1978)));
+
+    const auto second = m_model->addEntry(releasedIn(test::makeMovie("Superman", m_year, 4, "b"), 1978));
+
+    ASSERT_FALSE(second);
+    EXPECT_EQ(second.error(), MediaModel::EntryError::Duplicate);
+}
+
+TEST_F(MediaModelTest, ChangingTheReleaseYearToTheOneOfAnotherEntryIsRefused)
+{
+    ASSERT_TRUE(m_model->addEntry(releasedIn(test::makeMovie("Superman", m_year, 3, "a"), 1978)));
+    ASSERT_TRUE(m_model->addEntry(releasedIn(test::makeMovie("Superman", m_year, 4, "b"), 2025)));
+
+    const auto changed = m_model->updateEntry("b", releasedIn(test::makeMovie("Superman", m_year, 4, "b"), 1978));
+
+    ASSERT_FALSE(changed);
+    EXPECT_EQ(changed.error(), MediaModel::EntryError::Duplicate);
+}
+
+TEST_F(MediaModelTest, RenamingAnEntryToAnExistingTitleIsRefused)
+{
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year, 3, "a")));
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Alien", m_year, 4, "b")));
+
+    const auto renamed = m_model->updateEntry("b", test::makeMovie("Heat", m_year, 4, "b"));
+
+    ASSERT_FALSE(renamed);
+    EXPECT_EQ(renamed.error(), MediaModel::EntryError::Duplicate);
+    EXPECT_EQ(m_model->entryById("b")->title, "Alien");
+}
+
+TEST_F(MediaModelTest, EditingAnEntryWithoutChangingItsTitleIsAccepted)
+{
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year, 3, "a")));
+
+    EXPECT_TRUE(m_model->updateEntry("a", test::makeMovie("Heat", m_year, 9, "a")));
+    EXPECT_EQ(m_model->entryById("a")->consumed.month(), 9);
+}
+
+TEST_F(MediaModelTest, EntriesThatAlreadyShareATitleCanStillBeEdited)
+{
+    MediaDocument legacy;
+    legacy.entries = { test::makeMovie("Heat", m_year, 1, "a"), test::makeMovie("Heat", m_year, 2, "b") };
+    m_model = std::make_unique<MediaModel>(std::move(legacy), m_repository, stapik::sync::CloudSessionHooks{}, stapik::sync::AsyncSyncOptions{}, m_clock);
+
+    EXPECT_TRUE(m_model->updateEntry("a", test::makeMovie("Heat", m_year, 6, "a")));
+    EXPECT_EQ(m_model->entries().size(), 2U);
+}
+
+TEST_F(MediaModelTest, UpdatingAnUnknownEntryIsReported)
+{
+    const auto updated = m_model->updateEntry("missing", test::makeMovie("Heat", m_year, 3, "missing"));
+
+    ASSERT_FALSE(updated);
+    EXPECT_EQ(updated.error(), MediaModel::EntryError::UnknownEntry);
+}
+
+TEST_F(MediaModelTest, IdenticalEntriesOfAnEarlierYearAreArchivedOnce)
+{
+    MediaDocument legacy;
+    legacy.entries = { test::makeMovie("Heat", m_year - 3, 5, "a"), test::makeMovie("Heat", m_year - 3, 5, "b") };
+
+    m_model = std::make_unique<MediaModel>(std::move(legacy), m_repository, stapik::sync::CloudSessionHooks{}, stapik::sync::AsyncSyncOptions{}, m_clock);
+
+    EXPECT_EQ(m_model->entries().size(), 1U);
+    EXPECT_EQ(m_repository.loadArchives().at(m_year - 3).entries.size(), 1U);
+}
+
+TEST_F(MediaModelTest, EntriesWithTheSameTitleButAnotherMonthAreBothArchived)
+{
+    MediaDocument legacy;
+    legacy.entries = { test::makeMovie("Heat", m_year - 3, 3, "a"), test::makeMovie("Heat", m_year - 3, 5, "b") };
+
+    m_model = std::make_unique<MediaModel>(std::move(legacy), m_repository, stapik::sync::CloudSessionHooks{}, stapik::sync::AsyncSyncOptions{}, m_clock);
+
+    EXPECT_EQ(m_model->entries().size(), 2U);
+    EXPECT_EQ(m_repository.loadArchives().at(m_year - 3).entries.size(), 2U);
 }
 
 TEST(MediaModelSaveFailureTest, FailureIsReportedOnceUntilASaveSucceedsAgain)

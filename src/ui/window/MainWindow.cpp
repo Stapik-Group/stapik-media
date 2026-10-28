@@ -175,20 +175,9 @@ void MainWindow::onCategorySelected(const MediaCategory category)
 
 void MainWindow::onAddClicked()
 {
-    auto* dialog = new MediaEntryDialog(*this, m_sidebar.selectedCategory());
-
-    dialog->signal_response().connect([this, dialog](const int responseId)
-    {
-        if (responseId == Gtk::ResponseType::OK)
-        {
-            if (const auto result = dialog->getResult(); result.has_value() && !m_model.addEntry(*result))
-                showArchiveNotLoaded();
-        }
-        dialog->hide();
-    });
-
-    deleteOnHide(dialog);
-    dialog->show();
+    openEntryDialog(
+        new MediaEntryDialog(*this, m_sidebar.selectedCategory()),
+        [this](MediaEntry entry) { return m_model.addEntry(std::move(entry)); });
 }
 
 void MainWindow::onEntryEditRequested(const std::size_t index)
@@ -201,20 +190,52 @@ void MainWindow::onEntryEditRequested(const std::size_t index)
     }
 
     const auto id = entries.at(index).id;
-    auto* dialog = new MediaEntryDialog(*this, entries.at(index));
+    openEntryDialog(
+        new MediaEntryDialog(*this, entries.at(index)),
+        [this, id](MediaEntry entry) { return m_model.updateEntry(id, std::move(entry)); });
+}
 
-    dialog->signal_response().connect([this, dialog, id](const int responseId)
+void MainWindow::openEntryDialog(MediaEntryDialog* dialog, std::function<MediaModel::EntryResult(MediaEntry)> submit)
+{
+    dialog->signal_response().connect([this, dialog, submit = std::move(submit)](const int responseId)
     {
         if (responseId == Gtk::ResponseType::OK)
         {
-            if (const auto result = dialog->getResult(); result.has_value() && !m_model.updateEntry(id, *result))
-                showArchiveNotLoaded();
+            if (const auto entry = dialog->getResult(); entry.has_value())
+            {
+                const auto outcome = submit(*entry);
+                if (!outcome)
+                {
+                    reportRejectedEntry(*dialog, outcome.error(), *entry);
+                    if (outcome.error() == MediaModel::EntryError::Duplicate)
+                        return;
+                }
+            }
         }
         dialog->hide();
     });
 
     deleteOnHide(dialog);
     dialog->show();
+}
+
+void MainWindow::reportRejectedEntry(Gtk::Window& dialog, const MediaModel::EntryError error, const MediaEntry& entry)
+{
+    const auto& loc = LocaleManager::instance();
+
+    switch (error)
+    {
+        using enum MediaModel::EntryError;
+        case ArchiveNotLoaded:
+            showArchiveNotLoaded();
+            break;
+        case Duplicate:
+            showMessageDialog(dialog, loc.translate("dialog.entry.duplicate.header"), loc.translate("dialog.entry.duplicate.message", { { "title", entry.title }, { "year", std::format("{}", static_cast<int>(entry.releaseDate.date.year())) } }));
+            break;
+        case UnknownEntry:
+            showMessageDialog(*this, loc.translate("dialog.entry.missing.header"), loc.translate("dialog.entry.missing.message"));
+            break;
+    }
 }
 
 void MainWindow::onEntryDeleteRequested(const std::size_t index)

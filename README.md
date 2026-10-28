@@ -8,6 +8,7 @@ A desktop media-tracking application for Linux, written in C++20 using GTK4/gtkm
 
 - **Category sidebar** - browse your entries by type: Movies, Series, Cartoons, Books, Albums, Games.
 - **Media entries** - add, edit and delete entries, with fields tailored to each category (director/genre for movies and series, author/genre/audiobook for books, performer/publisher/genre for albums, studio/publisher/platform for games).
+- **No duplicates** - the same title with the same release year can appear only once per category (a remake from another year is a different entry); adding or changing an entry into an existing one is refused. Titles are compared ignoring case and surrounding spaces, and only among the entries loaded on the device.
 - **Release date with adjustable precision** - store a full date, a month and year, or just a year, depending on how much you actually know about older titles.
 - **Consumption date** - track the month and year you watched/read/listened/played each entry, defaulting to the current month and year when adding a new one
 - **Filtering and search** - narrow the list down by consumption year, optionally by month within that year, and search entries by title ignoring case and diacritics.

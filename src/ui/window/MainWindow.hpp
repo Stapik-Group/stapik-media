@@ -19,6 +19,10 @@
 #include <gtkmm/button.h>
 #include <gtkmm/scrolledwindow.h>
 
+#include <functional>
+
+class MediaEntryDialog;
+
 class MainWindow : public Gtk::ApplicationWindow
 {
 public:
@@ -63,6 +67,8 @@ private:
     void saveWindowState() const;
     void onCategorySelected(MediaCategory category);
     void onAddClicked();
+    void openEntryDialog(MediaEntryDialog* dialog, std::function<MediaModel::EntryResult(MediaEntry)> submit);
+    void reportRejectedEntry(Gtk::Window& dialog, MediaModel::EntryError error, const MediaEntry& entry);
     void onEntryEditRequested(std::size_t index);
     void onEntryDeleteRequested(std::size_t index);
 

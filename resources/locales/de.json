@@ -91,5 +91,10 @@
   "export.column.publisher": "Herausgeber",
   "export.column.genre": "Genre",
   "export.column.platform": "Plattform",
-  "export.column.audiobook": "Hörbuch"
+  "export.column.audiobook": "Hörbuch",
+
+  "dialog.entry.duplicate.header": "Eintrag existiert bereits",
+  "dialog.entry.duplicate.message": "In dieser Kategorie gibt es bereits „{title}“ ({year}). Derselbe Titel kann nur mit einem anderen Erscheinungsjahr erneut vorkommen.",
+  "dialog.entry.missing.header": "Eintrag nicht gefunden",
+  "dialog.entry.missing.message": "Der Eintrag wurde inzwischen entfernt, zum Beispiel durch eine Synchronisierung. Ihre Änderungen wurden nicht gespeichert."
 }

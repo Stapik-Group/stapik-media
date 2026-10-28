@@ -25,6 +25,7 @@ FetchContent_MakeAvailable(stapikcommon)
 add_library(stapikmediacore STATIC
         src/core/command/EntryCommands.cpp
         src/core/export/EntryCsv.cpp
+        src/core/model/EntryIdentity.cpp
         src/core/model/MediaDocument.cpp
         src/core/model/MediaModel.cpp
         src/core/model/ReleaseDate.cpp

@@ -12,6 +12,7 @@ include(GoogleTest)
 
 add_executable(stapikmedia_tests
         core/EntryCsvTest.cpp
+        core/EntryIdentityTest.cpp
         core/MediaCategoryKeyTest.cpp
         core/MediaDocumentTest.cpp
         core/MediaModelCloudTest.cpp

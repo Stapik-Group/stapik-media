@@ -1,6 +1,7 @@
 #include "MediaModel.hpp"
 
 #include "../command/EntryCommands.hpp"
+#include "EntryIdentity.hpp"
 #include "YearPartitioning.hpp"
 
 #include "stapik/domain/IdGenerator.hpp"
@@ -109,33 +110,39 @@ std::set<unsigned> MediaModel::availableYears() const
     return years;
 }
 
-bool MediaModel::addEntry(MediaEntry entry)
+MediaModel::EntryResult MediaModel::addEntry(MediaEntry entry)
 {
     if (!canWriteYear(entry.consumed.year()))
-        return false;
+        return stapik::Failure(EntryError::ArchiveNotLoaded);
+
+    if (hasConflictingWork(entry))
+        return stapik::Failure(EntryError::Duplicate);
 
     if (entry.id.empty())
         entry.id = stapik::domain::generateId();
 
     m_undoStack.execute(std::make_unique<AddEntryCommand>(*this, std::move(entry)));
-    return true;
+    return {};
 }
 
-bool MediaModel::updateEntry(const std::string& id, MediaEntry entry)
+MediaModel::EntryResult MediaModel::updateEntry(const std::string& id, MediaEntry entry)
 {
     auto before = entryById(id);
     if (!before.has_value())
     {
         stapik::log::warning("MediaModel::updateEntry: unknown id {}", id);
-        return false;
+        return stapik::Failure(EntryError::UnknownEntry);
     }
 
     if (!canWriteYear(entry.consumed.year()))
-        return false;
+        return stapik::Failure(EntryError::ArchiveNotLoaded);
 
     entry.id = id;
+    if (hasConflictingWork(entry))
+        return stapik::Failure(EntryError::Duplicate);
+
     m_undoStack.execute(std::make_unique<UpdateEntryCommand>(*this, std::move(*before), std::move(entry)));
-    return true;
+    return {};
 }
 
 void MediaModel::removeEntry(const std::string& id)
@@ -408,6 +415,17 @@ bool MediaModel::canWriteYear(const int year) const
     return m_remoteYearsKnown && !m_remoteYears.contains(year);
 }
 
+bool MediaModel::hasConflictingWork(const MediaEntry& candidate) const
+{
+    if (const auto existing = entryById(candidate.id); existing.has_value() && EntryIdentity::sameWork(*existing, candidate))
+        return false;
+
+    return std::ranges::any_of(m_view, [&candidate](const MediaEntry& entry)
+    {
+        return entry.id != candidate.id && EntryIdentity::sameWork(entry, candidate);
+    });
+}
+
 MediaModel::Touched MediaModel::normalize()
 {
     Touched touched;
@@ -427,6 +445,8 @@ MediaModel::Touched MediaModel::normalize()
         auto& archive = m_archives[entryYear];
 
         const auto duplicate = existed && YearPartitioning::containsSameContent(archive.entries, entry);
+        if (duplicate)
+            stapik::log::warning("Skipped an entry '{}' that is already in the archive of {}", entry.title, entryYear);
 
         if (!duplicate)
         {

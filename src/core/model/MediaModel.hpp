@@ -6,6 +6,7 @@
 
 #include "stapik/cloud/CloudStorageConfig.hpp"
 #include "stapik/command/UndoStack.hpp"
+#include "stapik/core/Result.hpp"
 #include "stapik/document/BackupInfo.hpp"
 #include "stapik/storage/FileError.hpp"
 #include "stapik/sync/CloudSession.hpp"
@@ -29,6 +30,15 @@ public:
 
     static constexpr std::chrono::milliseconds CLOUD_FLUSH_TIMEOUT{ 5000 };
 
+    enum class EntryError
+    {
+        ArchiveNotLoaded,
+        Duplicate,
+        UnknownEntry
+    };
+
+    using EntryResult = stapik::Result<void, EntryError>;
+
     MediaModel(MediaDocument initial, MediaRepository& repository);
     MediaModel(
         MediaDocument initial,
@@ -43,8 +53,8 @@ public:
     [[nodiscard]] std::optional<MediaEntry> entryById(const std::string& id) const;
     [[nodiscard]] std::set<unsigned> availableYears() const;
 
-    bool addEntry(MediaEntry entry);
-    bool updateEntry(const std::string& id, MediaEntry entry);
+    [[nodiscard]] EntryResult addEntry(MediaEntry entry);
+    [[nodiscard]] EntryResult updateEntry(const std::string& id, MediaEntry entry);
     void removeEntry(const std::string& id);
 
     void insertEntry(MediaEntry entry, std::optional<std::size_t> position = std::nullopt);
@@ -115,6 +125,7 @@ private:
     [[nodiscard]] std::optional<Location> locate(const std::string& id) const;
     [[nodiscard]] MediaDocument& documentFor(const std::optional<int>& archiveYear);
     [[nodiscard]] bool canWriteYear(int year) const;
+    [[nodiscard]] bool hasConflictingWork(const MediaEntry& candidate) const;
 
     [[nodiscard]] Touched normalize();
     void touch(const Touched& touched);
