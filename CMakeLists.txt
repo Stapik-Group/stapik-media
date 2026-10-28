@@ -35,6 +35,7 @@ add_library(stapikmediacore STATIC
         src/infrastructure/storage/MediaDocumentSchema.cpp
         src/infrastructure/storage/MediaEntrySerializer.cpp
         src/infrastructure/storage/MediaRepository.cpp
+        src/ui/util/ConsumptionText.cpp
         src/ui/util/EntryFilterService.cpp
         src/ui/util/EntrySuggestions.cpp
         src/ui/util/Pagination.cpp

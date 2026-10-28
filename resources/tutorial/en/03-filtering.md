@@ -1,6 +1,6 @@
 # Filtering and pages
 
-Above the list, the **Year** and **Month** drop-downs narrow the entries down by the time you consumed them. The month list becomes available after you choose a year.
+Above the list, the **Year** and **Month** drop-downs narrow the entries down by the month and year you watched, read, listened to or completed them. The month list becomes available after you choose a year.
 
 The search box next to them finds entries by title. It ignores letter case and diacritics, so "lodz" finds "Łódź".
 

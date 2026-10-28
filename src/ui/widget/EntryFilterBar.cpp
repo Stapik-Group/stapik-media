@@ -1,5 +1,7 @@
 #include "EntryFilterBar.hpp"
 
+#include "../util/ConsumptionText.hpp"
+
 #include "stapik/domain/YearMonth.hpp"
 #include "stapik/locale/LocaleManager.hpp"
 
@@ -131,7 +133,7 @@ void EntryFilterBar::rebuildSortOptions()
     const std::vector<Glib::ustring> labels{
         loc.translate("filter.sort.title"),
         loc.translate("filter.sort.releaseDate"),
-        loc.translate("filter.sort.consumed")
+        loc.translate(ConsumptionText::key("filter.sort.consumed", m_category))
     };
 
     const ScopedFlag updating(m_updating);
@@ -174,6 +176,15 @@ void EntryFilterBar::onSortDirectionClicked()
 EntrySort EntryFilterBar::selectedSort() const
 {
     return m_sort;
+}
+
+void EntryFilterBar::setCategory(const MediaCategory category)
+{
+    if (m_category == category)
+        return;
+
+    m_category = category;
+    rebuildSortOptions();
 }
 
 void EntryFilterBar::setSort(const EntrySort& sort)

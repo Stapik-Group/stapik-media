@@ -1,7 +1,10 @@
+#include "ui/util/ConsumptionText.hpp"
+
 #include <gtest/gtest.h>
 
 #include <nlohmann/json.hpp>
 
+#include <array>
 #include <filesystem>
 #include <fstream>
 #include <map>
@@ -104,5 +107,25 @@ TEST(MediaResourcesTest, EveryTutorialPageStartsWithAHeading)
     {
         for (const auto& page : tutorialPagesOf(language))
             EXPECT_TRUE(firstLineOf(MEDIA_RESOURCES_DIR / "tutorial" / language / page).starts_with("# ")) << language << "/" << page;
+    }
+}
+
+
+TEST(MediaResourcesTest, EveryCategoryHasItsConsumptionWordingInEveryLanguage)
+{
+    constexpr std::array categories = {
+        MediaCategory::Movie, MediaCategory::Series, MediaCategory::Cartoon,
+        MediaCategory::Book, MediaCategory::Album, MediaCategory::Game
+    };
+
+    for (const auto& language : LANGUAGES)
+    {
+        const auto keys = keysOf(loadStrings(MEDIA_RESOURCES_DIR, language));
+
+        for (const auto* prefix : { "list.entry.consumed", "dialog.entry.consumedDate.label", "filter.sort.consumed" })
+        {
+            for (const auto category : categories)
+                EXPECT_EQ(keys.count(ConsumptionText::key(prefix, category)), 1U) << prefix << " in " << language;
+        }
     }
 }

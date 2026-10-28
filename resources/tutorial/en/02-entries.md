@@ -11,7 +11,7 @@ Press **Add**. The title is required: if you leave it empty, the program asks yo
 
 **Release date** can be as exact as you know it. Choose the precision (day, month or year) and the fields that do not matter are hidden.
 
-**When consumed** is the month and year you watched, read, listened to or played it. For a new entry it starts as the current month.
+**When watched** is the month and year you saw the entry. The label follows the category: *When read* for books, *When listened to* for albums and *When completed* for games. The list uses the same words, for example *Read: March 2026*. For a new entry it starts as the current month.
 
 **Suggestions.** While you type a director, author, performer, studio, publisher, genre or platform, the program offers values you have already entered for the same kind of entries (movies, series and cartoons share theirs), the most used first. Pick one to avoid typing it again and keep the spelling the same.
 

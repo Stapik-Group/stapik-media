@@ -13,7 +13,10 @@
   "list.empty": "Keine Einträge in dieser Kategorie.",
 
   "list.entry.released": "Erschienen",
-  "list.entry.consumed": "Konsumiert",
+  "list.entry.consumed.watched": "Gesehen",
+  "list.entry.consumed.read": "Gelesen",
+  "list.entry.consumed.listened": "Gehört",
+  "list.entry.consumed.completed": "Durchgespielt",
 
   "dialog.entry.title.add": "Eintrag hinzufügen",
   "dialog.entry.title.edit": "Eintrag bearbeiten",
@@ -23,7 +26,10 @@
   "dialog.entry.error.emptyTitle": "Der Titel darf nicht leer sein.",
 
   "dialog.entry.releaseDate.label": "Erscheinungsdatum",
-  "dialog.entry.consumedDate.label": "Wann konsumiert",
+  "dialog.entry.consumedDate.label.watched": "Wann gesehen",
+  "dialog.entry.consumedDate.label.read": "Wann gelesen",
+  "dialog.entry.consumedDate.label.listened": "Wann gehört",
+  "dialog.entry.consumedDate.label.completed": "Wann durchgespielt",
 
   "dialog.entry.director.label": "Regisseur",
   "dialog.entry.genre.label": "Genre",
@@ -82,7 +88,10 @@
   "filter.sort.label": "Sortieren nach",
   "filter.sort.title": "Titel",
   "filter.sort.releaseDate": "Erscheinungsdatum",
-  "filter.sort.consumed": "Konsumiert",
+  "filter.sort.consumed.watched": "Datum gesehen",
+  "filter.sort.consumed.read": "Datum gelesen",
+  "filter.sort.consumed.listened": "Datum gehört",
+  "filter.sort.consumed.completed": "Datum durchgespielt",
   "filter.sort.ascending": "Aufsteigend",
   "filter.sort.descending": "Absteigend",
 
@@ -123,7 +132,7 @@
   "import.problem.unknownCategory": "unbekannte Kategorie",
   "import.problem.emptyTitle": "leerer Titel",
   "import.problem.invalidReleaseDate": "ungültiges Erscheinungsdatum",
-  "import.problem.invalidConsumed": "ungültiger Konsummonat",
+  "import.problem.invalidConsumed": "ungültiger Monat (erwartet JJJJ-MM)",
   "import.problem.invalidAudiobook": "ungültiger Hörbuch-Wert",
   "import.problem.invalidRating": "ungültige Bewertung",
   "import.failed.title": "Der Import ist fehlgeschlagen",

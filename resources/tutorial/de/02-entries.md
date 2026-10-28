@@ -11,7 +11,7 @@ Drücken Sie **Hinzufügen**. Der Titel ist erforderlich: Lassen Sie ihn leer, b
 
 Das **Erscheinungsdatum** kann so genau sein, wie Sie es kennen. Wählen Sie die Genauigkeit (Tag, Monat oder Jahr), und die nicht benötigten Felder werden ausgeblendet.
 
-**Wann konsumiert** ist der Monat und das Jahr, in dem Sie es gesehen, gelesen, gehört oder gespielt haben. Bei einem neuen Eintrag ist es der aktuelle Monat.
+**Wann gesehen** ist der Monat und das Jahr, in dem Sie den Eintrag gesehen haben. Die Beschriftung richtet sich nach der Kategorie: *Wann gelesen* bei Büchern, *Wann gehört* bei Alben und *Wann durchgespielt* bei Spielen. Die Liste verwendet dieselben Wörter, zum Beispiel *Gelesen: März 2026*. Bei einem neuen Eintrag ist es der aktuelle Monat.
 
 **Vorschläge.** Beim Eingeben von Regisseur, Autor, Interpret, Studio, Herausgeber, Genre oder Plattform bietet das Programm Werte an, die Sie bei gleichartigen Einträgen schon eingegeben haben (Filme, Serien und Zeichentrickfilme teilen sich ihre), die am häufigsten verwendeten zuerst. Wählen Sie einen aus, um ihn nicht erneut zu tippen und die Schreibweise einheitlich zu halten.
 

@@ -13,7 +13,10 @@
   "list.empty": "Brak wpisów w tej kategorii.",
 
   "list.entry.released": "Wydano",
-  "list.entry.consumed": "Skonsumowano",
+  "list.entry.consumed.watched": "Obejrzano",
+  "list.entry.consumed.read": "Przeczytano",
+  "list.entry.consumed.listened": "Przesłuchano",
+  "list.entry.consumed.completed": "Ukończono",
 
   "dialog.entry.title.add": "Dodaj wpis",
   "dialog.entry.title.edit": "Edytuj wpis",
@@ -23,7 +26,10 @@
   "dialog.entry.error.emptyTitle": "Tytuł nie może być pusty.",
 
   "dialog.entry.releaseDate.label": "Data wydania",
-  "dialog.entry.consumedDate.label": "Kiedy skonsumowano",
+  "dialog.entry.consumedDate.label.watched": "Kiedy obejrzano",
+  "dialog.entry.consumedDate.label.read": "Kiedy przeczytano",
+  "dialog.entry.consumedDate.label.listened": "Kiedy przesłuchano",
+  "dialog.entry.consumedDate.label.completed": "Kiedy ukończono",
 
   "dialog.entry.director.label": "Reżyser",
   "dialog.entry.genre.label": "Gatunek",
@@ -82,7 +88,10 @@
   "filter.sort.label": "Sortuj wg",
   "filter.sort.title": "Tytuł",
   "filter.sort.releaseDate": "Data wydania",
-  "filter.sort.consumed": "Data skonsumowania",
+  "filter.sort.consumed.watched": "Data obejrzenia",
+  "filter.sort.consumed.read": "Data przeczytania",
+  "filter.sort.consumed.listened": "Data przesłuchania",
+  "filter.sort.consumed.completed": "Data ukończenia",
   "filter.sort.ascending": "Rosnąco",
   "filter.sort.descending": "Malejąco",
 
@@ -123,7 +132,7 @@
   "import.problem.unknownCategory": "nieznana kategoria",
   "import.problem.emptyTitle": "pusty tytuł",
   "import.problem.invalidReleaseDate": "nieprawidłowa data wydania",
-  "import.problem.invalidConsumed": "nieprawidłowy miesiąc skonsumowania",
+  "import.problem.invalidConsumed": "nieprawidłowy miesiąc (oczekiwano RRRR-MM)",
   "import.problem.invalidAudiobook": "nieprawidłowa wartość audiobooka",
   "import.problem.invalidRating": "nieprawidłowa ocena",
   "import.failed.title": "Import nie powiódł się",

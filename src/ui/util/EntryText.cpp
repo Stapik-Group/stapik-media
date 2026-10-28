@@ -1,5 +1,6 @@
 #include "EntryText.hpp"
 
+#include "ConsumptionText.hpp"
 #include "DateFormatter.hpp"
 
 #include "stapik/locale/LocaleManager.hpp"
@@ -18,7 +19,7 @@ namespace EntryText
         auto line = std::format("{}: {}   {}: {}",
             loc.translate("list.entry.released"),
             DateFormatter::formatReleaseDate(entry.releaseDate),
-            loc.translate("list.entry.consumed"),
+            loc.translate(ConsumptionText::key("list.entry.consumed", entry.category)),
             DateFormatter::formatConsumedDate(entry.consumed));
 
         if (entry.rating.has_value())

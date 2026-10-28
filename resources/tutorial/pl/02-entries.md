@@ -11,7 +11,7 @@ Naciśnij **Dodaj**. Tytuł jest wymagany: jeśli go nie wpiszesz, program popro
 
 **Data wydania** może być tak dokładna, jak ją znasz. Wybierz dokładność (dzień, miesiąc lub rok), a pola, które nie mają znaczenia, zostaną ukryte.
 
-**Kiedy skonsumowano** to miesiąc i rok, w którym obejrzałeś, przeczytałeś, przesłuchałeś lub przeszedłeś pozycję. Dla nowego wpisu jest to bieżący miesiąc.
+**Kiedy obejrzano** to miesiąc i rok, w którym obejrzałeś pozycję. Podpis zależy od kategorii: *Kiedy przeczytano* przy książkach, *Kiedy przesłuchano* przy albumach i *Kiedy ukończono* przy grach. Lista używa tych samych słów, na przykład *Przeczytano: marzec 2026*. Dla nowego wpisu jest to bieżący miesiąc.
 
 **Podpowiedzi.** Podczas wpisywania reżysera, autora, wykonawcy, studia, wydawcy, gatunku lub platformy program podpowiada wartości, które wpisałeś już przy takich samych wpisach (filmy, seriale i kreskówki mają wspólne), najczęściej używane na początku. Wybierz jedną, aby nie pisać jej ponownie i zachować tę samą pisownię.
 

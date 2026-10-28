@@ -25,6 +25,7 @@ add_executable(stapikmedia_tests
         infrastructure/MediaEntrySerializerTest.cpp
         infrastructure/MediaRepositoryTest.cpp
         resources/MediaResourcesTest.cpp
+        ui/ConsumptionTextTest.cpp
         ui/EntryFilterServiceTest.cpp
         ui/EntrySortTest.cpp
         ui/EntrySuggestionsTest.cpp

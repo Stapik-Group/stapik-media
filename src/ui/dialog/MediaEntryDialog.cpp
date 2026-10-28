@@ -1,5 +1,6 @@
 #include "MediaEntryDialog.hpp"
 
+#include "../util/ConsumptionText.hpp"
 #include "details/ScreenDetailsForm.hpp"
 #include "details/BookDetailsForm.hpp"
 #include "details/AlbumDetailsForm.hpp"
@@ -48,7 +49,7 @@ void MediaEntryDialog::initLayout()
     m_releaseDateLabel.set_halign(Gtk::Align::START);
     m_releaseDateLabel.add_css_class("panel-title");
 
-    m_consumedDateLabel.set_text(loc.translate("dialog.entry.consumedDate.label"));
+    m_consumedDateLabel.set_text(loc.translate(ConsumptionText::key("dialog.entry.consumedDate.label", m_category)));
     m_consumedDateLabel.set_halign(Gtk::Align::START);
     m_consumedDateLabel.add_css_class("panel-title");
 

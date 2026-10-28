@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../core/model/MediaCategory.hpp"
 #include "../util/EntrySort.hpp"
 
 #include "stapik/ui/widget/SearchEntry.hpp"
@@ -29,6 +30,7 @@ public:
     [[nodiscard]] std::string searchQuery() const;
     [[nodiscard]] EntrySort selectedSort() const;
     void setSort(const EntrySort& sort);
+    void setCategory(MediaCategory category);
 
     sigc::signal<void()>& signalFilterChanged();
 
@@ -47,6 +49,7 @@ private:
     Gtk::DropDown m_sortDropDown;
     Gtk::Button m_sortDirectionButton;
     EntrySort m_sort;
+    MediaCategory m_category = MediaCategory::Movie;
 
     std::vector<unsigned> m_yearValues;
     std::set<unsigned> m_lastAvailableYears;

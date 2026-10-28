@@ -208,6 +208,7 @@ EntrySort MainWindow::storedSort() const
 void MainWindow::onCategorySelected(const MediaCategory category)
 {
     m_currentPage = 1;
+    m_filterBar.setCategory(category);
     m_filterBar.reset();
     m_filterBar.setAvailableYears(m_model.availableYears());
     m_listHeaderLabel.set_text(CategorySidebar::labelFor(category));
