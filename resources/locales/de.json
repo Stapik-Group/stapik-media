@@ -73,5 +73,23 @@
   "cloud.plainFileSecrets": "Es ist kein System-Schlüsselbund verfügbar, daher werden der API-Schlüssel und die Passphrase in einer Datei gespeichert, die nur für Ihren Benutzer lesbar ist.",
   "cloud.apiKeyExpiring.header": "Cloud-API-Schlüssel läuft bald ab",
   "settings.checkForUpdates": "Nach Updates suchen",
-  "filter.search.placeholder": "Nach Titel suchen"
+  "filter.search.placeholder": "Nach Titel suchen",
+
+  "menu.file.exportCsv": "Alle Einträge als CSV exportieren…",
+  "menu.file.print": "Liste drucken…",
+  "menu.file.exportPdf": "Liste als PDF exportieren…",
+  "dialog.export.csv.title": "Alle Einträge als CSV exportieren",
+  "dialog.export.pdf.title": "Liste als PDF exportieren",
+  "dialog.export.failed.title": "Der Export ist fehlgeschlagen",
+  "dialog.export.failed.text": "Die Datei konnte nicht geschrieben werden: {error}",
+  "dialog.print.failed.title": "Der Druck ist fehlgeschlagen",
+  "export.column.category": "Kategorie",
+  "export.column.title": "Titel",
+  "export.column.releaseDate": "Erscheinungsdatum",
+  "export.column.consumed": "Konsumiert",
+  "export.column.creator": "Regie / Autor / Interpret / Studio",
+  "export.column.publisher": "Herausgeber",
+  "export.column.genre": "Genre",
+  "export.column.platform": "Plattform",
+  "export.column.audiobook": "Hörbuch"
 }

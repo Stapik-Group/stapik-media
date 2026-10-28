@@ -37,6 +37,4 @@ private:
     sigc::signal<void()> m_signalDeleteRequested;
 
     void initLayout(const MediaEntry& entry);
-    [[nodiscard]] static std::string formatDatesLine(const MediaEntry& entry);
-    [[nodiscard]] static std::string formatDetailsLine(const MediaEntry& entry);
 };

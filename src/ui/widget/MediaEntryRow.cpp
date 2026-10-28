@@ -1,11 +1,9 @@
 #include "MediaEntryRow.hpp"
 
-#include "../util/DateFormatter.hpp"
+#include "../util/EntryText.hpp"
 
 #include "stapik/locale/LocaleManager.hpp"
 
-#include <format>
-#include <variant>
 
 MediaEntryRow::MediaEntryRow(const MediaEntry& entry) :
     Box(Gtk::Orientation::HORIZONTAL, COLUMN_SPACING),
@@ -25,11 +23,11 @@ void MediaEntryRow::initLayout(const MediaEntry& entry)
     m_titleLabel.set_halign(Gtk::Align::START);
     m_titleLabel.add_css_class("entry-title");
 
-    m_detailsLabel.set_text(formatDetailsLine(entry));
+    m_detailsLabel.set_text(EntryText::detailsLine(entry));
     m_detailsLabel.set_halign(Gtk::Align::START);
     m_detailsLabel.add_css_class("entry-details");
 
-    m_datesLabel.set_text(formatDatesLine(entry));
+    m_datesLabel.set_text(EntryText::datesLine(entry));
     m_datesLabel.set_halign(Gtk::Align::START);
     m_datesLabel.add_css_class("entry-dates");
 
@@ -52,49 +50,13 @@ void MediaEntryRow::initLayout(const MediaEntry& entry)
     append(m_buttonsBox);
 }
 
-std::string MediaEntryRow::formatDatesLine(const MediaEntry& entry)
-{
-    const auto& loc = LocaleManager::instance();
-
-    return std::format("{}: {}   {}: {}",
-        loc.translate("list.entry.released"),
-        DateFormatter::formatReleaseDate(entry.releaseDate),
-        loc.translate("list.entry.consumed"),
-        DateFormatter::formatConsumedDate(entry.consumed));
-}
-
-std::string MediaEntryRow::formatDetailsLine(const MediaEntry& entry)
-{
-    const auto& loc = LocaleManager::instance();
-
-    return std::visit([&loc]<typename T>(const T& d) -> std::string
-    {
-        if constexpr (std::is_same_v<T, ScreenDetails>)
-            return loc.translate("dialog.entry.director.label") + ": " + d.director +
-                   "   " + loc.translate("dialog.entry.genre.label") + ": " + d.genre;
-        else if constexpr (std::is_same_v<T, BookDetails>)
-            return loc.translate("dialog.entry.author.label") + ": " + d.author +
-                   "   " + loc.translate("dialog.entry.genre.label") + ": " + d.genre +
-                   (d.isAudiobook ? "   (" + loc.translate("dialog.entry.audiobook.label") + ")" : "");
-        else if constexpr (std::is_same_v<T, AlbumDetails>)
-            return loc.translate("dialog.entry.performer.label") + ": " + d.performer +
-                   "   " + loc.translate("dialog.entry.publisher.label") + ": " + d.publisher +
-                   "   " + loc.translate("dialog.entry.genre.label") + ": " + d.genre;
-        else if constexpr (std::is_same_v<T, GameDetails>)
-            return loc.translate("dialog.entry.studio.label") + ": " + d.studio +
-                   "   " + loc.translate("dialog.entry.publisher.label") + ": " + d.publisher +
-                   "   " + loc.translate("dialog.entry.platform.label") + ": " + d.platform;
-        return {};
-    }, entry.details);
-}
-
 void MediaEntryRow::refreshLabels()
 {
     m_editButton.set_label(LocaleManager::instance().translate("list.entry.edit"));
     m_deleteButton.set_label(LocaleManager::instance().translate("list.entry.delete"));
 
-    m_detailsLabel.set_text(formatDetailsLine(m_entry));
-    m_datesLabel.set_text(formatDatesLine(m_entry));
+    m_detailsLabel.set_text(EntryText::detailsLine(m_entry));
+    m_datesLabel.set_text(EntryText::datesLine(m_entry));
 }
 
 sigc::signal<void()>& MediaEntryRow::signalEditRequested()

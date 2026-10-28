@@ -15,6 +15,8 @@ A desktop media-tracking application for Linux, written in C++20 using GTK4/gtkm
 - **Undo / Redo** - add, edit and delete are undoable from the Edit menu (Ctrl+Z / Ctrl+Shift+Z).
 - **Cloud sync** - background synchronization with a self-hosted Stapik Cloud server, with automatic conflict resolution based on timestamps and a status indicator in the window.
 - **Yearly archives** - only the current year is kept in the main cloud document; older years are archived separately and downloaded on demand.
+- **CSV export** - all entries to a CSV file that opens correctly in Excel (UTF-8 with a byte order mark and the separator of the current language).
+- **Printing and PDF** - the list you see (category, filters and search, every page) can be printed or saved as a PDF.
 - **Settings window** - language, theme, font and the update check in one place.
 - **Built-in tutorial** - a help window with a contents tree (Help menu or F1), available in Polish, English and German.
 - **Update notice** - the program tells you when a newer version is published on GitHub; nothing is downloaded automatically.

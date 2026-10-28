@@ -73,5 +73,23 @@
   "cloud.plainFileSecrets": "No system keyring is available, so the API key and the passphrase are kept in a file readable only by your user.",
   "cloud.apiKeyExpiring.header": "Cloud API key expires soon",
   "settings.checkForUpdates": "Check for updates",
-  "filter.search.placeholder": "Search by title"
+  "filter.search.placeholder": "Search by title",
+
+  "menu.file.exportCsv": "Export all entries to CSV…",
+  "menu.file.print": "Print the list…",
+  "menu.file.exportPdf": "Export the list to PDF…",
+  "dialog.export.csv.title": "Export all entries to CSV",
+  "dialog.export.pdf.title": "Export the list to PDF",
+  "dialog.export.failed.title": "The export failed",
+  "dialog.export.failed.text": "The file could not be written: {error}",
+  "dialog.print.failed.title": "Printing failed",
+  "export.column.category": "Category",
+  "export.column.title": "Title",
+  "export.column.releaseDate": "Release date",
+  "export.column.consumed": "Consumed",
+  "export.column.creator": "Director / author / performer / studio",
+  "export.column.publisher": "Publisher",
+  "export.column.genre": "Genre",
+  "export.column.platform": "Platform",
+  "export.column.audiobook": "Audiobook"
 }

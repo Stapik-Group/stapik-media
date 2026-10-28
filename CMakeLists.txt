@@ -24,6 +24,7 @@ FetchContent_MakeAvailable(stapikcommon)
 
 add_library(stapikmediacore STATIC
         src/core/command/EntryCommands.cpp
+        src/core/export/EntryCsv.cpp
         src/core/model/MediaDocument.cpp
         src/core/model/MediaModel.cpp
         src/core/model/ReleaseDate.cpp
@@ -54,13 +55,16 @@ stapik_add_application(
         LINK_LIBRARIES stapikmediacore PkgConfig::GTKMM CURL::libcurl nlohmann_json::nlohmann_json
         SOURCES
                 src/app/MediaAppInfo.cpp
+                src/ui/action/ExportActionHandler.cpp
                 src/ui/action/MenuActionHandler.cpp
                 src/ui/dialog/details/AlbumDetailsForm.cpp
                 src/ui/dialog/details/BookDetailsForm.cpp
                 src/ui/dialog/details/GameDetailsForm.cpp
                 src/ui/dialog/details/ScreenDetailsForm.cpp
                 src/ui/dialog/MediaEntryDialog.cpp
+                src/ui/print/EntryPrintout.cpp
                 src/ui/util/DateFormatter.cpp
+                src/ui/util/EntryText.cpp
                 src/ui/view/CategorySidebar.cpp
                 src/ui/view/MediaListView.cpp
                 src/ui/widget/MainMenu.cpp

@@ -14,6 +14,8 @@
 
 #include <glibmm/main.h>
 
+#include <format>
+
 namespace
 {
     const char* storageProblemKey(const StorageProblem problem)
@@ -33,6 +35,7 @@ namespace
 MainWindow::MainWindow(const stapik::theme::ThemeRegistry& themes) :
     m_repository(),
     m_model(m_repository.load(), m_repository),
+    m_exportActions(*this, m_model, [this] { return currentListing(); }),
     m_mainBox(Gtk::Orientation::VERTICAL, 0),
     m_contentBox(Gtk::Orientation::HORIZONTAL, 0),
     m_rightBox(Gtk::Orientation::VERTICAL, 0),
@@ -41,6 +44,7 @@ MainWindow::MainWindow(const stapik::theme::ThemeRegistry& themes) :
     init();
     initLayout();
     initSignals();
+    m_exportActions.registerActions();
     reportStorageProblem();
 }
 
@@ -270,16 +274,35 @@ void MainWindow::onNextPageRequested()
     applyFiltersAndRefresh();
 }
 
-void MainWindow::applyFiltersAndRefresh()
+EntryFilter MainWindow::currentFilter() const
 {
-    const EntryFilter filter{
+    return EntryFilter{
         m_sidebar.selectedCategory(),
         m_filterBar.selectedMonth(),
         m_filterBar.selectedYear(),
         m_filterBar.searchQuery()
     };
+}
 
-    const auto matchingIndices = EntryFilterService::filterIndices(m_model.entries(), filter);
+ExportActionHandler::Listing MainWindow::currentListing() const
+{
+    const auto& entries = m_model.entries();
+    const auto matchingIndices = EntryFilterService::filterIndices(entries, currentFilter());
+
+    ExportActionHandler::Listing listing{
+        .heading = std::format("{} \u2013 {}", get_title().raw(), CategorySidebar::labelFor(m_sidebar.selectedCategory())),
+        .entries = {}
+    };
+    listing.entries.reserve(matchingIndices.size());
+    for (const auto index : matchingIndices)
+        listing.entries.push_back(entries[index]);
+
+    return listing;
+}
+
+void MainWindow::applyFiltersAndRefresh()
+{
+    const auto matchingIndices = EntryFilterService::filterIndices(m_model.entries(), currentFilter());
     const auto slice = Pagination::sliceFor(matchingIndices.size(), m_currentPage, PAGE_SIZE);
     m_currentPage = slice.page;
 

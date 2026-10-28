@@ -1,10 +1,12 @@
 #pragma once
 
+#include "../action/ExportActionHandler.hpp"
 #include "../widget/MainMenu.hpp"
 #include "../../core/model/MediaModel.hpp"
 #include "../../infrastructure/storage/MediaRepository.hpp"
 #include "../view/CategorySidebar.hpp"
 #include "../view/MediaListView.hpp"
+#include "../util/EntryFilter.hpp"
 #include "../widget/EntryFilterBar.hpp"
 #include "../widget/PaginationBar.hpp"
 
@@ -36,6 +38,7 @@ private:
 
     MediaRepository m_repository;
     MediaModel m_model;
+    ExportActionHandler m_exportActions;
 
     Gtk::Box m_mainBox;
     Gtk::Box m_contentBox;
@@ -63,6 +66,8 @@ private:
     void onEntryEditRequested(std::size_t index);
     void onEntryDeleteRequested(std::size_t index);
 
+    [[nodiscard]] EntryFilter currentFilter() const;
+    [[nodiscard]] ExportActionHandler::Listing currentListing() const;
     void applyFiltersAndRefresh();
     void onFilterChanged();
     void showArchiveNotLoaded();

@@ -73,5 +73,23 @@
   "cloud.plainFileSecrets": "Brak systemowego pęku kluczy, więc klucz API i fraza szyfrująca są przechowywane w pliku dostępnym tylko dla Twojego użytkownika.",
   "cloud.apiKeyExpiring.header": "Klucz API chmury wkrótce wygaśnie",
   "settings.checkForUpdates": "Sprawdzaj aktualizacje",
-  "filter.search.placeholder": "Szukaj po tytule"
+  "filter.search.placeholder": "Szukaj po tytule",
+
+  "menu.file.exportCsv": "Eksportuj wszystkie wpisy do CSV…",
+  "menu.file.print": "Drukuj listę…",
+  "menu.file.exportPdf": "Eksportuj listę do PDF…",
+  "dialog.export.csv.title": "Eksport wszystkich wpisów do CSV",
+  "dialog.export.pdf.title": "Eksport listy do PDF",
+  "dialog.export.failed.title": "Eksport się nie powiódł",
+  "dialog.export.failed.text": "Nie udało się zapisać pliku: {error}",
+  "dialog.print.failed.title": "Drukowanie nie powiodło się",
+  "export.column.category": "Kategoria",
+  "export.column.title": "Tytuł",
+  "export.column.releaseDate": "Data wydania",
+  "export.column.consumed": "Skonsumowano",
+  "export.column.creator": "Reżyser / autor / wykonawca / studio",
+  "export.column.publisher": "Wydawca",
+  "export.column.genre": "Gatunek",
+  "export.column.platform": "Platforma",
+  "export.column.audiobook": "Audiobook"
 }
