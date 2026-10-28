@@ -223,7 +223,7 @@ void MainWindow::onAddClicked()
         dialog->hide();
     });
 
-    dialog->signal_hide().connect([dialog] { delete dialog; });
+    deleteOnHide(dialog);
     dialog->show();
 }
 
@@ -249,7 +249,7 @@ void MainWindow::onEntryEditRequested(const std::size_t index)
         dialog->hide();
     });
 
-    dialog->signal_hide().connect([dialog] { delete dialog; });
+    deleteOnHide(dialog);
     dialog->show();
 }
 
