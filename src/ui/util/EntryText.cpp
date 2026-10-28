@@ -4,6 +4,7 @@
 
 #include "stapik/locale/LocaleManager.hpp"
 
+#include <algorithm>
 #include <format>
 #include <type_traits>
 #include <variant>
@@ -14,11 +15,23 @@ namespace EntryText
     {
         const auto& loc = LocaleManager::instance();
 
-        return std::format("{}: {}   {}: {}",
+        auto line = std::format("{}: {}   {}: {}",
             loc.translate("list.entry.released"),
             DateFormatter::formatReleaseDate(entry.releaseDate),
             loc.translate("list.entry.consumed"),
             DateFormatter::formatConsumedDate(entry.consumed));
+
+        if (entry.rating.has_value())
+            line += std::format("   {}: {}/{}", loc.translate("list.entry.rating"), *entry.rating, EntryRating::MAX);
+
+        return line;
+    }
+
+    std::string noteLine(const MediaEntry& entry)
+    {
+        auto line = entry.note;
+        std::ranges::replace_if(line, [](const char character) { return character == '\n' || character == '\r'; }, ' ');
+        return line;
     }
 
     std::string detailsLine(const MediaEntry& entry)

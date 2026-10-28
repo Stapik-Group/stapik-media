@@ -33,6 +33,10 @@
   "dialog.entry.publisher.label": "Publisher",
   "dialog.entry.studio.label": "Studio",
   "dialog.entry.platform.label": "Platform",
+  "dialog.entry.rating.label": "Rating",
+  "dialog.entry.rating.none": "No rating",
+  "dialog.entry.note.label": "Note",
+  "list.entry.rating": "Rating",
 
   "picker.precision.label": "Release date precision",
   "picker.precision.day": "Day",
@@ -121,6 +125,7 @@
   "import.problem.invalidReleaseDate": "invalid release date",
   "import.problem.invalidConsumed": "invalid consumption month",
   "import.problem.invalidAudiobook": "invalid audiobook value",
+  "import.problem.invalidRating": "invalid rating",
   "import.failed.title": "The import failed",
   "import.failed.unreadable": "The file could not be read.",
   "import.failed.tooLarge": "The file is larger than 16 MB.",
@@ -137,6 +142,8 @@
   "export.column.genre": "Genre",
   "export.column.platform": "Platform",
   "export.column.audiobook": "Audiobook",
+  "export.column.rating": "Rating",
+  "export.column.note": "Note",
 
   "dialog.entry.duplicate.header": "Entry already exists",
   "dialog.entry.duplicate.message": "The list already has \"{title}\" ({year}) in this category. The same title can appear again only with a different release year.",

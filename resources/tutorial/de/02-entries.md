@@ -13,6 +13,10 @@ Das **Erscheinungsdatum** kann so genau sein, wie Sie es kennen. Wählen Sie die
 
 **Wann konsumiert** ist der Monat und das Jahr, in dem Sie es gesehen, gelesen, gehört oder gespielt haben. Bei einem neuen Eintrag ist es der aktuelle Monat.
 
+## Bewertung und Notiz
+
+Beide Felder sind optional. Die **Bewertung** ist eine Zahl von 1 bis 10; wählen Sie *Keine Bewertung*, um sie leer zu lassen. Die **Notiz** ist freier Text beliebiger Länge, zum Beispiel Ihr Eindruck oder wer es empfohlen hat. Die Bewertung steht in der Liste neben den Datumsangaben, die erste Zeile der Notiz darunter (fahren Sie mit der Maus darüber, um sie ganz zu lesen), und beide Felder sind im CSV-Export und -Import enthalten, in der gedruckten Liste nur die Bewertung.
+
 ## Ein Eintrag pro Titel
 
 Derselbe Titel, der im selben Jahr erschienen ist, darf in einer Kategorie nur einmal vorkommen. Fügen Sie einen Eintrag hinzu oder ändern Sie einen so, dass er in Kategorie, Titel und Jahr des Erscheinungsdatums mit einem anderen übereinstimmt, teilt Ihnen das Programm dies mit und lässt das Fenster geöffnet, damit nichts von Ihrer Eingabe verloren geht. Groß- und Kleinschreibung sowie Leerzeichen um den Titel spielen keine Rolle, ebenso wenig die Genauigkeit des Erscheinungsdatums. Ein Remake mit demselben Titel, aber einem anderen Erscheinungsjahr, ist ein eigener Eintrag, ebenso derselbe Titel in einer anderen Kategorie (etwa ein Buch und seine Verfilmung). Um zu etwas zurückzukehren, das schon in der Liste steht, bearbeiten Sie dessen Eintrag.

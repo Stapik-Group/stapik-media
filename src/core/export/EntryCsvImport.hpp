@@ -18,7 +18,8 @@ namespace EntryCsvImport
         EmptyTitle,
         InvalidReleaseDate,
         InvalidConsumed,
-        InvalidAudiobook
+        InvalidAudiobook,
+        InvalidRating
     };
 
     struct Row

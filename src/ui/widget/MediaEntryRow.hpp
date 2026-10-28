@@ -29,6 +29,7 @@ private:
     Gtk::Label m_titleLabel;
     Gtk::Label m_detailsLabel;
     Gtk::Label m_datesLabel;
+    Gtk::Label m_noteLabel;
 
     Gtk::Box m_buttonsBox;
     Gtk::Button m_editButton;

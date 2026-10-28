@@ -13,6 +13,10 @@ Press **Add**. The title is required: if you leave it empty, the program asks yo
 
 **When consumed** is the month and year you watched, read, listened to or played it. For a new entry it starts as the current month.
 
+## Rating and note
+
+Both are optional. **Rating** is a number from 1 to 10; choose *No rating* to leave it empty. **Note** is free text of any length, for example what you thought or who recommended it. The rating is shown in the list next to the dates, the first line of the note under them (hover over it to read all of it), and both are included in the CSV export and import and in the printed list (the rating only).
+
 ## One entry per title
 
 The same title released in the same year can appear only once in a category. If you add an entry, or change one, so that it matches another one in its category, title and year of the release date, the program tells you so and keeps the window open, so that nothing you typed is lost. Letter case and spaces around the title do not matter, and neither does how exact the release date is. A remake with the same title but another release year is a separate entry, and so is the same title in a different category (a book and its film, say). To come back to something you have already listed, edit its entry.

@@ -8,4 +8,5 @@ namespace EntryText
 {
     [[nodiscard]] std::string datesLine(const MediaEntry& entry);
     [[nodiscard]] std::string detailsLine(const MediaEntry& entry);
+    [[nodiscard]] std::string noteLine(const MediaEntry& entry);
 }

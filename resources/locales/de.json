@@ -33,6 +33,10 @@
   "dialog.entry.publisher.label": "Verlag",
   "dialog.entry.studio.label": "Studio",
   "dialog.entry.platform.label": "Plattform",
+  "dialog.entry.rating.label": "Bewertung",
+  "dialog.entry.rating.none": "Keine Bewertung",
+  "dialog.entry.note.label": "Notiz",
+  "list.entry.rating": "Bewertung",
 
   "picker.precision.label": "Genauigkeit des Erscheinungsdatums",
   "picker.precision.day": "Tag",
@@ -121,6 +125,7 @@
   "import.problem.invalidReleaseDate": "ungültiges Erscheinungsdatum",
   "import.problem.invalidConsumed": "ungültiger Konsummonat",
   "import.problem.invalidAudiobook": "ungültiger Hörbuch-Wert",
+  "import.problem.invalidRating": "ungültige Bewertung",
   "import.failed.title": "Der Import ist fehlgeschlagen",
   "import.failed.unreadable": "Die Datei konnte nicht gelesen werden.",
   "import.failed.tooLarge": "Die Datei ist größer als 16 MB.",
@@ -137,6 +142,8 @@
   "export.column.genre": "Genre",
   "export.column.platform": "Plattform",
   "export.column.audiobook": "Hörbuch",
+  "export.column.rating": "Bewertung",
+  "export.column.note": "Notiz",
 
   "dialog.entry.duplicate.header": "Eintrag existiert bereits",
   "dialog.entry.duplicate.message": "In dieser Kategorie gibt es bereits „{title}“ ({year}). Derselbe Titel kann nur mit einem anderen Erscheinungsjahr erneut vorkommen.",

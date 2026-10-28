@@ -33,6 +33,10 @@
   "dialog.entry.publisher.label": "Wydawca",
   "dialog.entry.studio.label": "Studio",
   "dialog.entry.platform.label": "Platforma",
+  "dialog.entry.rating.label": "Ocena",
+  "dialog.entry.rating.none": "Brak oceny",
+  "dialog.entry.note.label": "Notatka",
+  "list.entry.rating": "Ocena",
 
   "picker.precision.label": "Dokładność daty wydania",
   "picker.precision.day": "Dzień",
@@ -121,6 +125,7 @@
   "import.problem.invalidReleaseDate": "nieprawidłowa data wydania",
   "import.problem.invalidConsumed": "nieprawidłowy miesiąc skonsumowania",
   "import.problem.invalidAudiobook": "nieprawidłowa wartość audiobooka",
+  "import.problem.invalidRating": "nieprawidłowa ocena",
   "import.failed.title": "Import nie powiódł się",
   "import.failed.unreadable": "Nie można odczytać pliku.",
   "import.failed.tooLarge": "Plik jest większy niż 16 MB.",
@@ -137,6 +142,8 @@
   "export.column.genre": "Gatunek",
   "export.column.platform": "Platforma",
   "export.column.audiobook": "Audiobook",
+  "export.column.rating": "Ocena",
+  "export.column.note": "Notatka",
 
   "dialog.entry.duplicate.header": "Taki wpis już istnieje",
   "dialog.entry.duplicate.message": "Na liście jest już „{title}” ({year}) w tej kategorii. Ten sam tytuł może wystąpić ponownie tylko z innym rokiem wydania.",

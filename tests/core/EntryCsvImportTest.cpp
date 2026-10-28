@@ -14,7 +14,7 @@ namespace
     using EntryCsvImport::RowProblem;
     using stapik::csv::CsvRow;
 
-    const CsvRow HEADER{ "Category", "Title", "Release date", "Consumed", "Creator", "Publisher", "Genre", "Platform", "Audiobook" };
+    const CsvRow HEADER{ "Category", "Title", "Release date", "Consumed", "Creator", "Publisher", "Genre", "Platform", "Audiobook", "Rating", "Note" };
 
     EntryCsvImport::Row onlyRowOf(const CsvRow& row)
     {
@@ -92,6 +92,9 @@ TEST(EntryCsvImportTest, ReportsEveryKindOfProblem)
     EXPECT_EQ(problemOf({ "movie", "Heat", "1995", "0000-01" }), RowProblem::InvalidConsumed);
     EXPECT_EQ(problemOf({ "movie", "Heat", "1995", "March 2024" }), RowProblem::InvalidConsumed);
     EXPECT_EQ(problemOf({ "book", "Dune", "1965", "2024-03", "Herbert", "", "", "", "maybe" }), RowProblem::InvalidAudiobook);
+    EXPECT_EQ(problemOf({ "movie", "Heat", "1995", "2024-03", "", "", "", "", "", "11" }), RowProblem::InvalidRating);
+    EXPECT_EQ(problemOf({ "movie", "Heat", "1995", "2024-03", "", "", "", "", "", "0" }), RowProblem::InvalidRating);
+    EXPECT_EQ(problemOf({ "movie", "Heat", "1995", "2024-03", "", "", "", "", "", "good" }), RowProblem::InvalidRating);
 }
 
 TEST(EntryCsvImportTest, KeepsTheTitleOfAnInvalidRowForThePreview)
@@ -103,8 +106,12 @@ TEST(EntryCsvImportTest, KeepsTheTitleOfAnInvalidRowForThePreview)
 
 TEST(EntryCsvImportTest, ExportedEntriesAreReadBackUnchanged)
 {
+    auto rated = test::makeMovie("Heat", 2024, 3, "a");
+    rated.rating = 9;
+    rated.note = "Great, but long.\nSecond \"line\"";
+
     const std::vector<MediaEntry> entries{
-        test::makeMovie("Heat", 2024, 3, "a"),
+        rated,
         test::makeBook("Dune; \"Part\" One", 2023, 11, "b"),
         test::makeEntry(MediaCategory::Album, "Thriller", 2022, 1, AlbumDetails{ "Michael Jackson", "Epic", "Pop" }, "c"),
         test::makeEntry(MediaCategory::Game, "Doom", 2021, 12, GameDetails{ "id Software", "Bethesda", "PC" }, "d"),
@@ -136,4 +143,18 @@ TEST(EntryCsvImportTest, ReadsTheAudiobookFlag)
 
     EXPECT_TRUE(std::get<BookDetails>(audiobook.entry->details).isAudiobook);
     EXPECT_FALSE(std::get<BookDetails>(paper.entry->details).isAudiobook);
+}
+
+
+TEST(EntryCsvImportTest, ReadsTheRatingAndTheNote)
+{
+    const auto rated = onlyRowOf({ "movie", "Heat", "1995", "2024-03", "", "", "", "", "", "8", "  Worth a rewatch " });
+    const auto unrated = onlyRowOf({ "movie", "Heat", "1995", "2024-03", "", "", "", "", "", "", "" });
+    const auto short_row = onlyRowOf({ "movie", "Heat", "1995", "2024-03" });
+
+    EXPECT_EQ(rated.entry->rating, 8);
+    EXPECT_EQ(rated.entry->note, "Worth a rewatch");
+    EXPECT_FALSE(unrated.entry->rating.has_value());
+    EXPECT_TRUE(unrated.entry->note.empty());
+    EXPECT_FALSE(short_row.entry->rating.has_value());
 }

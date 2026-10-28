@@ -28,6 +28,7 @@ namespace
             case InvalidReleaseDate: return "import.problem.invalidReleaseDate";
             case InvalidConsumed: return "import.problem.invalidConsumed";
             case InvalidAudiobook: return "import.problem.invalidAudiobook";
+            case InvalidRating: return "import.problem.invalidRating";
         }
         return "import.problem.missingColumns";
     }

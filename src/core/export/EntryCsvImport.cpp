@@ -24,6 +24,8 @@ namespace
     constexpr std::size_t GENRE_COLUMN = 6;
     constexpr std::size_t PLATFORM_COLUMN = 7;
     constexpr std::size_t AUDIOBOOK_COLUMN = 8;
+    constexpr std::size_t RATING_COLUMN = 9;
+    constexpr std::size_t NOTE_COLUMN = 10;
     constexpr std::size_t REQUIRED_COLUMNS = CONSUMED_COLUMN + 1;
 
     constexpr std::size_t YEAR_LENGTH = 4;
@@ -109,6 +111,20 @@ namespace
         return std::nullopt;
     }
 
+    bool parseRating(const std::string& text, std::optional<int>& rating)
+    {
+        rating.reset();
+        if (text.empty())
+            return true;
+
+        int value = 0;
+        if (!parseNumber(text, value) || value < EntryRating::MIN || value > EntryRating::MAX)
+            return false;
+
+        rating = value;
+        return true;
+    }
+
     bool isScreen(const MediaCategory category)
     {
         return category == MediaCategory::Movie || category == MediaCategory::Series || category == MediaCategory::Cartoon;
@@ -161,7 +177,11 @@ namespace
         if (!audiobook.has_value())
             return failedRow(number, std::move(title), RowProblem::InvalidAudiobook);
 
-        MediaEntry entry{ *category, title, *releaseDate, *consumed, detailsOf(*category, row, *audiobook), {} };
+        std::optional<int> rating;
+        if (!parseRating(cell(row, RATING_COLUMN), rating))
+            return failedRow(number, std::move(title), RowProblem::InvalidRating);
+
+        MediaEntry entry{ *category, title, *releaseDate, *consumed, detailsOf(*category, row, *audiobook), {}, rating, cell(row, NOTE_COLUMN) };
         return EntryCsvImport::Row{ .number = number, .title = std::move(title), .entry = std::move(entry), .problem = std::nullopt };
     }
 

@@ -116,6 +116,12 @@
     color: #606060;
 }
 
+.entry-note {
+    font-size: 11px;
+    font-style: italic;
+    color: #606060;
+}
+
 .entry-filter-bar {
     padding: 6px 8px;
 }

@@ -11,7 +11,7 @@ namespace
 {
     std::vector<std::string> header()
     {
-        return { "category", "title", "released", "consumed", "creator", "publisher", "genre", "platform", "audiobook" };
+        return { "category", "title", "released", "consumed", "creator", "publisher", "genre", "platform", "audiobook", "rating", "note" };
     }
 
     MediaEntry withReleaseDate(MediaEntry entry, const ReleaseDate& releaseDate)
@@ -39,28 +39,28 @@ TEST(EntryCsvTest, ScreenEntryFillsDirectorAndGenre)
     const auto rows = EntryCsv::table({ test::makeMovie("Heat", 2024, 3, "a") }, header());
 
     ASSERT_EQ(rows.size(), 2U);
-    EXPECT_EQ(rows[1], (stapik::csv::CsvRow{ "movie", "Heat", "2010-03-05", "2024-03", "Director", "", "Drama", "", "" }));
+    EXPECT_EQ(rows[1], (stapik::csv::CsvRow{ "movie", "Heat", "2010-03-05", "2024-03", "Director", "", "Drama", "", "", "", "" }));
 }
 
 TEST(EntryCsvTest, BookEntryMarksAudiobooks)
 {
     const auto rows = EntryCsv::table({ test::makeBook("Dune", 2023, 11, "b") }, header());
 
-    EXPECT_EQ(rows.at(1), (stapik::csv::CsvRow{ "book", "Dune", "2010-03-05", "2023-11", "Author", "", "Fantasy", "", "true" }));
+    EXPECT_EQ(rows.at(1), (stapik::csv::CsvRow{ "book", "Dune", "2010-03-05", "2023-11", "Author", "", "Fantasy", "", "true", "", "" }));
 }
 
 TEST(EntryCsvTest, AlbumEntryFillsPerformerAndPublisher)
 {
     const auto entry = test::makeEntry(MediaCategory::Album, "Kind of Blue", 2022, 1, AlbumDetails{ "Miles Davis", "Columbia", "Jazz" });
 
-    EXPECT_EQ(EntryCsv::table({ entry }, header()).at(1), (stapik::csv::CsvRow{ "album", "Kind of Blue", "2010-03-05", "2022-01", "Miles Davis", "Columbia", "Jazz", "", "" }));
+    EXPECT_EQ(EntryCsv::table({ entry }, header()).at(1), (stapik::csv::CsvRow{ "album", "Kind of Blue", "2010-03-05", "2022-01", "Miles Davis", "Columbia", "Jazz", "", "", "", "" }));
 }
 
 TEST(EntryCsvTest, GameEntryFillsStudioPublisherAndPlatform)
 {
     const auto entry = test::makeEntry(MediaCategory::Game, "Portal", 2021, 12, GameDetails{ "Valve", "Valve", "PC" });
 
-    EXPECT_EQ(EntryCsv::table({ entry }, header()).at(1), (stapik::csv::CsvRow{ "game", "Portal", "2010-03-05", "2021-12", "Valve", "Valve", "", "PC", "" }));
+    EXPECT_EQ(EntryCsv::table({ entry }, header()).at(1), (stapik::csv::CsvRow{ "game", "Portal", "2010-03-05", "2021-12", "Valve", "Valve", "", "PC", "", "", "" }));
 }
 
 TEST(EntryCsvTest, ReleaseDateIsCutToItsPrecision)
@@ -82,4 +82,25 @@ TEST(EntryCsvTest, EntriesKeepTheirOrder)
     ASSERT_EQ(rows.size(), 3U);
     EXPECT_EQ(rows[1][1], "B");
     EXPECT_EQ(rows[2][1], "A");
+}
+
+
+TEST(EntryCsvTest, RatingAndNoteAreTheLastColumns)
+{
+    auto entry = test::makeMovie("Heat", 2024, 3, "a");
+    entry.rating = 9;
+    entry.note = "Great\nfinale";
+
+    const auto row = EntryCsv::table({ entry }, header()).at(1);
+
+    EXPECT_EQ(row.at(9), "9");
+    EXPECT_EQ(row.at(10), "Great\nfinale");
+}
+
+TEST(EntryCsvTest, MissingRatingAndNoteAreEmpty)
+{
+    const auto row = EntryCsv::table({ test::makeMovie("Heat", 2024, 3, "a") }, header()).at(1);
+
+    EXPECT_EQ(row.at(9), "");
+    EXPECT_EQ(row.at(10), "");
 }

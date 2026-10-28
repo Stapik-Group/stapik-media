@@ -8,6 +8,11 @@
 #include "stapik/locale/LocaleManager.hpp"
 #include "stapik/text/Trim.hpp"
 
+#include <gtkmm/stringlist.h>
+
+#include <string>
+#include <vector>
+
 MediaEntryDialog::MediaEntryDialog(Window &parent, const MediaCategory category) :
     StapikDialog(parent, LocaleManager::instance().translate("dialog.entry.title.add")),
     m_category(category),
@@ -28,6 +33,8 @@ MediaEntryDialog::MediaEntryDialog(Window &parent, const MediaEntry &existing) :
     m_releaseDatePicker.loadFrom(existing.releaseDate);
     m_consumedMonthPicker.setMonth(existing.consumed);
     m_detailsForm->loadFrom(existing.details);
+    m_ratingDropDown.set_selected(existing.rating.has_value() ? static_cast<guint>(*existing.rating) : NO_RATING_INDEX);
+    m_noteView.get_buffer()->set_text(existing.note);
 }
 
 void MediaEntryDialog::initLayout()
@@ -57,6 +64,30 @@ void MediaEntryDialog::initLayout()
     m_detailsForm->add_css_class("details-form");
     m_detailsContainer.append(*m_detailsForm);
     contentBox().append(m_detailsContainer);
+
+    m_ratingLabel.set_text(loc.translate("dialog.entry.rating.label"));
+    m_ratingLabel.set_halign(Gtk::Align::START);
+    m_ratingLabel.add_css_class("panel-title");
+
+    std::vector<Glib::ustring> ratingLabels{ loc.translate("dialog.entry.rating.none") };
+    for (auto rating = EntryRating::MIN; rating <= EntryRating::MAX; ++rating)
+        ratingLabels.emplace_back(std::to_string(rating));
+    m_ratingDropDown.set_model(Gtk::StringList::create(ratingLabels));
+    m_ratingDropDown.set_selected(NO_RATING_INDEX);
+
+    m_noteLabel.set_text(loc.translate("dialog.entry.note.label"));
+    m_noteLabel.set_halign(Gtk::Align::START);
+    m_noteLabel.add_css_class("panel-title");
+
+    m_noteView.set_wrap_mode(Gtk::WrapMode::WORD_CHAR);
+    m_noteScroller.set_child(m_noteView);
+    m_noteScroller.set_min_content_height(NOTE_HEIGHT);
+    m_noteScroller.add_css_class("frame");
+
+    contentBox().append(m_ratingLabel);
+    contentBox().append(m_ratingDropDown);
+    contentBox().append(m_noteLabel);
+    contentBox().append(m_noteScroller);
 
     addCancelButton();
     addOkButton(loc.translate("dialog.entry.button.save"));
@@ -90,12 +121,19 @@ std::optional<MediaEntry> MediaEntryDialog::getResult() const
     if (title.empty())
         return std::nullopt;
 
+    const auto ratingIndex = m_ratingDropDown.get_selected();
+    std::optional<int> rating;
+    if (ratingIndex > NO_RATING_INDEX && ratingIndex <= static_cast<guint>(EntryRating::MAX))
+        rating = static_cast<int>(ratingIndex);
+
     return MediaEntry{
         m_category,
         title,
         m_releaseDatePicker.toReleaseDate(),
         m_consumedMonthPicker.month(),
         m_detailsForm->toDetails(),
-        m_id
+        m_id,
+        rating,
+        stapik::text::trim(m_noteView.get_buffer()->get_text().raw())
     };
 }

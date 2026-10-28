@@ -4,6 +4,8 @@
 
 #include "stapik/locale/LocaleManager.hpp"
 
+#include <pangomm/layout.h>
+
 
 MediaEntryRow::MediaEntryRow(const MediaEntry& entry) :
     Box(Gtk::Orientation::HORIZONTAL, COLUMN_SPACING),
@@ -31,9 +33,18 @@ void MediaEntryRow::initLayout(const MediaEntry& entry)
     m_datesLabel.set_halign(Gtk::Align::START);
     m_datesLabel.add_css_class("entry-dates");
 
+    m_noteLabel.set_text(EntryText::noteLine(entry));
+    m_noteLabel.set_halign(Gtk::Align::START);
+    m_noteLabel.set_ellipsize(Pango::EllipsizeMode::END);
+    m_noteLabel.set_xalign(0.0F);
+    m_noteLabel.add_css_class("entry-note");
+    m_noteLabel.set_tooltip_text(entry.note);
+    m_noteLabel.set_visible(!entry.note.empty());
+
     m_infoBox.append(m_titleLabel);
     m_infoBox.append(m_detailsLabel);
     m_infoBox.append(m_datesLabel);
+    m_infoBox.append(m_noteLabel);
     m_infoBox.set_hexpand(true);
 
     m_editButton.set_label(LocaleManager::instance().translate("list.entry.edit"));

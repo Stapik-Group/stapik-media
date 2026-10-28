@@ -507,6 +507,35 @@ TEST_F(MediaModelTest, ReplacedEntriesRoundTripThroughASnapshot)
     EXPECT_EQ(idsOf(m_model->entries()), (std::vector<std::string>{ "b", "a" }));
 }
 
+TEST_F(MediaModelTest, RatingAndNoteAreSavedWithTheEntry)
+{
+    auto entry = test::makeMovie("Heat", m_year, 3, "a");
+    entry.rating = 8;
+    entry.note = "Rewatch";
+
+    ASSERT_TRUE(m_model->addEntry(entry));
+
+    const auto saved = m_repository.load();
+    ASSERT_EQ(saved.entries.size(), 1U);
+    EXPECT_EQ(saved.entries[0].rating, 8);
+    EXPECT_EQ(saved.entries[0].note, "Rewatch");
+}
+
+TEST_F(MediaModelTest, RatingAndNoteCanBeChangedAndCleared)
+{
+    auto entry = test::makeMovie("Heat", m_year, 3, "a");
+    entry.rating = 8;
+    entry.note = "Rewatch";
+    ASSERT_TRUE(m_model->addEntry(entry));
+
+    entry.rating.reset();
+    entry.note.clear();
+    ASSERT_TRUE(m_model->updateEntry("a", entry));
+
+    EXPECT_FALSE(m_model->entries().front().rating.has_value());
+    EXPECT_TRUE(m_model->entries().front().note.empty());
+}
+
 TEST(MediaModelSaveFailureTest, FailureIsReportedOnceUntilASaveSucceedsAgain)
 {
     stapik::test::TemporaryDirectory directory{ "stapik-media-model-failure" };

@@ -4,7 +4,9 @@
 
 #include "stapik/domain/IdGenerator.hpp"
 
+#include <optional>
 #include <stdexcept>
+#include <string>
 
 namespace
 {
@@ -27,6 +29,26 @@ namespace
         if (str == "month") return Month;
         if (str == "year") return Year;
         throw std::invalid_argument("Unknown precision string: " + str);
+    }
+
+    std::optional<int> ratingFromJson(const nlohmann::json &json)
+    {
+        if (!json.contains("rating") || json.at("rating").is_null())
+            return std::nullopt;
+
+        const auto rating = json.at("rating").get<int>();
+        if (rating < EntryRating::MIN || rating > EntryRating::MAX)
+            throw std::invalid_argument("Rating out of range: " + std::to_string(rating));
+
+        return rating;
+    }
+
+    std::string noteFromJson(const nlohmann::json &json)
+    {
+        if (!json.contains("note") || json.at("note").is_null())
+            return {};
+
+        return json.at("note").get<std::string>();
     }
 
     nlohmann::json detailsToJson(const MediaDetails &details)
@@ -82,7 +104,7 @@ namespace
 
 nlohmann::json MediaEntrySerializer::toJson(const MediaEntry &entry)
 {
-    return {
+    nlohmann::json json = {
         {"id", entry.id},
         {"category", categoryToKey(entry.category)},
         {"title", entry.title},
@@ -95,6 +117,14 @@ nlohmann::json MediaEntrySerializer::toJson(const MediaEntry &entry)
         {"consumed", {{"month", entry.consumed.month()}, {"year", entry.consumed.year()}}},
         {"details", detailsToJson(entry.details)}
     };
+
+    if (entry.rating.has_value())
+        json["rating"] = *entry.rating;
+
+    if (!entry.note.empty())
+        json["note"] = entry.note;
+
+    return json;
 }
 
 MediaEntry MediaEntrySerializer::fromJson(const nlohmann::json &json)
@@ -121,6 +151,8 @@ MediaEntry MediaEntrySerializer::fromJson(const nlohmann::json &json)
             json.at("consumed").at("month").get<int>()
         ),
         detailsFromJson(category, json.at("details")),
-        std::move(id)
+        std::move(id),
+        ratingFromJson(json),
+        noteFromJson(json)
     };
 }

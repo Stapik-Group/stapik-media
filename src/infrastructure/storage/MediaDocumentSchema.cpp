@@ -43,5 +43,6 @@ stapik::document::SchemaMigrator createMediaSchemaMigrator()
 {
     stapik::document::SchemaMigrator migrator(MEDIA_SCHEMA_VERSION);
     migrator.addStep(0, migrateFromLegacy);
+    migrator.addStep(1, [](nlohmann::json&) {});
     return migrator;
 }

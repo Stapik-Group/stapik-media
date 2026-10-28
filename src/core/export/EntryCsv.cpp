@@ -3,6 +3,7 @@
 #include "../model/MediaCategoryKey.hpp"
 
 #include <format>
+#include <string>
 #include <type_traits>
 #include <variant>
 
@@ -71,7 +72,9 @@ namespace EntryCsv
                 columns.publisher,
                 columns.genre,
                 columns.platform,
-                columns.audiobook
+                columns.audiobook,
+                entry.rating.has_value() ? std::to_string(*entry.rating) : std::string{},
+                entry.note
             });
         }
 
