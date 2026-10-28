@@ -1,10 +1,14 @@
 #pragma once
 
+#include "../action/ArchiveActionHandler.hpp"
+#include "../action/ExportActionHandler.hpp"
+#include "../action/ImportActionHandler.hpp"
 #include "../widget/MainMenu.hpp"
 #include "../../core/model/MediaModel.hpp"
 #include "../../infrastructure/storage/MediaRepository.hpp"
 #include "../view/CategorySidebar.hpp"
 #include "../view/MediaListView.hpp"
+#include "../util/EntryFilter.hpp"
 #include "../widget/EntryFilterBar.hpp"
 #include "../widget/PaginationBar.hpp"
 
@@ -17,6 +21,11 @@
 #include <gtkmm/button.h>
 #include <gtkmm/scrolledwindow.h>
 
+#include <functional>
+#include <vector>
+
+class MediaEntryDialog;
+
 class MainWindow : public Gtk::ApplicationWindow
 {
 public:
@@ -25,14 +34,10 @@ public:
 private:
     static constexpr int DEFAULT_WIDTH = 1280;
     static constexpr int DEFAULT_HEIGHT = 800;
-    static constexpr int MIN_STORED_SIZE = 400;
-    static constexpr auto SETTING_WIDTH = "window.width";
-    static constexpr auto SETTING_HEIGHT = "window.height";
-    static constexpr auto SETTING_MAXIMIZED = "window.maximized";
     static constexpr auto SETTING_CATEGORY = "sidebar.category";
+    static constexpr auto SETTING_SORT_FIELD = "list.sort.field";
+    static constexpr auto SETTING_SORT_DIRECTION = "list.sort.direction";
     static constexpr int ADD_BUTTON_MARGIN = 8;
-    static constexpr auto WINDOW_TITLE = "Stapik Media";
-    static constexpr unsigned int CLOSE_TIMEOUT_MS = 5000;
     static constexpr int STATUS_MARGIN = 4;
     static constexpr std::size_t PAGE_SIZE = 10;
 
@@ -42,6 +47,9 @@ private:
 
     MediaRepository m_repository;
     MediaModel m_model;
+    ExportActionHandler m_exportActions;
+    ImportActionHandler m_importActions;
+    ArchiveActionHandler m_archiveActions;
 
     Gtk::Box m_mainBox;
     Gtk::Box m_contentBox;
@@ -53,22 +61,29 @@ private:
     MainMenu m_mainMenu;
     Gtk::Label m_listHeaderLabel;
     StatusIndicator m_statusIndicator;
-    bool m_closing = false;
-    bool m_closed = false;
 
     void init();
     void initLayout();
     void reportStorageProblem();
+    void reportUnreadableEntries();
     void initSignals();
     void onSyncStatusChanged(stapik::sync::SyncStatus status);
+    void onSaveFailed(const std::string& message);
+    void onCloudConflict();
+    void onApiKeyExpiring(MediaModel::TimePoint expiresAt);
     bool onCloseRequest();
-    void closeNow();
     void saveWindowState() const;
+    [[nodiscard]] EntrySort storedSort() const;
     void onCategorySelected(MediaCategory category);
     void onAddClicked();
+    void openEntryDialog(MediaEntryDialog* dialog, std::function<MediaModel::EntryResult(MediaEntry)> submit);
+    void reportRejectedEntry(Gtk::Window& dialog, MediaModel::EntryError error, const MediaEntry& entry);
     void onEntryEditRequested(std::size_t index);
     void onEntryDeleteRequested(std::size_t index);
 
+    [[nodiscard]] EntryFilter currentFilter() const;
+    [[nodiscard]] std::vector<std::size_t> visibleIndices() const;
+    [[nodiscard]] ExportActionHandler::Listing currentListing() const;
     void applyFiltersAndRefresh();
     void onFilterChanged();
     void showArchiveNotLoaded();

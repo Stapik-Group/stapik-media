@@ -6,10 +6,16 @@
 
 #include "stapik/cloud/CloudStorageConfig.hpp"
 #include "stapik/command/UndoStack.hpp"
+#include "stapik/core/Result.hpp"
+#include "stapik/document/BackupInfo.hpp"
+#include "stapik/storage/FileError.hpp"
 #include "stapik/sync/CloudSession.hpp"
+#include "stapik/sync/CloudSessionHooks.hpp"
 #include "stapik/sync/SyncStatus.hpp"
+#include "stapik/time/Clock.hpp"
 
 #include <sigc++/signal.h>
+#include <chrono>
 #include <map>
 #include <optional>
 #include <set>
@@ -19,19 +25,55 @@
 class MediaModel
 {
 public:
+    using TimePoint = std::chrono::system_clock::time_point;
+    using CloudOutcome = stapik::sync::SyncOutcome<MediaDocument>;
+
+    static constexpr std::chrono::milliseconds CLOUD_FLUSH_TIMEOUT{ 5000 };
+
+    enum class EntryError
+    {
+        ArchiveNotLoaded,
+        Duplicate,
+        UnknownEntry,
+        ReadOnly
+    };
+
+    enum class ImportVerdict
+    {
+        Add,
+        Duplicate,
+        ArchiveNotLoaded
+    };
+
+    using EntryResult = stapik::Result<void, EntryError>;
+
     MediaModel(MediaDocument initial, MediaRepository& repository);
+    MediaModel(
+        MediaDocument initial,
+        MediaRepository& repository,
+        stapik::sync::CloudSessionHooks cloudHooks,
+        const stapik::sync::AsyncSyncOptions& syncOptions = {},
+        const stapik::time::IClock& clock = stapik::time::systemClock());
     MediaModel(const MediaModel&) = delete;
     MediaModel& operator=(const MediaModel&) = delete;
 
     [[nodiscard]] const std::vector<MediaEntry>& entries() const;
     [[nodiscard]] std::optional<MediaEntry> entryById(const std::string& id) const;
     [[nodiscard]] std::set<unsigned> availableYears() const;
+    [[nodiscard]] std::size_t unreadableEntryCount() const;
+    [[nodiscard]] MediaDocument snapshot() const;
+    bool replaceAll(MediaDocument imported);
 
-    bool addEntry(MediaEntry entry);
-    bool updateEntry(const std::string& id, MediaEntry entry);
+    [[nodiscard]] EntryResult addEntry(MediaEntry entry);
+    [[nodiscard]] EntryResult updateEntry(const std::string& id, MediaEntry entry);
     void removeEntry(const std::string& id);
 
+    [[nodiscard]] std::vector<ImportVerdict> previewImport(const std::vector<MediaEntry>& candidates) const;
+    std::size_t importEntries(std::vector<MediaEntry> candidates);
+
     void insertEntry(MediaEntry entry, std::optional<std::size_t> position = std::nullopt);
+    void insertEntries(std::vector<MediaEntry> entries);
+    void eraseEntries(const std::vector<std::string>& ids);
     bool replaceEntry(MediaEntry entry);
     std::optional<std::size_t> eraseEntry(const std::string& id);
 
@@ -41,16 +83,26 @@ public:
 
     bool connectCloud(const CloudStorageConfig& config);
     void syncNow();
-    void flush();
+    void disconnectCloud();
+    void flushCloud(std::chrono::milliseconds timeout = CLOUD_FLUSH_TIMEOUT);
+
+    [[nodiscard]] std::vector<stapik::document::BackupInfo> listBackups() const;
+    bool restoreBackup(const stapik::document::BackupInfo& backup);
 
     [[nodiscard]] std::optional<CloudStorageConfig> cloudConfig() const;
+    [[nodiscard]] bool isWritable() const;
     [[nodiscard]] bool isCloudConnected() const;
+    [[nodiscard]] bool hasCloudConnection() const;
     [[nodiscard]] bool isSyncing() const;
     [[nodiscard]] stapik::sync::SyncStatus syncStatus() const;
 
     sigc::signal<void()>& signalEntriesChanged();
     sigc::signal<void()>& signalAvailableYearsChanged();
     sigc::signal<void(stapik::sync::SyncStatus)>& signalSyncStatusChanged();
+    sigc::signal<void(const std::string&)>& signalSaveFailed();
+    sigc::signal<void(const CloudOutcome&)>& signalCloudOutcome();
+    sigc::signal<void()>& signalCloudConflict();
+    sigc::signal<void(TimePoint)>& signalCloudApiKeyExpiring();
 private:
     static constexpr auto CLOUD_DOCUMENT_NAME = "media.json";
 
@@ -71,25 +123,37 @@ private:
     std::vector<MediaEntry> m_view;
     std::set<int> m_remoteYears;
     bool m_remoteYearsKnown = false;
+    int m_activeYear = 0;
     std::set<std::string> m_syncingPartitions;
     MediaRepository& m_repository;
+    const stapik::time::IClock& m_clock;
+    bool m_saveFailureReported = false;
     stapik::sync::CloudSession<MediaDocument> m_session;
     stapik::command::UndoStack m_undoStack;
     sigc::signal<void()> m_signalEntriesChanged;
     sigc::signal<void()> m_signalAvailableYearsChanged;
     sigc::signal<void(stapik::sync::SyncStatus)> m_signalSyncStatusChanged;
+    sigc::signal<void(const std::string&)> m_signalSaveFailed;
+    sigc::signal<void(const CloudOutcome&)> m_signalCloudOutcome;
+    sigc::signal<void()> m_signalCloudConflict;
+    sigc::signal<void(TimePoint)> m_signalCloudApiKeyExpiring;
 
-    [[nodiscard]] static int currentYear();
-    [[nodiscard]] static std::optional<int> archiveYearOf(const MediaEntry& entry);
+    [[nodiscard]] int currentYear() const;
+    [[nodiscard]] std::optional<int> archiveYearOf(const MediaEntry& entry) const;
     [[nodiscard]] static std::optional<std::size_t> indexIn(const MediaDocument& document, const std::string& id);
     [[nodiscard]] std::optional<Location> locate(const std::string& id) const;
     [[nodiscard]] MediaDocument& documentFor(const std::optional<int>& archiveYear);
     [[nodiscard]] bool canWriteYear(int year) const;
+    [[nodiscard]] bool hasConflictingWork(const MediaEntry& candidate) const;
 
     [[nodiscard]] Touched normalize();
+    void archiveClosedYears();
     void touch(const Touched& touched);
     void commit(const Touched& touched);
     void rebuildView();
+    void saveMain();
+    void saveArchive(int year, const MediaDocument& document);
+    void reportSave(const stapik::storage::FileResult& result);
 
     void startCloudSync();
     void reconcileArchives();

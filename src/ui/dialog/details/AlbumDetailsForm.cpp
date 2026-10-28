@@ -1,6 +1,8 @@
 #include "AlbumDetailsForm.hpp"
 #include "stapik/locale/LocaleManager.hpp"
 
+#include "../../widget/SuggestionCompletion.hpp"
+
 AlbumDetailsForm::AlbumDetailsForm()
 {
     initLayout();
@@ -45,4 +47,11 @@ MediaDetails AlbumDetailsForm::toDetails() const
         std::string(m_publisherEntry.get_text()),
         std::string(m_genreEntry.get_text())
     };
+}
+
+void AlbumDetailsForm::setSuggestions(const EntrySuggestions::Lists& suggestions)
+{
+    SuggestionCompletion::attach(m_performerEntry, suggestions.creators);
+    SuggestionCompletion::attach(m_publisherEntry, suggestions.publishers);
+    SuggestionCompletion::attach(m_genreEntry, suggestions.genres);
 }

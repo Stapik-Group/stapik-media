@@ -2,6 +2,7 @@
 
 #include "../action/MenuActionHandler.hpp"
 
+#include "stapik/settings/ObservableSetting.hpp"
 #include "stapik/theme/ThemeRegistry.hpp"
 #include "stapik/ui/menu/StandardMenu.hpp"
 
@@ -17,5 +18,6 @@ public:
 
 private:
     MenuActionHandler m_actionHandler;
+    stapik::settings::ObservableSetting<bool> m_updateCheckSetting;
     StandardMenu m_menu;
 };

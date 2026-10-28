@@ -1,6 +1,8 @@
 #include "BookDetailsForm.hpp"
 #include "stapik/locale/LocaleManager.hpp"
 
+#include "../../widget/SuggestionCompletion.hpp"
+
 BookDetailsForm::BookDetailsForm()
 {
     initLayout();
@@ -43,4 +45,10 @@ MediaDetails BookDetailsForm::toDetails() const
         std::string(m_genreEntry.get_text()),
         m_audiobookCheck.get_active()
     };
+}
+
+void BookDetailsForm::setSuggestions(const EntrySuggestions::Lists& suggestions)
+{
+    SuggestionCompletion::attach(m_authorEntry, suggestions.creators);
+    SuggestionCompletion::attach(m_genreEntry, suggestions.genres);
 }

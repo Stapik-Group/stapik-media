@@ -68,3 +68,49 @@ TEST(EntryFilterServiceTest, NoMatchesGivesAnEmptyList)
     EXPECT_TRUE(EntryFilterService::filterIndices(sampleEntries(), filter).empty());
     EXPECT_TRUE(EntryFilterService::filterIndices({}, movies()).empty());
 }
+
+TEST(EntryFilterServiceTest, FiltersByTitleIgnoringCase)
+{
+    auto filter = movies();
+    filter.titleQuery = "HEAT";
+
+    const auto result = EntryFilterService::filterIndices(sampleEntries(), filter);
+
+    EXPECT_EQ(result, (std::vector<std::size_t>{0}));
+}
+
+TEST(EntryFilterServiceTest, FiltersByTitleIgnoringDiacritics)
+{
+    std::vector<MediaEntry> entries = { test::makeMovie("Łódź 1939", 2024, 3, "a"), test::makeMovie("Lodowisko", 2024, 3, "b"), test::makeMovie("Heat", 2024, 3, "c") };
+    auto filter = movies();
+    filter.titleQuery = "lodz";
+
+    EXPECT_EQ(EntryFilterService::filterIndices(entries, filter), (std::vector<std::size_t>{0}));
+}
+
+TEST(EntryFilterServiceTest, TitleQueryMatchesAPartOfTheTitle)
+{
+    auto filter = movies();
+    filter.titleQuery = "ni";
+
+    const auto result = EntryFilterService::filterIndices(sampleEntries(), filter);
+
+    EXPECT_EQ(result, (std::vector<std::size_t>{2}));
+}
+
+TEST(EntryFilterServiceTest, TitleQueryIsCombinedWithTheOtherFilters)
+{
+    auto filter = movies();
+    filter.consumedYear = 2023;
+    filter.titleQuery = "heat";
+
+    EXPECT_TRUE(EntryFilterService::filterIndices(sampleEntries(), filter).empty());
+}
+
+TEST(EntryFilterServiceTest, EmptyTitleQueryKeepsEveryEntry)
+{
+    auto filter = movies();
+    filter.titleQuery = "";
+
+    EXPECT_EQ(EntryFilterService::filterIndices(sampleEntries(), filter).size(), 3U);
+}

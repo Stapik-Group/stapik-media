@@ -13,6 +13,7 @@ public:
 
     void loadFrom(const MediaDetails& details) override;
     [[nodiscard]] MediaDetails toDetails() const override;
+    void setSuggestions(const EntrySuggestions::Lists& suggestions) override;
 
 private:
     static constexpr int FIELD_SPACING = 6;

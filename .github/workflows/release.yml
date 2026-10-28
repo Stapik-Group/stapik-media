@@ -1,0 +1,53 @@
+name: Release
+
+# Publishing a release with a tag vX.Y.Z builds the Debian packages, the Windows installer and the portable ZIP
+# and attaches them to that release. Nothing else starts this workflow.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check the tag
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out the tagged sources
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Compare the tag with the version of the project
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          if [[ ! "$TAG" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "::error::The tag '$TAG' is not of the form vX.Y.Z"
+            exit 1
+          fi
+
+          project_version="$(sed -nE 's/^project\(stapikmedia VERSION ([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' CMakeLists.txt | head -n 1)"
+          if [[ "${BASH_REMATCH[1]}" != "$project_version" ]]; then
+            echo "::error::The tag is ${BASH_REMATCH[1]}, but CMakeLists.txt has version ${project_version:-unknown}"
+            exit 1
+          fi
+
+  build:
+    needs: check
+    uses: Stapik-Group/stapik-common/.github/workflows/build.yml@v1.6.0
+    with:
+      application-name: stapikmedia
+      images: '["ubuntu:22.04", "ubuntu:24.04", "debian:12", "debian:13"]'
+      cmake-args: -DSTAPIK_MEDIA_BUILD_TESTS=ON
+      package: true
+    secrets:
+      sign-pfx-base64: ${{ secrets.WINDOWS_SIGN_PFX_BASE64 }}
+      sign-pfx-password: ${{ secrets.WINDOWS_SIGN_PFX_PASSWORD }}
+
+  publish:
+    needs: build
+    permissions:
+      contents: write
+    uses: Stapik-Group/stapik-common/.github/workflows/publish.yml@v1.6.0

@@ -2,6 +2,8 @@
 
 #include "stapik/locale/LocaleManager.hpp"
 
+#include "../../widget/SuggestionCompletion.hpp"
+
 ScreenDetailsForm::ScreenDetailsForm()
 {
     initLayout();
@@ -40,4 +42,10 @@ MediaDetails ScreenDetailsForm::toDetails() const
         std::string(m_directorEntry.get_text()),
         std::string(m_genreEntry.get_text())
     };
+}
+
+void ScreenDetailsForm::setSuggestions(const EntrySuggestions::Lists& suggestions)
+{
+    SuggestionCompletion::attach(m_directorEntry, suggestions.creators);
+    SuggestionCompletion::attach(m_genreEntry, suggestions.genres);
 }

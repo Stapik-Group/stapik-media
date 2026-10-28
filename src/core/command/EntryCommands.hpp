@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <optional>
 #include <string>
+#include <vector>
 
 class AddEntryCommand final : public stapik::command::ICommand
 {
@@ -21,6 +22,20 @@ public:
 private:
     MediaModel& m_model;
     MediaEntry m_entry;
+};
+
+class ImportEntriesCommand final : public stapik::command::ICommand
+{
+public:
+    ImportEntriesCommand(MediaModel& model, std::vector<MediaEntry> entries);
+
+    void execute() override;
+    void undo() override;
+    [[nodiscard]] std::string description() const override;
+
+private:
+    MediaModel& m_model;
+    std::vector<MediaEntry> m_entries;
 };
 
 class UpdateEntryCommand final : public stapik::command::ICommand

@@ -1,25 +1,89 @@
 #include "MediaModel.hpp"
 
 #include "../command/EntryCommands.hpp"
+#include "EntryIdentity.hpp"
 #include "YearPartitioning.hpp"
 
 #include "stapik/domain/IdGenerator.hpp"
 #include "stapik/domain/YearMonth.hpp"
 #include "stapik/log/Log.hpp"
 #include "stapik/sync/PartitionKey.hpp"
+#include "stapik/sync/Timestamp.hpp"
 
 #include <algorithm>
 #include <chrono>
+#include <format>
 #include <memory>
-#include <tuple>
+#include <unordered_set>
+#include <utility>
+
+namespace
+{
+    bool isConflict(const MediaModel::CloudOutcome& outcome)
+    {
+        return outcome.state == stapik::sync::SyncState::LostRaceAcceptedServer || outcome.discardedLocalChange;
+    }
+
+    const char* stateName(const stapik::sync::SyncState state)
+    {
+        switch (state)
+        {
+            using enum stapik::sync::SyncState;
+            case Synchronized: return "synchronized";
+            case OfflineKeptLocal: return "offline, local version kept";
+            case ServerWon: return "cloud version is newer";
+            case LostRaceAcceptedServer: return "conflict, cloud version accepted";
+            case LostRaceKeptLocal: return "conflict, local version kept";
+            case RemoteUnreadable: return "cloud document unreadable";
+            case AuthRejected: return "API key rejected";
+            case DecryptionFailed: return "decryption failed";
+            case DocumentTooLarge: return "document too large";
+        }
+        return "unknown";
+    }
+
+    void logOutcome(const std::string& subject, const MediaModel::CloudOutcome& outcome)
+    {
+        const auto details = outcome.message.empty() ? std::string{} : std::format(" ({})", outcome.message);
+
+        switch (outcome.state)
+        {
+            using enum stapik::sync::SyncState;
+            case RemoteUnreadable:
+            case AuthRejected:
+            case DecryptionFailed:
+            case DocumentTooLarge:
+                stapik::log::warning("[Cloud] {}: {}{}", subject, stateName(outcome.state), details);
+                break;
+            case Synchronized:
+            case OfflineKeptLocal:
+            case ServerWon:
+            case LostRaceAcceptedServer:
+            case LostRaceKeptLocal:
+                stapik::log::info("[Cloud] {}: {}{}", subject, stateName(outcome.state), details);
+                break;
+        }
+    }
+}
 
 MediaModel::MediaModel(MediaDocument initial, MediaRepository& repository) :
+    MediaModel(std::move(initial), repository, stapik::sync::defaultCloudSessionHooks(CLOUD_DOCUMENT_NAME))
+{}
+
+MediaModel::MediaModel(
+    MediaDocument initial,
+    MediaRepository& repository,
+    stapik::sync::CloudSessionHooks cloudHooks,
+    const stapik::sync::AsyncSyncOptions& syncOptions,
+    const stapik::time::IClock& clock) :
     m_main(std::move(initial)),
     m_repository(repository),
-    m_session(stapik::sync::defaultCloudSessionHooks(CLOUD_DOCUMENT_NAME))
+    m_clock(clock),
+    m_session(std::move(cloudHooks), syncOptions)
 {
     m_archives = m_repository.loadArchives();
     touch(normalize());
+    m_activeYear = currentYear();
     rebuildView();
 
     m_session.signalDocumentReplaced().connect(sigc::mem_fun(*this, &MediaModel::onDocumentReplaced));
@@ -34,6 +98,7 @@ MediaModel::MediaModel(MediaDocument initial, MediaRepository& repository) :
     m_session.signalPartitionStatusChanged().connect(sigc::mem_fun(*this, &MediaModel::onPartitionStatusChanged));
     m_session.signalPartitionOutcome().connect(sigc::mem_fun(*this, &MediaModel::onPartitionOutcome));
     m_session.signalAvailableYears().connect(sigc::mem_fun(*this, &MediaModel::onAvailableYears));
+    m_session.signalApiKeyExpiring().connect([this](const TimePoint expiresAt) { m_signalCloudApiKeyExpiring.emit(expiresAt); });
 
     startCloudSync();
 }
@@ -65,37 +130,113 @@ std::set<unsigned> MediaModel::availableYears() const
     return years;
 }
 
-bool MediaModel::addEntry(MediaEntry entry)
+std::size_t MediaModel::unreadableEntryCount() const
 {
-    if (!canWriteYear(entry.consumed.year()))
+    auto count = m_main.unreadableEntries.size();
+    for (const auto& archive : m_archives)
+        count += archive.second.unreadableEntries.size();
+
+    return count;
+}
+
+MediaDocument MediaModel::snapshot() const
+{
+    MediaDocument document;
+    document.entries = m_view;
+    document.unreadableEntries = m_main.unreadableEntries;
+    document.updatedAt = m_main.updatedAt;
+
+    for (const auto& [year, archive] : m_archives)
+        document.unreadableEntries.insert(document.unreadableEntries.end(), archive.unreadableEntries.begin(), archive.unreadableEntries.end());
+
+    return document;
+}
+
+bool MediaModel::replaceAll(MediaDocument imported)
+{
+    if (!isWritable())
         return false;
+
+    m_undoStack.clear();
+
+    Touched touched;
+    touched.main = true;
+
+    for (auto& [year, archive] : m_archives)
+    {
+        archive.entries.clear();
+        archive.unreadableEntries.clear();
+        touched.archives.insert(year);
+    }
+
+    m_main.entries.clear();
+    m_main.unreadableEntries = std::move(imported.unreadableEntries);
+
+    for (auto& entry : imported.entries)
+    {
+        const auto archiveYear = archiveYearOf(entry);
+        documentFor(archiveYear).entries.push_back(std::move(entry));
+
+        if (archiveYear.has_value())
+            touched.archives.insert(*archiveYear);
+    }
+
+    commit(touched);
+    return true;
+}
+
+MediaModel::EntryResult MediaModel::addEntry(MediaEntry entry)
+{
+    if (!isWritable())
+        return stapik::Failure(EntryError::ReadOnly);
+
+    archiveClosedYears();
+
+    if (!canWriteYear(entry.consumed.year()))
+        return stapik::Failure(EntryError::ArchiveNotLoaded);
+
+    if (hasConflictingWork(entry))
+        return stapik::Failure(EntryError::Duplicate);
 
     if (entry.id.empty())
         entry.id = stapik::domain::generateId();
 
     m_undoStack.execute(std::make_unique<AddEntryCommand>(*this, std::move(entry)));
-    return true;
+    return {};
 }
 
-bool MediaModel::updateEntry(const std::string& id, MediaEntry entry)
+MediaModel::EntryResult MediaModel::updateEntry(const std::string& id, MediaEntry entry)
 {
+    if (!isWritable())
+        return stapik::Failure(EntryError::ReadOnly);
+
+    archiveClosedYears();
+
     auto before = entryById(id);
     if (!before.has_value())
     {
         stapik::log::warning("MediaModel::updateEntry: unknown id {}", id);
-        return false;
+        return stapik::Failure(EntryError::UnknownEntry);
     }
 
     if (!canWriteYear(entry.consumed.year()))
-        return false;
+        return stapik::Failure(EntryError::ArchiveNotLoaded);
 
     entry.id = id;
+    if (hasConflictingWork(entry))
+        return stapik::Failure(EntryError::Duplicate);
+
     m_undoStack.execute(std::make_unique<UpdateEntryCommand>(*this, std::move(*before), std::move(entry)));
-    return true;
+    return {};
 }
 
 void MediaModel::removeEntry(const std::string& id)
 {
+    if (!isWritable())
+        return;
+
+    archiveClosedYears();
+
     auto entry = entryById(id);
     if (!entry.has_value())
     {
@@ -104,6 +245,93 @@ void MediaModel::removeEntry(const std::string& id)
     }
 
     m_undoStack.execute(std::make_unique<RemoveEntryCommand>(*this, std::move(*entry)));
+}
+
+std::vector<MediaModel::ImportVerdict> MediaModel::previewImport(const std::vector<MediaEntry>& candidates) const
+{
+    std::unordered_set<std::string> knownWorks;
+    for (const auto& entry : m_view)
+        knownWorks.insert(EntryIdentity::workKey(entry));
+
+    std::vector<ImportVerdict> verdicts;
+    verdicts.reserve(candidates.size());
+
+    for (const auto& candidate : candidates)
+    {
+        if (!canWriteYear(candidate.consumed.year()))
+            verdicts.push_back(ImportVerdict::ArchiveNotLoaded);
+        else if (!knownWorks.insert(EntryIdentity::workKey(candidate)).second)
+            verdicts.push_back(ImportVerdict::Duplicate);
+        else
+            verdicts.push_back(ImportVerdict::Add);
+    }
+
+    return verdicts;
+}
+
+std::size_t MediaModel::importEntries(std::vector<MediaEntry> candidates)
+{
+    if (!isWritable())
+        return 0;
+
+    archiveClosedYears();
+
+    const auto verdicts = previewImport(candidates);
+
+    std::vector<MediaEntry> accepted;
+    for (std::size_t index = 0; index < candidates.size(); ++index)
+    {
+        if (verdicts[index] != ImportVerdict::Add)
+            continue;
+
+        candidates[index].id = stapik::domain::generateId();
+        accepted.push_back(std::move(candidates[index]));
+    }
+
+    if (accepted.empty())
+        return 0;
+
+    const auto count = accepted.size();
+    m_undoStack.execute(std::make_unique<ImportEntriesCommand>(*this, std::move(accepted)));
+    return count;
+}
+
+void MediaModel::insertEntries(std::vector<MediaEntry> entries)
+{
+    Touched touched;
+    for (auto& entry : entries)
+    {
+        const auto archiveYear = archiveYearOf(entry);
+        documentFor(archiveYear).entries.push_back(std::move(entry));
+
+        if (archiveYear.has_value())
+            touched.archives.insert(*archiveYear);
+        else
+            touched.main = true;
+    }
+
+    commit(touched);
+}
+
+void MediaModel::eraseEntries(const std::vector<std::string>& ids)
+{
+    Touched touched;
+    for (const auto& id : ids)
+    {
+        const auto location = locate(id);
+        if (!location.has_value())
+            continue;
+
+        auto& document = documentFor(location->archiveYear);
+        document.entries.erase(document.entries.begin() + static_cast<std::ptrdiff_t>(location->index));
+
+        if (location->archiveYear.has_value())
+            touched.archives.insert(*location->archiveYear);
+        else
+            touched.main = true;
+    }
+
+    commit(touched);
 }
 
 void MediaModel::insertEntry(MediaEntry entry, const std::optional<std::size_t> position)
@@ -207,9 +435,60 @@ void MediaModel::syncNow()
     startCloudSync();
 }
 
-void MediaModel::flush()
+void MediaModel::disconnectCloud()
 {
-    m_session.flush();
+    m_session.disconnect();
+
+    m_remoteYears.clear();
+    m_remoteYearsKnown = false;
+    m_syncingPartitions.clear();
+
+    if (m_main.cloudBaseline.has_value())
+    {
+        m_main.cloudBaseline.reset();
+        saveMain();
+    }
+
+    for (auto& [year, archive] : m_archives)
+    {
+        if (!archive.cloudBaseline.has_value())
+            continue;
+
+        archive.cloudBaseline.reset();
+        saveArchive(year, archive);
+    }
+
+    m_signalAvailableYearsChanged.emit();
+}
+
+void MediaModel::flushCloud(const std::chrono::milliseconds timeout)
+{
+    m_session.flushAndWait(timeout);
+}
+
+std::vector<stapik::document::BackupInfo> MediaModel::listBackups() const
+{
+    return m_repository.listBackups();
+}
+
+bool MediaModel::restoreBackup(const stapik::document::BackupInfo& backup)
+{
+    if (!m_repository.isWritable())
+        return false;
+
+    auto loaded = m_repository.loadBackup(backup);
+    if (loaded.status != stapik::document::LoadStatus::Loaded)
+        return false;
+
+    const auto baseline = m_main.cloudBaseline;
+    m_main = std::move(*loaded.document);
+    m_main.cloudBaseline = baseline;
+    m_undoStack.clear();
+
+    auto touched = normalize();
+    touched.main = true;
+    commit(touched);
+    return true;
 }
 
 std::optional<CloudStorageConfig> MediaModel::cloudConfig() const
@@ -217,9 +496,19 @@ std::optional<CloudStorageConfig> MediaModel::cloudConfig() const
     return m_session.config();
 }
 
+bool MediaModel::isWritable() const
+{
+    return m_repository.isWritable();
+}
+
 bool MediaModel::isCloudConnected() const
 {
     return m_repository.isWritable() && m_session.isConnected();
+}
+
+bool MediaModel::hasCloudConnection() const
+{
+    return m_session.isConnected();
 }
 
 bool MediaModel::isSyncing() const
@@ -237,6 +526,26 @@ sigc::signal<void()>& MediaModel::signalEntriesChanged()
     return m_signalEntriesChanged;
 }
 
+sigc::signal<void(const std::string&)>& MediaModel::signalSaveFailed()
+{
+    return m_signalSaveFailed;
+}
+
+sigc::signal<void(const MediaModel::CloudOutcome&)>& MediaModel::signalCloudOutcome()
+{
+    return m_signalCloudOutcome;
+}
+
+sigc::signal<void()>& MediaModel::signalCloudConflict()
+{
+    return m_signalCloudConflict;
+}
+
+sigc::signal<void(MediaModel::TimePoint)>& MediaModel::signalCloudApiKeyExpiring()
+{
+    return m_signalCloudApiKeyExpiring;
+}
+
 sigc::signal<void()>& MediaModel::signalAvailableYearsChanged()
 {
     return m_signalAvailableYearsChanged;
@@ -247,12 +556,12 @@ sigc::signal<void(stapik::sync::SyncStatus)>& MediaModel::signalSyncStatusChange
     return m_signalSyncStatusChanged;
 }
 
-int MediaModel::currentYear()
+int MediaModel::currentYear() const
 {
-    return stapik::domain::YearMonth::current().year();
+    return stapik::domain::YearMonth::current(m_clock).year();
 }
 
-std::optional<int> MediaModel::archiveYearOf(const MediaEntry& entry)
+std::optional<int> MediaModel::archiveYearOf(const MediaEntry& entry) const
 {
     return YearPartitioning::archiveYearOf(entry, currentYear());
 }
@@ -293,6 +602,17 @@ bool MediaModel::canWriteYear(const int year) const
     return m_remoteYearsKnown && !m_remoteYears.contains(year);
 }
 
+bool MediaModel::hasConflictingWork(const MediaEntry& candidate) const
+{
+    if (const auto existing = entryById(candidate.id); existing.has_value() && EntryIdentity::sameWork(*existing, candidate))
+        return false;
+
+    return std::ranges::any_of(m_view, [&candidate](const MediaEntry& entry)
+    {
+        return entry.id != candidate.id && EntryIdentity::sameWork(entry, candidate);
+    });
+}
+
 MediaModel::Touched MediaModel::normalize()
 {
     Touched touched;
@@ -312,6 +632,8 @@ MediaModel::Touched MediaModel::normalize()
         auto& archive = m_archives[entryYear];
 
         const auto duplicate = existed && YearPartitioning::containsSameContent(archive.entries, entry);
+        if (duplicate)
+            stapik::log::warning("Skipped an entry '{}' that is already in the archive of {}", entry.title, entryYear);
 
         if (!duplicate)
         {
@@ -322,34 +644,52 @@ MediaModel::Touched MediaModel::normalize()
         touched.main = true;
     }
 
-    if (touched.main)
-        m_main.entries = std::move(remaining);
+    m_main.entries = std::move(remaining);
 
     return touched;
 }
 
+void MediaModel::archiveClosedYears()
+{
+    const auto year = currentYear();
+    if (year == m_activeYear)
+        return;
+
+    m_activeYear = year;
+
+    const auto touched = normalize();
+    if (touched.main || !touched.archives.empty())
+        commit(touched);
+}
+
 void MediaModel::touch(const Touched& touched)
 {
-    const auto now = std::chrono::system_clock::now();
+    const auto now = m_clock.now();
     const auto writable = m_repository.isWritable();
 
     for (const auto year : touched.archives)
     {
         auto& archive = m_archives[year];
         archive.updatedAt = now;
-        std::ignore = m_repository.saveArchive(year, archive);
+        saveArchive(year, archive);
 
         if (writable)
+        {
+            stapik::log::debug("[Cloud] The archive of {} was saved and queued, updated {}", year, stapik::sync::toIso8601(archive.updatedAt));
             m_session.pushPartitionChange(stapik::sync::partitionKeyForYear(year), archive);
+        }
     }
 
     if (touched.main)
     {
         m_main.updatedAt = now;
-        std::ignore = m_repository.save(m_main);
+        saveMain();
 
         if (writable)
+        {
+            stapik::log::debug("[Cloud] The main document was saved and queued, updated {}", stapik::sync::toIso8601(m_main.updatedAt));
             m_session.pushChange(m_main);
+        }
     }
 }
 
@@ -370,6 +710,34 @@ void MediaModel::rebuildView()
     m_view.insert(m_view.end(), m_main.entries.begin(), m_main.entries.end());
 }
 
+void MediaModel::saveMain()
+{
+    if (!m_repository.isWritable())
+        return;
+
+    reportSave(m_repository.save(m_main));
+}
+
+void MediaModel::saveArchive(const int year, const MediaDocument& document)
+{
+    if (!m_repository.isWritable())
+        return;
+
+    reportSave(m_repository.saveArchive(year, document));
+}
+
+void MediaModel::reportSave(const stapik::storage::FileResult& result)
+{
+    if (result)
+    {
+        m_saveFailureReported = false;
+        return;
+    }
+
+    if (!std::exchange(m_saveFailureReported, true))
+        m_signalSaveFailed.emit(result.error().message());
+}
+
 void MediaModel::startCloudSync()
 {
     if (!isCloudConnected())
@@ -388,8 +756,11 @@ void MediaModel::reconcileArchives()
 
 void MediaModel::onDocumentReplaced(const MediaDocument& document)
 {
+    stapik::log::info("[Cloud] The main document was replaced by the cloud version: {} entries, updated {}",
+        document.entries.size(), stapik::sync::toIso8601(document.lastUpdate()));
+
     m_main = document;
-    std::ignore = m_repository.save(m_main);
+    saveMain();
     m_undoStack.clear();
     commit(normalize());
 }
@@ -397,18 +768,16 @@ void MediaModel::onDocumentReplaced(const MediaDocument& document)
 void MediaModel::onBaselineChanged(const std::chrono::system_clock::time_point baseline)
 {
     m_main.cloudBaseline = baseline;
-    std::ignore = m_repository.save(m_main);
+    saveMain();
 }
 
-void MediaModel::onSyncOutcome(const stapik::sync::SyncOutcome<MediaDocument>& outcome)
+void MediaModel::onSyncOutcome(const CloudOutcome& outcome)
 {
-    if (outcome.message.empty())
-        return;
+    logOutcome("main document", outcome);
+    m_signalCloudOutcome.emit(outcome);
 
-    if (outcome.state == stapik::sync::SyncState::RemoteUnreadable)
-        stapik::log::warning("[Cloud] {}", outcome.message);
-    else
-        stapik::log::debug("[Cloud] {}", outcome.message);
+    if (isConflict(outcome))
+        m_signalCloudConflict.emit();
 }
 
 void MediaModel::onPartitionReplaced(const std::string& partition, const MediaDocument& document)
@@ -417,8 +786,11 @@ void MediaModel::onPartitionReplaced(const std::string& partition, const MediaDo
     if (!year.has_value())
         return;
 
+    stapik::log::info("[Cloud] The archive of {} was replaced by the cloud version: {} entries, updated {}",
+        *year, document.entries.size(), stapik::sync::toIso8601(document.lastUpdate()));
+
     m_archives[*year] = document;
-    std::ignore = m_repository.saveArchive(*year, document);
+    saveArchive(*year, document);
     m_undoStack.clear();
     rebuildView();
     m_signalEntriesChanged.emit();
@@ -435,7 +807,7 @@ void MediaModel::onPartitionBaselineChanged(const std::string& partition, const 
         return;
 
     found->second.cloudBaseline = baseline;
-    std::ignore = m_repository.saveArchive(*year, found->second);
+    saveArchive(*year, found->second);
 }
 
 void MediaModel::onPartitionStatusChanged(const std::string& partition, const stapik::sync::SyncStatus status)
@@ -448,15 +820,12 @@ void MediaModel::onPartitionStatusChanged(const std::string& partition, const st
     m_signalSyncStatusChanged.emit(m_session.status());
 }
 
-void MediaModel::onPartitionOutcome(const std::string& partition, const stapik::sync::SyncOutcome<MediaDocument>& outcome)
+void MediaModel::onPartitionOutcome(const std::string& partition, const CloudOutcome& outcome)
 {
-    if (outcome.message.empty())
-        return;
+    logOutcome(std::format("partition {}", partition), outcome);
 
-    if (outcome.state == stapik::sync::SyncState::RemoteUnreadable)
-        stapik::log::warning("[Cloud] Partition {}: {}", partition, outcome.message);
-    else
-        stapik::log::debug("[Cloud] Partition {}: {}", partition, outcome.message);
+    if (isConflict(outcome))
+        m_signalCloudConflict.emit();
 }
 
 void MediaModel::onAvailableYears(const std::optional<std::vector<int>>& years)

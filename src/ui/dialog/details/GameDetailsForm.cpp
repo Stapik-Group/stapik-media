@@ -1,6 +1,8 @@
 #include "GameDetailsForm.hpp"
 #include "stapik/locale/LocaleManager.hpp"
 
+#include "../../widget/SuggestionCompletion.hpp"
+
 GameDetailsForm::GameDetailsForm()
 {
     initLayout();
@@ -45,4 +47,11 @@ MediaDetails GameDetailsForm::toDetails() const
         std::string(m_publisherEntry.get_text()),
         std::string(m_platformEntry.get_text())
     };
+}
+
+void GameDetailsForm::setSuggestions(const EntrySuggestions::Lists& suggestions)
+{
+    SuggestionCompletion::attach(m_studioEntry, suggestions.creators);
+    SuggestionCompletion::attach(m_publisherEntry, suggestions.publishers);
+    SuggestionCompletion::attach(m_platformEntry, suggestions.platforms);
 }

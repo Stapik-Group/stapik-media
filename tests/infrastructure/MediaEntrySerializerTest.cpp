@@ -73,3 +73,47 @@ TEST(MediaEntrySerializerTest, InvalidConsumedMonthIsRejected)
 
     EXPECT_THROW(std::ignore = MediaEntrySerializer::fromJson(json), std::invalid_argument);
 }
+
+
+TEST(MediaEntrySerializerTest, RatingAndNoteRoundTrip)
+{
+    auto entry = test::makeMovie("Heat", 2024, 3, "a");
+    entry.rating = 8;
+    entry.note = "Rewatch\nwith friends";
+
+    const auto restored = MediaEntrySerializer::fromJson(MediaEntrySerializer::toJson(entry));
+
+    EXPECT_EQ(restored.rating, 8);
+    EXPECT_EQ(restored.note, "Rewatch\nwith friends");
+}
+
+TEST(MediaEntrySerializerTest, EntryWithoutRatingAndNoteWritesNeitherField)
+{
+    const auto json = MediaEntrySerializer::toJson(test::makeMovie("Heat", 2024, 3, "a"));
+
+    EXPECT_FALSE(json.contains("rating"));
+    EXPECT_FALSE(json.contains("note"));
+}
+
+TEST(MediaEntrySerializerTest, EntryOfAnOlderFileHasNoRatingAndNote)
+{
+    auto json = MediaEntrySerializer::toJson(test::makeMovie("Heat", 2024, 3, "a"));
+    json["rating"] = nullptr;
+    json["note"] = nullptr;
+
+    const auto restored = MediaEntrySerializer::fromJson(json);
+
+    EXPECT_FALSE(restored.rating.has_value());
+    EXPECT_TRUE(restored.note.empty());
+}
+
+TEST(MediaEntrySerializerTest, RatingOutsideTheScaleMakesTheEntryUnreadable)
+{
+    auto json = MediaEntrySerializer::toJson(test::makeMovie("Heat", 2024, 3, "a"));
+
+    json["rating"] = 0;
+    EXPECT_ANY_THROW(std::ignore = MediaEntrySerializer::fromJson(json));
+
+    json["rating"] = 11;
+    EXPECT_ANY_THROW(std::ignore = MediaEntrySerializer::fromJson(json));
+}

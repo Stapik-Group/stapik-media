@@ -2,15 +2,21 @@
 
 #include "../dialog/MediaEntryDialog.hpp"
 #include "../util/EntryFilterService.hpp"
+#include "../util/EntrySort.hpp"
+#include "../util/Pagination.hpp"
 #include "../../core/model/MediaCategoryKey.hpp"
 
 #include "stapik/app/AppContext.hpp"
 
+#include "stapik/locale/DateFormatter.hpp"
 #include "stapik/locale/LocaleManager.hpp"
 #include "stapik/log/Log.hpp"
+#include "stapik/ui/dialog/ConfirmDialog.hpp"
 #include "stapik/ui/dialog/DialogUtils.hpp"
 
 #include <glibmm/main.h>
+
+#include <format>
 
 namespace
 {
@@ -31,6 +37,9 @@ namespace
 MainWindow::MainWindow(const stapik::theme::ThemeRegistry& themes) :
     m_repository(),
     m_model(m_repository.load(), m_repository),
+    m_exportActions(*this, m_model, [this] { return currentListing(); }),
+    m_importActions(*this, m_model),
+    m_archiveActions(*this, m_model, m_repository),
     m_mainBox(Gtk::Orientation::VERTICAL, 0),
     m_contentBox(Gtk::Orientation::HORIZONTAL, 0),
     m_rightBox(Gtk::Orientation::VERTICAL, 0),
@@ -39,7 +48,11 @@ MainWindow::MainWindow(const stapik::theme::ThemeRegistry& themes) :
     init();
     initLayout();
     initSignals();
+    m_exportActions.registerActions();
+    m_importActions.registerActions();
+    m_archiveActions.registerActions();
     reportStorageProblem();
+    reportUnreadableEntries();
 }
 
 void MainWindow::reportStorageProblem()
@@ -48,29 +61,36 @@ void MainWindow::reportStorageProblem()
     if (problem == StorageProblem::None)
         return;
 
-    if (!m_repository.isWritable())
-        m_mainBox.set_sensitive(false);
+    if (!m_model.isWritable())
+    {
+        m_addButton.set_sensitive(false);
+        m_listView.setEditable(false);
+    }
 
     Glib::signal_idle().connect_once([this, problem]
     {
         const auto& loc = LocaleManager::instance();
-        showMessageDialog(*this, loc.translate("storage.problem.header"), loc.translate(storageProblemKey(problem)), Gtk::MessageType::ERROR);
+        showMessageDialog(*this, loc.translate("storage.problem.header"), loc.translate(storageProblemKey(problem)));
+    });
+}
+
+void MainWindow::reportUnreadableEntries()
+{
+    const auto count = m_model.unreadableEntryCount();
+    if (count == 0)
+        return;
+
+    Glib::signal_idle().connect_once([this, count]
+    {
+        const auto& loc = LocaleManager::instance();
+        showMessageDialog(*this, loc.translate("storage.unreadable.header"), loc.translate("storage.unreadable.message", { { "count", std::to_string(count) } }));
     });
 }
 
 void MainWindow::init()
 {
-    const auto& settings = stapik::app::AppContext::instance().settings();
-    const auto storedWidth = settings.get(SETTING_WIDTH, DEFAULT_WIDTH);
-    const auto storedHeight = settings.get(SETTING_HEIGHT, DEFAULT_HEIGHT);
-    const auto sizeIsValid = storedWidth >= MIN_STORED_SIZE && storedHeight >= MIN_STORED_SIZE;
-
-    set_title(WINDOW_TITLE);
-    set_default_size(sizeIsValid ? storedWidth : DEFAULT_WIDTH, sizeIsValid ? storedHeight : DEFAULT_HEIGHT);
-
-    if (settings.get(SETTING_MAXIMIZED, false))
-        maximize();
-
+    set_title(stapik::app::AppContext::instance().info().displayName);
+    set_default_size(DEFAULT_WIDTH, DEFAULT_HEIGHT);
     set_child(m_mainBox);
 }
 
@@ -99,6 +119,8 @@ void MainWindow::initLayout()
     if (storedCategory.has_value())
         m_sidebar.selectCategory(*storedCategory);
 
+    m_filterBar.setSort(storedSort());
+
     m_contentBox.append(m_sidebar);
     m_contentBox.append(m_rightBox);
 
@@ -122,11 +144,13 @@ void MainWindow::initSignals()
     m_paginationBar.signalNextRequested().connect(sigc::mem_fun(*this, &MainWindow::onNextPageRequested));
 
     m_model.signalSyncStatusChanged().connect(sigc::mem_fun(*this, &MainWindow::onSyncStatusChanged));
+    m_model.signalSaveFailed().connect(sigc::mem_fun(*this, &MainWindow::onSaveFailed));
+    m_model.signalCloudConflict().connect(sigc::mem_fun(*this, &MainWindow::onCloudConflict));
+    m_model.signalCloudApiKeyExpiring().connect(sigc::mem_fun(*this, &MainWindow::onApiKeyExpiring));
     m_model.signalAvailableYearsChanged().connect([this] { m_filterBar.setAvailableYears(m_model.availableYears()); });
     signal_close_request().connect(sigc::mem_fun(*this, &MainWindow::onCloseRequest), false);
 
     m_model.signalEntriesChanged().connect([this] {
-        m_currentPage = 1;
         m_filterBar.setAvailableYears(m_model.availableYears());
         applyFiltersAndRefresh();
     });
@@ -144,65 +168,47 @@ void MainWindow::initSignals()
 
 void MainWindow::onSyncStatusChanged(const stapik::sync::SyncStatus status)
 {
-    if (m_closed)
-        return;
-
     m_statusIndicator.set_visible(m_model.isCloudConnected());
     m_statusIndicator.setStatus(status);
 }
 
 bool MainWindow::onCloseRequest()
 {
-    if (m_closing)
-        return true;
-
     saveWindowState();
-    m_model.flush();
-    if (!m_model.isSyncing())
-        return false;
-
-    m_closing = true;
-    set_visible(false);
-
-    m_model.signalSyncStatusChanged().connect([this](const stapik::sync::SyncStatus)
-    {
-        if (!m_model.isSyncing())
-            closeNow();
-    });
-    Glib::signal_timeout().connect_once([this] { closeNow(); }, CLOSE_TIMEOUT_MS);
-    return true;
+    m_model.flushCloud();
+    return false;
 }
 
 void MainWindow::saveWindowState() const
 {
     auto& settings = stapik::app::AppContext::instance().settings();
-    const auto maximized = is_maximized();
-
-    settings.set(SETTING_MAXIMIZED, maximized);
     settings.set(SETTING_CATEGORY, categoryToKey(m_sidebar.selectedCategory()));
 
-    if (!maximized && get_width() >= MIN_STORED_SIZE && get_height() >= MIN_STORED_SIZE)
-    {
-        settings.set(SETTING_WIDTH, get_width());
-        settings.set(SETTING_HEIGHT, get_height());
-    }
+    const auto sort = m_filterBar.selectedSort();
+    settings.set(SETTING_SORT_FIELD, sortFieldToKey(sort.field));
+    settings.set(SETTING_SORT_DIRECTION, sortDirectionToKey(sort.direction));
 
-    if (!settings.save())
-        stapik::log::warning("Cannot persist the window state");
+    if (const auto saved = settings.save(); !saved)
+        stapik::log::warning("Cannot persist the window state: {}", saved.error().message());
 }
 
-void MainWindow::closeNow()
+EntrySort MainWindow::storedSort() const
 {
-    if (m_closed)
-        return;
+    const auto& settings = stapik::app::AppContext::instance().settings();
 
-    m_closed = true;
-    destroy();
+    EntrySort sort;
+    if (const auto field = sortFieldFromKey(settings.get(SETTING_SORT_FIELD, std::string{})); field.has_value())
+        sort.field = *field;
+    if (const auto direction = sortDirectionFromKey(settings.get(SETTING_SORT_DIRECTION, std::string{})); direction.has_value())
+        sort.direction = *direction;
+
+    return sort;
 }
 
 void MainWindow::onCategorySelected(const MediaCategory category)
 {
     m_currentPage = 1;
+    m_filterBar.setCategory(category);
     m_filterBar.reset();
     m_filterBar.setAvailableYears(m_model.availableYears());
     m_listHeaderLabel.set_text(CategorySidebar::labelFor(category));
@@ -211,20 +217,9 @@ void MainWindow::onCategorySelected(const MediaCategory category)
 
 void MainWindow::onAddClicked()
 {
-    auto* dialog = new MediaEntryDialog(*this, m_sidebar.selectedCategory());
-
-    dialog->signal_response().connect([this, dialog](const int responseId)
-    {
-        if (responseId == Gtk::ResponseType::OK)
-        {
-            if (const auto result = dialog->getResult(); result.has_value() && !m_model.addEntry(*result))
-                showArchiveNotLoaded();
-        }
-        dialog->hide();
-    });
-
-    dialog->signal_hide().connect([dialog] { delete dialog; });
-    dialog->show();
+    openEntryDialog(
+        new MediaEntryDialog(*this, m_sidebar.selectedCategory()),
+        [this](MediaEntry entry) { return m_model.addEntry(std::move(entry)); });
 }
 
 void MainWindow::onEntryEditRequested(const std::size_t index)
@@ -237,20 +232,62 @@ void MainWindow::onEntryEditRequested(const std::size_t index)
     }
 
     const auto id = entries.at(index).id;
-    auto* dialog = new MediaEntryDialog(*this, entries.at(index));
+    openEntryDialog(
+        new MediaEntryDialog(*this, entries.at(index)),
+        [this, id](MediaEntry entry) { return m_model.updateEntry(id, std::move(entry)); });
+}
 
-    dialog->signal_response().connect([this, dialog, id](const int responseId)
+void MainWindow::openEntryDialog(MediaEntryDialog* dialog, std::function<MediaModel::EntryResult(MediaEntry)> submit)
+{
+    dialog->setSuggestions(m_model.entries());
+
+    dialog->signal_response().connect([this, dialog, submit = std::move(submit)](const int responseId)
     {
         if (responseId == Gtk::ResponseType::OK)
         {
-            if (const auto result = dialog->getResult(); result.has_value() && !m_model.updateEntry(id, *result))
-                showArchiveNotLoaded();
+            const auto entry = dialog->getResult();
+            if (!entry.has_value())
+            {
+                const auto& loc = LocaleManager::instance();
+                showMessageDialog(*dialog, loc.translate("dialog.entry.error.title"), loc.translate("dialog.entry.error.emptyTitle"));
+                return;
+            }
+
+            const auto outcome = submit(*entry);
+            if (!outcome)
+            {
+                reportRejectedEntry(*dialog, outcome.error(), *entry);
+                if (outcome.error() == MediaModel::EntryError::Duplicate)
+                    return;
+            }
         }
         dialog->hide();
     });
 
-    dialog->signal_hide().connect([dialog] { delete dialog; });
+    deleteOnHide(dialog);
     dialog->show();
+}
+
+void MainWindow::reportRejectedEntry(Gtk::Window& dialog, const MediaModel::EntryError error, const MediaEntry& entry)
+{
+    const auto& loc = LocaleManager::instance();
+
+    switch (error)
+    {
+        using enum MediaModel::EntryError;
+        case ArchiveNotLoaded:
+            showArchiveNotLoaded();
+            break;
+        case Duplicate:
+            showMessageDialog(dialog, loc.translate("dialog.entry.duplicate.header"), loc.translate("dialog.entry.duplicate.message", { { "title", entry.title }, { "year", std::format("{}", static_cast<int>(entry.releaseDate.date.year())) } }));
+            break;
+        case UnknownEntry:
+            showMessageDialog(*this, loc.translate("dialog.entry.missing.header"), loc.translate("dialog.entry.missing.message"));
+            break;
+        case ReadOnly:
+            showMessageDialog(*this, loc.translate("storage.problem.header"), loc.translate("storage.readOnly.message"));
+            break;
+    }
 }
 
 void MainWindow::onEntryDeleteRequested(const std::size_t index)
@@ -259,13 +296,44 @@ void MainWindow::onEntryDeleteRequested(const std::size_t index)
     if (index >= entries.size())
         return;
 
-    m_model.removeEntry(entries.at(index).id);
+    const auto& loc = LocaleManager::instance();
+    const auto& entry = entries.at(index);
+
+    showConfirmDialog(
+        *this,
+        ConfirmDialogOptions{
+            .title = loc.translate("dialog.entry.delete.title"),
+            .message = loc.translate("dialog.entry.delete.message", { { "title", entry.title } }),
+            .confirmLabel = loc.translate("list.entry.delete"),
+            .destructive = true
+        },
+        [this, id = entry.id] { m_model.removeEntry(id); });
+}
+
+void MainWindow::onSaveFailed(const std::string& message)
+{
+    const auto& loc = LocaleManager::instance();
+    showMessageDialog(*this, loc.translate("dialog.save.failed.title"), loc.translate("dialog.save.failed.text", { { "error", message } }));
+}
+
+void MainWindow::onCloudConflict()
+{
+    const auto& loc = LocaleManager::instance();
+    showMessageDialog(*this, loc.translate("cloud.conflict.header"), loc.translate("cloud.conflict.secondary"));
+}
+
+void MainWindow::onApiKeyExpiring(const MediaModel::TimePoint expiresAt)
+{
+    const auto& loc = LocaleManager::instance();
+    const auto date = stapik::locale::formatDate(stapik::locale::toLocalTime(expiresAt), loc.languageCode());
+
+    showMessageDialog(*this, loc.translate("cloud.apiKeyExpiring.header"), loc.translate("cloud.apiKeyExpiring", { { "date", date } }));
 }
 
 void MainWindow::showArchiveNotLoaded()
 {
     const auto& loc = LocaleManager::instance();
-    showMessageDialog(*this, loc.translate("partition.notLoaded.header"), loc.translate("partition.notLoaded.message"), Gtk::MessageType::WARNING);
+    showMessageDialog(*this, loc.translate("partition.notLoaded.header"), loc.translate("partition.notLoaded.message"));
 }
 
 void MainWindow::onFilterChanged()
@@ -290,30 +358,49 @@ void MainWindow::onNextPageRequested()
     applyFiltersAndRefresh();
 }
 
-void MainWindow::applyFiltersAndRefresh()
+EntryFilter MainWindow::currentFilter() const
 {
-    const EntryFilter filter{
+    return EntryFilter{
         m_sidebar.selectedCategory(),
         m_filterBar.selectedMonth(),
-        m_filterBar.selectedYear()
+        m_filterBar.selectedYear(),
+        m_filterBar.searchQuery()
     };
+}
 
-    const auto matchingIndices = EntryFilterService::filterIndices(m_model.entries(), filter);
+ExportActionHandler::Listing MainWindow::currentListing() const
+{
+    const auto& entries = m_model.entries();
+    const auto matchingIndices = visibleIndices();
 
-    const auto totalPages = matchingIndices.empty()
-        ? std::size_t{1}
-    : (matchingIndices.size() + PAGE_SIZE - 1) / PAGE_SIZE;
+    ExportActionHandler::Listing listing{
+        .heading = std::format("{} \u2013 {}", get_title().raw(), CategorySidebar::labelFor(m_sidebar.selectedCategory())),
+        .entries = {}
+    };
+    listing.entries.reserve(matchingIndices.size());
+    for (const auto index : matchingIndices)
+        listing.entries.push_back(entries[index]);
 
-    if (m_currentPage > totalPages)
-        m_currentPage = totalPages;
+    return listing;
+}
 
-    const auto startIndex = (m_currentPage - 1) * PAGE_SIZE;
-    const auto endIndex = std::min(startIndex + PAGE_SIZE, matchingIndices.size());
+std::vector<std::size_t> MainWindow::visibleIndices() const
+{
+    auto indices = EntryFilterService::filterIndices(m_model.entries(), currentFilter());
+    EntryFilterService::sortIndices(m_model.entries(), indices, m_filterBar.selectedSort());
+    return indices;
+}
+
+void MainWindow::applyFiltersAndRefresh()
+{
+    const auto matchingIndices = visibleIndices();
+    const auto slice = Pagination::sliceFor(matchingIndices.size(), m_currentPage, PAGE_SIZE);
+    m_currentPage = slice.page;
 
     const std::vector pageIndices(
-        matchingIndices.begin() + static_cast<std::ptrdiff_t>(startIndex),
-        matchingIndices.begin() + static_cast<std::ptrdiff_t>(endIndex));
+        matchingIndices.begin() + static_cast<std::ptrdiff_t>(slice.first),
+        matchingIndices.begin() + static_cast<std::ptrdiff_t>(slice.last));
 
     m_listView.refresh(m_model.entries(), pageIndices);
-    m_paginationBar.setState(m_currentPage, totalPages);
+    m_paginationBar.setState(slice.page, slice.totalPages);
 }

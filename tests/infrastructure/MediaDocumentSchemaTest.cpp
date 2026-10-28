@@ -108,3 +108,16 @@ TEST(MediaDocumentSchemaTest, NewerVersionIsReported)
 
     EXPECT_EQ(createMediaSchemaMigrator().migrate(document, MEDIA_SCHEMA_VERSION + 1), MigrationStatus::FromNewerVersion);
 }
+
+
+TEST(MediaDocumentSchemaTest, DocumentOfVersionOneIsMigratedWithoutChanges)
+{
+    MediaDocument source;
+    source.entries = { test::makeMovie("Heat", 2024, 3) };
+    auto document = source.toJson();
+    const auto before = document;
+
+    EXPECT_EQ(createMediaSchemaMigrator().migrate(document, 1), MigrationStatus::Migrated);
+
+    EXPECT_EQ(document, before);
+}

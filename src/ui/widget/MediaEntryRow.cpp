@@ -1,10 +1,11 @@
 #include "MediaEntryRow.hpp"
 
-#include "../util/DateFormatter.hpp"
+#include "../util/EntryText.hpp"
 
 #include "stapik/locale/LocaleManager.hpp"
 
-#include <variant>
+#include <pangomm/layout.h>
+
 
 MediaEntryRow::MediaEntryRow(const MediaEntry& entry) :
     Box(Gtk::Orientation::HORIZONTAL, COLUMN_SPACING),
@@ -24,21 +25,26 @@ void MediaEntryRow::initLayout(const MediaEntry& entry)
     m_titleLabel.set_halign(Gtk::Align::START);
     m_titleLabel.add_css_class("entry-title");
 
-    m_detailsLabel.set_text(formatDetailsLine(entry));
+    m_detailsLabel.set_text(EntryText::detailsLine(entry));
     m_detailsLabel.set_halign(Gtk::Align::START);
     m_detailsLabel.add_css_class("entry-details");
 
-    const auto datesText =
-        LocaleManager::instance().translate("list.entry.released") + ": " + DateFormatter::formatReleaseDate(entry.releaseDate) +
-        "   " +
-        LocaleManager::instance().translate("list.entry.consumed") + ": " + DateFormatter::formatConsumedDate(entry.consumed);
-    m_datesLabel.set_text(datesText);
+    m_datesLabel.set_text(EntryText::datesLine(entry));
     m_datesLabel.set_halign(Gtk::Align::START);
     m_datesLabel.add_css_class("entry-dates");
+
+    m_noteLabel.set_text(EntryText::noteLine(entry));
+    m_noteLabel.set_halign(Gtk::Align::START);
+    m_noteLabel.set_ellipsize(Pango::EllipsizeMode::END);
+    m_noteLabel.set_xalign(0.0F);
+    m_noteLabel.add_css_class("entry-note");
+    m_noteLabel.set_tooltip_text(entry.note);
+    m_noteLabel.set_visible(!entry.note.empty());
 
     m_infoBox.append(m_titleLabel);
     m_infoBox.append(m_detailsLabel);
     m_infoBox.append(m_datesLabel);
+    m_infoBox.append(m_noteLabel);
     m_infoBox.set_hexpand(true);
 
     m_editButton.set_label(LocaleManager::instance().translate("list.entry.edit"));
@@ -55,29 +61,10 @@ void MediaEntryRow::initLayout(const MediaEntry& entry)
     append(m_buttonsBox);
 }
 
-std::string MediaEntryRow::formatDetailsLine(const MediaEntry& entry)
+void MediaEntryRow::setEditable(const bool editable)
 {
-    const auto& loc = LocaleManager::instance();
-
-    return std::visit([&loc]<typename T>(const T& d) -> std::string
-    {
-        if constexpr (std::is_same_v<T, ScreenDetails>)
-            return loc.translate("dialog.entry.director.label") + ": " + d.director +
-                   "   " + loc.translate("dialog.entry.genre.label") + ": " + d.genre;
-        else if constexpr (std::is_same_v<T, BookDetails>)
-            return loc.translate("dialog.entry.author.label") + ": " + d.author +
-                   "   " + loc.translate("dialog.entry.genre.label") + ": " + d.genre +
-                   (d.isAudiobook ? "   (" + loc.translate("dialog.entry.audiobook.label") + ")" : "");
-        else if constexpr (std::is_same_v<T, AlbumDetails>)
-            return loc.translate("dialog.entry.performer.label") + ": " + d.performer +
-                   "   " + loc.translate("dialog.entry.publisher.label") + ": " + d.publisher +
-                   "   " + loc.translate("dialog.entry.genre.label") + ": " + d.genre;
-        else if constexpr (std::is_same_v<T, GameDetails>)
-            return loc.translate("dialog.entry.studio.label") + ": " + d.studio +
-                   "   " + loc.translate("dialog.entry.publisher.label") + ": " + d.publisher +
-                   "   " + loc.translate("dialog.entry.platform.label") + ": " + d.platform;
-        return {};
-    }, entry.details);
+    m_editButton.set_sensitive(editable);
+    m_deleteButton.set_sensitive(editable);
 }
 
 void MediaEntryRow::refreshLabels()
@@ -85,12 +72,8 @@ void MediaEntryRow::refreshLabels()
     m_editButton.set_label(LocaleManager::instance().translate("list.entry.edit"));
     m_deleteButton.set_label(LocaleManager::instance().translate("list.entry.delete"));
 
-    m_detailsLabel.set_text(formatDetailsLine(m_entry));
-    const auto datesText =
-        LocaleManager::instance().translate("list.entry.released") + ": " + DateFormatter::formatReleaseDate(m_entry.releaseDate) +
-        "   " +
-        LocaleManager::instance().translate("list.entry.consumed") + ": " + DateFormatter::formatConsumedDate(m_entry.consumed);
-    m_datesLabel.set_text(datesText);
+    m_detailsLabel.set_text(EntryText::detailsLine(m_entry));
+    m_datesLabel.set_text(EntryText::datesLine(m_entry));
 }
 
 sigc::signal<void()>& MediaEntryRow::signalEditRequested()

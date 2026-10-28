@@ -1,11 +1,18 @@
 #include "MediaEntryDialog.hpp"
 
+#include "../util/ConsumptionText.hpp"
 #include "details/ScreenDetailsForm.hpp"
 #include "details/BookDetailsForm.hpp"
 #include "details/AlbumDetailsForm.hpp"
 #include "details/GameDetailsForm.hpp"
 
 #include "stapik/locale/LocaleManager.hpp"
+#include "stapik/text/Trim.hpp"
+
+#include <gtkmm/stringlist.h>
+
+#include <string>
+#include <vector>
 
 MediaEntryDialog::MediaEntryDialog(Window &parent, const MediaCategory category) :
     StapikDialog(parent, LocaleManager::instance().translate("dialog.entry.title.add")),
@@ -13,7 +20,6 @@ MediaEntryDialog::MediaEntryDialog(Window &parent, const MediaCategory category)
     m_detailsContainer(Gtk::Orientation::VERTICAL, DETAILS_SPACING)
 {
     initLayout();
-    m_consumedDatePicker.loadFrom(stapik::domain::YearMonth::current());
 }
 
 MediaEntryDialog::MediaEntryDialog(Window &parent, const MediaEntry &existing) :
@@ -26,8 +32,10 @@ MediaEntryDialog::MediaEntryDialog(Window &parent, const MediaEntry &existing) :
 
     m_titleEntry.set_text(existing.title);
     m_releaseDatePicker.loadFrom(existing.releaseDate);
-    m_consumedDatePicker.loadFrom(existing.consumed);
+    m_consumedMonthPicker.setMonth(existing.consumed);
     m_detailsForm->loadFrom(existing.details);
+    m_ratingDropDown.set_selected(existing.rating.has_value() ? static_cast<guint>(*existing.rating) : NO_RATING_INDEX);
+    m_noteView.get_buffer()->set_text(existing.note);
 }
 
 void MediaEntryDialog::initLayout()
@@ -41,7 +49,7 @@ void MediaEntryDialog::initLayout()
     m_releaseDateLabel.set_halign(Gtk::Align::START);
     m_releaseDateLabel.add_css_class("panel-title");
 
-    m_consumedDateLabel.set_text(loc.translate("dialog.entry.consumedDate.label"));
+    m_consumedDateLabel.set_text(loc.translate(ConsumptionText::key("dialog.entry.consumedDate.label", m_category)));
     m_consumedDateLabel.set_halign(Gtk::Align::START);
     m_consumedDateLabel.add_css_class("panel-title");
 
@@ -51,12 +59,36 @@ void MediaEntryDialog::initLayout()
     contentBox().append(m_releaseDateLabel);
     contentBox().append(m_releaseDatePicker);
     contentBox().append(m_consumedDateLabel);
-    contentBox().append(m_consumedDatePicker);
+    contentBox().append(m_consumedMonthPicker);
 
     m_detailsForm = createFormFor(m_category);
     m_detailsForm->add_css_class("details-form");
     m_detailsContainer.append(*m_detailsForm);
     contentBox().append(m_detailsContainer);
+
+    m_ratingLabel.set_text(loc.translate("dialog.entry.rating.label"));
+    m_ratingLabel.set_halign(Gtk::Align::START);
+    m_ratingLabel.add_css_class("panel-title");
+
+    std::vector<Glib::ustring> ratingLabels{ loc.translate("dialog.entry.rating.none") };
+    for (auto rating = EntryRating::MIN; rating <= EntryRating::MAX; ++rating)
+        ratingLabels.emplace_back(std::to_string(rating));
+    m_ratingDropDown.set_model(Gtk::StringList::create(ratingLabels));
+    m_ratingDropDown.set_selected(NO_RATING_INDEX);
+
+    m_noteLabel.set_text(loc.translate("dialog.entry.note.label"));
+    m_noteLabel.set_halign(Gtk::Align::START);
+    m_noteLabel.add_css_class("panel-title");
+
+    m_noteView.set_wrap_mode(Gtk::WrapMode::WORD_CHAR);
+    m_noteScroller.set_child(m_noteView);
+    m_noteScroller.set_min_content_height(NOTE_HEIGHT);
+    m_noteScroller.add_css_class("frame");
+
+    contentBox().append(m_ratingLabel);
+    contentBox().append(m_ratingDropDown);
+    contentBox().append(m_noteLabel);
+    contentBox().append(m_noteScroller);
 
     addCancelButton();
     addOkButton(loc.translate("dialog.entry.button.save"));
@@ -84,18 +116,30 @@ std::unique_ptr<DetailsFormWidget> MediaEntryDialog::createFormFor(const MediaCa
     throw std::invalid_argument("Unknown MediaCategory in createFormFor");
 }
 
+void MediaEntryDialog::setSuggestions(const std::vector<MediaEntry>& entries)
+{
+    m_detailsForm->setSuggestions(EntrySuggestions::collect(entries, m_category));
+}
+
 std::optional<MediaEntry> MediaEntryDialog::getResult() const
 {
-    const auto title = m_titleEntry.get_text();
+    const auto title = stapik::text::trim(m_titleEntry.get_text().raw());
     if (title.empty())
         return std::nullopt;
 
+    const auto ratingIndex = m_ratingDropDown.get_selected();
+    std::optional<int> rating;
+    if (ratingIndex > NO_RATING_INDEX && ratingIndex <= static_cast<guint>(EntryRating::MAX))
+        rating = static_cast<int>(ratingIndex);
+
     return MediaEntry{
         m_category,
-        std::string(title),
+        title,
         m_releaseDatePicker.toReleaseDate(),
-        m_consumedDatePicker.toYearMonth(),
+        m_consumedMonthPicker.month(),
         m_detailsForm->toDetails(),
-        m_id
+        m_id,
+        rating,
+        stapik::text::trim(m_noteView.get_buffer()->get_text().raw())
     };
 }

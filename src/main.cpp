@@ -1,30 +1,24 @@
-#include <gtkmm.h>
+#include "app/MediaAppInfo.hpp"
+#include "ui/window/MainWindow.hpp"
 
-#include <curl/curl.h>
-
-#include "stapik/app/AppContext.hpp"
-#include "stapik/app/SingleInstanceGuard.hpp"
+#include "stapik/app/StapikApplication.hpp"
 #include "stapik/locale/LocaleManager.hpp"
 #include "stapik/log/Log.hpp"
 #include "stapik/storage/AppPaths.hpp"
-#include "stapik/theme/ThemeManager.hpp"
 #include "stapik/theme/ThemeRegistry.hpp"
-#include "stapik/ui/menu/StandardMenu.hpp"
-#include "stapik/ui/style/AppStyleProvider.hpp"
 
-#include "ui/window/MainWindow.hpp"
+#include <curl/curl.h>
+
+#include <glibmm/main.h>
 
 #include <algorithm>
 #include <filesystem>
+#include <string>
 #include <string_view>
 #include <vector>
 
 namespace
 {
-    constexpr auto APPLICATION_ID = "pl.stapik.media";
-    constexpr auto AUTHOR = "Sebastian Smoliński";
-    constexpr auto REPOSITORY_URL = "https://github.com/Stapik-Group/stapik-media";
-
     constexpr std::string_view SELF_TEST_FLAG = "--self-test";
     constexpr std::string_view SELF_TEST_PROBE_KEY = "window.button.add";
     constexpr unsigned int SELF_TEST_DURATION_MS = 2000;
@@ -52,6 +46,7 @@ namespace
 
         std::error_code errorCode;
         check(std::filesystem::is_directory(AppPaths::resourcesDir() / "locales", errorCode), "application locales");
+        check(std::filesystem::is_directory(AppPaths::resourcesDir() / "tutorial" / "en", errorCode), "application tutorial");
         check(std::filesystem::is_directory(AppPaths::commonResourcesDir() / "themes", errorCode), "common themes");
         check(themes.themes().size() >= SELF_TEST_MIN_THEMES, "themes registered");
 
@@ -67,42 +62,30 @@ namespace
 
 int main(const int argc, char *argv[])
 {
-    stapik::app::AppContext::initialize({
-        .applicationId = APPLICATION_ID,
-        .internalName = STAPIK_APP_NAME,
-        .displayName = STAPIK_APP_DISPLAY_NAME,
-        .version = STAPIK_APP_VERSION,
-        .author = AUTHOR,
-        .repositoryUrl = REPOSITORY_URL
-    });
-
-    const auto instanceGuard = stapik::app::SingleInstanceGuard::acquire(APPLICATION_ID, STAPIK_APP_DISPLAY_NAME);
-    if (instanceGuard == nullptr)
-        return 0;
-
     std::vector<char*> arguments(argv, argv + argc);
     const auto selfTest = extractSelfTestFlag(arguments);
     arguments.push_back(nullptr);
 
-    const auto app = Gtk::Application::create(APPLICATION_ID);
-
-    auto styleProvider = AppStyleProvider::withCommonThemes(AppPaths::resourcesDir());
-    StandardMenu::installShortcuts(*app);
+    const auto app = stapik::app::StapikApplication::create(makeMediaAppInfo(), { .checkForUpdates = !selfTest });
 
     auto exitCode = 0;
 
     app->signal_activate().connect([&]
     {
-        styleProvider.apply(ThemeManager::instance().themeId());
-        ThemeManager::instance().signalThemeChanged().connect([&styleProvider] { styleProvider.apply(ThemeManager::instance().themeId()); });
-        auto* window = new MainWindow(styleProvider.themes());
+        if (auto* existingWindow = app->get_active_window())
+        {
+            existingWindow->present();
+            return;
+        }
+
+        auto* window = new MainWindow(app->themes());
         app->add_window(*window);
         window->show();
 
         if (!selfTest)
             return;
 
-        if (!verifyInstallation(styleProvider.themes()))
+        if (!verifyInstallation(app->themes()))
             exitCode = 1;
 
         Glib::signal_timeout().connect_once([&app] { app->quit(); }, SELF_TEST_DURATION_MS);

@@ -13,6 +13,7 @@ public:
     explicit MediaEntryRow(const MediaEntry& entry);
 
     void refreshLabels();
+    void setEditable(bool editable);
 
     sigc::signal<void()>& signalEditRequested();
     sigc::signal<void()>& signalDeleteRequested();
@@ -28,6 +29,7 @@ private:
     Gtk::Label m_titleLabel;
     Gtk::Label m_detailsLabel;
     Gtk::Label m_datesLabel;
+    Gtk::Label m_noteLabel;
 
     Gtk::Box m_buttonsBox;
     Gtk::Button m_editButton;
@@ -37,5 +39,4 @@ private:
     sigc::signal<void()> m_signalDeleteRequested;
 
     void initLayout(const MediaEntry& entry);
-    [[nodiscard]] static std::string formatDetailsLine(const MediaEntry& entry);
 };

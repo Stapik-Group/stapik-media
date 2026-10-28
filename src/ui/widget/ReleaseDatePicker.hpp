@@ -17,7 +17,7 @@ public:
 
 private:
     static constexpr int FIELD_SPACING = 6;
-    static constexpr int MIN_YEAR = 1900;
+    static constexpr int MIN_YEAR = 1;
     static constexpr int MAX_YEAR = 2100;
     static constexpr int DEFAULT_DAY = 1;
     static constexpr int DEFAULT_MONTH = 1;
@@ -34,5 +34,6 @@ private:
 
     void initLayout();
     void onPrecisionChanged();
+    void updateDayRange();
     [[nodiscard]] DatePrecision currentPrecision() const;
 };
