@@ -13,7 +13,6 @@ MediaEntryDialog::MediaEntryDialog(Window &parent, const MediaCategory category)
     m_detailsContainer(Gtk::Orientation::VERTICAL, DETAILS_SPACING)
 {
     initLayout();
-    m_consumedDatePicker.loadFrom(stapik::domain::YearMonth::current());
 }
 
 MediaEntryDialog::MediaEntryDialog(Window &parent, const MediaEntry &existing) :
@@ -26,7 +25,7 @@ MediaEntryDialog::MediaEntryDialog(Window &parent, const MediaEntry &existing) :
 
     m_titleEntry.set_text(existing.title);
     m_releaseDatePicker.loadFrom(existing.releaseDate);
-    m_consumedDatePicker.loadFrom(existing.consumed);
+    m_consumedMonthPicker.setMonth(existing.consumed);
     m_detailsForm->loadFrom(existing.details);
 }
 
@@ -51,7 +50,7 @@ void MediaEntryDialog::initLayout()
     contentBox().append(m_releaseDateLabel);
     contentBox().append(m_releaseDatePicker);
     contentBox().append(m_consumedDateLabel);
-    contentBox().append(m_consumedDatePicker);
+    contentBox().append(m_consumedMonthPicker);
 
     m_detailsForm = createFormFor(m_category);
     m_detailsForm->add_css_class("details-form");
@@ -94,7 +93,7 @@ std::optional<MediaEntry> MediaEntryDialog::getResult() const
         m_category,
         std::string(title),
         m_releaseDatePicker.toReleaseDate(),
-        m_consumedDatePicker.toYearMonth(),
+        m_consumedMonthPicker.month(),
         m_detailsForm->toDetails(),
         m_id
     };

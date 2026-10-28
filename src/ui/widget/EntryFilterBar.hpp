@@ -1,11 +1,15 @@
 #pragma once
 
+#include "stapik/ui/widget/SearchEntry.hpp"
+
 #include <gtkmm/box.h>
 #include <gtkmm/dropdown.h>
 #include <gtkmm/label.h>
 #include <sigc++/signal.h>
-#include <vector>
+#include <optional>
 #include <set>
+#include <string>
+#include <vector>
 
 class EntryFilterBar : public Gtk::Box
 {
@@ -18,6 +22,7 @@ public:
 
     [[nodiscard]] std::optional<unsigned> selectedYear() const;
     [[nodiscard]] std::optional<unsigned> selectedMonth() const;
+    [[nodiscard]] std::string searchQuery() const;
 
     sigc::signal<void()>& signalFilterChanged();
 
@@ -30,6 +35,7 @@ private:
     Gtk::DropDown m_monthDropDown;
     Gtk::Label m_yearLabel;
     Gtk::DropDown m_yearDropDown;
+    SearchEntry m_searchEntry;
 
     std::vector<unsigned> m_yearValues;
     std::set<unsigned> m_lastAvailableYears;

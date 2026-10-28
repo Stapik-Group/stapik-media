@@ -3,7 +3,8 @@
 #include "../widget/MediaEntryRow.hpp"
 
 #include <gtkmm/box.h>
-#include <gtkmm/label.h>
+#include "stapik/ui/widget/EmptyState.hpp"
+
 #include <sigc++/signal.h>
 #include <vector>
 #include <memory>
@@ -23,7 +24,7 @@ private:
     static constexpr int LIST_SPACING = 2;
 
     std::vector<std::unique_ptr<MediaEntryRow>> m_rows;
-    Gtk::Label m_emptyPlaceholder;
+    EmptyState m_emptyState;
 
     sigc::signal<void(std::size_t)> m_signalEditRequested;
     sigc::signal<void(std::size_t)> m_signalDeleteRequested;

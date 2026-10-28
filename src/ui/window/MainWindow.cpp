@@ -2,6 +2,7 @@
 
 #include "../dialog/MediaEntryDialog.hpp"
 #include "../util/EntryFilterService.hpp"
+#include "../util/Pagination.hpp"
 #include "../../core/model/MediaCategoryKey.hpp"
 
 #include "stapik/app/AppContext.hpp"
@@ -61,7 +62,7 @@ void MainWindow::reportStorageProblem()
 
 void MainWindow::init()
 {
-    set_title(WINDOW_TITLE);
+    set_title(stapik::app::AppContext::instance().info().displayName);
     set_default_size(DEFAULT_WIDTH, DEFAULT_HEIGHT);
     set_child(m_mainBox);
 }
@@ -274,25 +275,18 @@ void MainWindow::applyFiltersAndRefresh()
     const EntryFilter filter{
         m_sidebar.selectedCategory(),
         m_filterBar.selectedMonth(),
-        m_filterBar.selectedYear()
+        m_filterBar.selectedYear(),
+        m_filterBar.searchQuery()
     };
 
     const auto matchingIndices = EntryFilterService::filterIndices(m_model.entries(), filter);
-
-    const auto totalPages = matchingIndices.empty()
-        ? std::size_t{1}
-    : (matchingIndices.size() + PAGE_SIZE - 1) / PAGE_SIZE;
-
-    if (m_currentPage > totalPages)
-        m_currentPage = totalPages;
-
-    const auto startIndex = (m_currentPage - 1) * PAGE_SIZE;
-    const auto endIndex = std::min(startIndex + PAGE_SIZE, matchingIndices.size());
+    const auto slice = Pagination::sliceFor(matchingIndices.size(), m_currentPage, PAGE_SIZE);
+    m_currentPage = slice.page;
 
     const std::vector pageIndices(
-        matchingIndices.begin() + static_cast<std::ptrdiff_t>(startIndex),
-        matchingIndices.begin() + static_cast<std::ptrdiff_t>(endIndex));
+        matchingIndices.begin() + static_cast<std::ptrdiff_t>(slice.first),
+        matchingIndices.begin() + static_cast<std::ptrdiff_t>(slice.last));
 
     m_listView.refresh(m_model.entries(), pageIndices);
-    m_paginationBar.setState(m_currentPage, totalPages);
+    m_paginationBar.setState(slice.page, slice.totalPages);
 }

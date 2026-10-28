@@ -21,6 +21,7 @@ add_executable(stapikmedia_tests
         infrastructure/MediaRepositoryTest.cpp
         resources/MediaResourcesTest.cpp
         ui/EntryFilterServiceTest.cpp
+        ui/PaginationTest.cpp
 )
 
 target_link_libraries(stapikmedia_tests PRIVATE

@@ -1,13 +1,10 @@
 #include "MediaListView.hpp"
-#include "stapik/locale/LocaleManager.hpp"
 #include "stapik/log/Log.hpp"
 
-MediaListView::MediaListView() : Box(Gtk::Orientation::VERTICAL, LIST_SPACING)
-{
-    m_emptyPlaceholder.set_text(LocaleManager::instance().translate("list.empty"));
-    m_emptyPlaceholder.set_margin(LIST_SPACING * 4);
-    m_emptyPlaceholder.add_css_class("dim-label");
-}
+MediaListView::MediaListView() :
+    Box(Gtk::Orientation::VERTICAL, LIST_SPACING),
+    m_emptyState(EmptyState::DEFAULT_ICON, "list.empty")
+{}
 
 void MediaListView::refresh(const std::vector<MediaEntry>& allEntries, const std::vector<std::size_t>& indicesToShow)
 {
@@ -29,7 +26,7 @@ void MediaListView::refresh(const std::vector<MediaEntry>& allEntries, const std
     }
 
     if (indicesToShow.empty())
-        append(m_emptyPlaceholder);
+        append(m_emptyState);
 }
 
 void MediaListView::clearRows()
@@ -38,15 +35,14 @@ void MediaListView::clearRows()
         remove(*row);
     m_rows.clear();
 
-    if (m_emptyPlaceholder.get_parent() != nullptr)
-        remove(m_emptyPlaceholder);
+    if (m_emptyState.get_parent() != nullptr)
+        remove(m_emptyState);
 }
 
 void MediaListView::refreshLabels()
 {
     for (const auto& row : m_rows)
         row->refreshLabels();
-    m_emptyPlaceholder.set_text(LocaleManager::instance().translate("list.empty"));
 }
 
 sigc::signal<void(std::size_t)>& MediaListView::signalEditRequested()

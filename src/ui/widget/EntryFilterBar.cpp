@@ -24,6 +24,11 @@ void EntryFilterBar::initLayout()
     append(m_monthLabel);
     append(m_monthDropDown);
 
+    m_searchEntry.set_placeholder_text(loc.translate("filter.search.placeholder"));
+    m_searchEntry.set_hexpand(true);
+    m_searchEntry.signalQueryChanged().connect([this] { m_signalFilterChanged.emit(); });
+    append(m_searchEntry);
+
     m_yearDropDown.property_selected().signal_changed().connect(sigc::mem_fun(*this, &EntryFilterBar::onYearChanged));
     m_monthDropDown.property_selected().signal_changed().connect(sigc::mem_fun(*this, &EntryFilterBar::onMonthChanged));
 
@@ -109,8 +114,14 @@ std::optional<unsigned> EntryFilterBar::selectedMonth() const
     return index;
 }
 
+std::string EntryFilterBar::searchQuery() const
+{
+    return m_searchEntry.query();
+}
+
 void EntryFilterBar::reset()
 {
+    m_searchEntry.set_text("");
     m_yearDropDown.set_selected(ALL_YEARS_INDEX);
     m_monthDropDown.set_selected(ALL_MONTHS_INDEX);
     m_monthDropDown.set_sensitive(false);
@@ -121,6 +132,7 @@ void EntryFilterBar::refreshLabels()
     const auto& loc = LocaleManager::instance();
     m_yearLabel.set_text(loc.translate("filter.year.label"));
     m_monthLabel.set_text(loc.translate("filter.month.label"));
+    m_searchEntry.set_placeholder_text(loc.translate("filter.search.placeholder"));
 
     const auto previousMonth = selectedMonth();
 

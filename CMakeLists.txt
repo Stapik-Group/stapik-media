@@ -32,6 +32,7 @@ add_library(stapikmediacore STATIC
         src/infrastructure/storage/MediaEntrySerializer.cpp
         src/infrastructure/storage/MediaRepository.cpp
         src/ui/util/EntryFilterService.cpp
+        src/ui/util/Pagination.cpp
 )
 
 target_include_directories(stapikmediacore PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -62,7 +63,6 @@ stapik_add_application(
                 src/ui/util/DateFormatter.cpp
                 src/ui/view/CategorySidebar.cpp
                 src/ui/view/MediaListView.cpp
-                src/ui/widget/ConsumedDatePicker.cpp
                 src/ui/widget/MainMenu.cpp
                 src/ui/widget/MediaEntryRow.cpp
                 src/ui/widget/ReleaseDatePicker.cpp

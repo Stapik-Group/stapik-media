@@ -2,6 +2,8 @@
 
 Nad listą rozwijane pola **Rok** i **Miesiąc** zawężają wpisy według czasu skonsumowania. Lista miesięcy staje się dostępna po wybraniu roku.
 
-Długie listy są podzielone na strony. Przyciskami ze strzałkami pod listą przechodzisz między stronami, a numer strony widać między przyciskami.
+Pole wyszukiwania obok nich znajduje wpisy po tytule. Nie rozróżnia wielkości liter ani znaków diakrytycznych, więc „lodz” znajdzie „Łódź”.
 
-Zmiana kategorii zeruje filtr.
+Długie listy są podzielone na strony po dziesięć wpisów. Przyciskami ze strzałkami pod listą przechodzisz między stronami, a numer strony widać między przyciskami.
+
+Zmiana kategorii zeruje filtr i wyszukiwanie.

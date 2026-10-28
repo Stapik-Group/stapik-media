@@ -4,6 +4,7 @@
 
 #include "stapik/locale/LocaleManager.hpp"
 
+#include <format>
 #include <variant>
 
 MediaEntryRow::MediaEntryRow(const MediaEntry& entry) :
@@ -28,11 +29,7 @@ void MediaEntryRow::initLayout(const MediaEntry& entry)
     m_detailsLabel.set_halign(Gtk::Align::START);
     m_detailsLabel.add_css_class("entry-details");
 
-    const auto datesText =
-        LocaleManager::instance().translate("list.entry.released") + ": " + DateFormatter::formatReleaseDate(entry.releaseDate) +
-        "   " +
-        LocaleManager::instance().translate("list.entry.consumed") + ": " + DateFormatter::formatConsumedDate(entry.consumed);
-    m_datesLabel.set_text(datesText);
+    m_datesLabel.set_text(formatDatesLine(entry));
     m_datesLabel.set_halign(Gtk::Align::START);
     m_datesLabel.add_css_class("entry-dates");
 
@@ -53,6 +50,17 @@ void MediaEntryRow::initLayout(const MediaEntry& entry)
 
     append(m_infoBox);
     append(m_buttonsBox);
+}
+
+std::string MediaEntryRow::formatDatesLine(const MediaEntry& entry)
+{
+    const auto& loc = LocaleManager::instance();
+
+    return std::format("{}: {}   {}: {}",
+        loc.translate("list.entry.released"),
+        DateFormatter::formatReleaseDate(entry.releaseDate),
+        loc.translate("list.entry.consumed"),
+        DateFormatter::formatConsumedDate(entry.consumed));
 }
 
 std::string MediaEntryRow::formatDetailsLine(const MediaEntry& entry)
@@ -86,11 +94,7 @@ void MediaEntryRow::refreshLabels()
     m_deleteButton.set_label(LocaleManager::instance().translate("list.entry.delete"));
 
     m_detailsLabel.set_text(formatDetailsLine(m_entry));
-    const auto datesText =
-        LocaleManager::instance().translate("list.entry.released") + ": " + DateFormatter::formatReleaseDate(m_entry.releaseDate) +
-        "   " +
-        LocaleManager::instance().translate("list.entry.consumed") + ": " + DateFormatter::formatConsumedDate(m_entry.consumed);
-    m_datesLabel.set_text(datesText);
+    m_datesLabel.set_text(formatDatesLine(m_entry));
 }
 
 sigc::signal<void()>& MediaEntryRow::signalEditRequested()

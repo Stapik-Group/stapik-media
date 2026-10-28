@@ -2,7 +2,9 @@
 
 #include "details/DetailsFormWidget.hpp"
 
+#include "stapik/domain/YearMonth.hpp"
 #include "stapik/ui/dialog/StapikDialog.hpp"
+#include "stapik/ui/widget/MonthPicker.hpp"
 
 #include <gtkmm/box.h>
 #include <gtkmm/entry.h>
@@ -10,7 +12,6 @@
 #include <optional>
 #include <memory>
 
-#include "../widget/ConsumedDatePicker.hpp"
 #include "../widget/ReleaseDatePicker.hpp"
 
 class MediaEntryDialog : public StapikDialog
@@ -30,7 +31,7 @@ private:
     Gtk::Label m_titleLabel;
     Gtk::Entry m_titleEntry;
     ReleaseDatePicker m_releaseDatePicker;
-    ConsumedDatePicker m_consumedDatePicker;
+    MonthPicker m_consumedMonthPicker{ stapik::domain::YearMonth::current() };
     Gtk::Box m_detailsContainer;
     std::unique_ptr<DetailsFormWidget> m_detailsForm;
     Gtk::Label m_releaseDateLabel;

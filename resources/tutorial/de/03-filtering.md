@@ -2,6 +2,8 @@
 
 Über der Liste grenzen die Auswahlfelder **Jahr** und **Monat** die Einträge nach dem Zeitpunkt des Konsums ein. Die Monatsliste ist verfügbar, sobald ein Jahr gewählt ist.
 
-Lange Listen sind in Seiten unterteilt. Mit den Pfeiltasten unter der Liste wechseln Sie die Seite; die Seitenzahl steht zwischen den Tasten.
+Das Suchfeld daneben findet Einträge nach dem Titel. Es ignoriert Groß- und Kleinschreibung sowie diakritische Zeichen, sodass „lodz“ auch „Łódź“ findet.
 
-Beim Wechsel der Kategorie wird der Filter zurückgesetzt.
+Lange Listen sind in Seiten zu je zehn Einträgen unterteilt. Mit den Pfeiltasten unter der Liste wechseln Sie die Seite; die Seitenzahl steht zwischen den Tasten.
+
+Beim Wechsel der Kategorie werden Filter und Suche zurückgesetzt.

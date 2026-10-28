@@ -1,5 +1,4 @@
 {
-  "window.title": "Stapik Media",
   "window.button.add": "Add",
 
   "sidebar.category.movie": "Movies",
@@ -73,5 +72,6 @@
   "cloud.conflict.secondary": "Another device saved a newer version of the media list. Your latest changes were replaced by it.",
   "cloud.plainFileSecrets": "No system keyring is available, so the API key and the passphrase are kept in a file readable only by your user.",
   "cloud.apiKeyExpiring.header": "Cloud API key expires soon",
-  "settings.checkForUpdates": "Check for updates"
+  "settings.checkForUpdates": "Check for updates",
+  "filter.search.placeholder": "Search by title"
 }

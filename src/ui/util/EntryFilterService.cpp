@@ -1,10 +1,15 @@
 #include "EntryFilterService.hpp"
 
+#include "stapik/text/TextFolding.hpp"
+
+#include <string>
+
 namespace EntryFilterService
 {
     std::vector<std::size_t> filterIndices(const std::vector<MediaEntry>& entries, const EntryFilter& filter)
     {
         std::vector<std::size_t> result;
+        const auto query = stapik::text::foldForSearch(filter.titleQuery);
 
         for (std::size_t i = 0; i < entries.size(); ++i)
         {
@@ -17,6 +22,9 @@ namespace EntryFilterService
                 continue;
 
             if (filter.consumedMonth.has_value() && entry.consumed.month() != static_cast<int>(filter.consumedMonth.value()))
+                continue;
+
+            if (!query.empty() && stapik::text::foldForSearch(entry.title).find(query) == std::string::npos)
                 continue;
 
             result.push_back(i);

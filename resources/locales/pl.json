@@ -1,5 +1,4 @@
 {
-  "window.title": "Stapik Media",
   "window.button.add": "Dodaj",
 
   "sidebar.category.movie": "Filmy",
@@ -73,5 +72,6 @@
   "cloud.conflict.secondary": "Inne urządzenie zapisało nowszą wersję listy mediów. Twoje ostatnie zmiany zostały przez nią zastąpione.",
   "cloud.plainFileSecrets": "Brak systemowego pęku kluczy, więc klucz API i fraza szyfrująca są przechowywane w pliku dostępnym tylko dla Twojego użytkownika.",
   "cloud.apiKeyExpiring.header": "Klucz API chmury wkrótce wygaśnie",
-  "settings.checkForUpdates": "Sprawdzaj aktualizacje"
+  "settings.checkForUpdates": "Sprawdzaj aktualizacje",
+  "filter.search.placeholder": "Szukaj po tytule"
 }

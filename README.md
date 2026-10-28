@@ -10,8 +10,8 @@ A desktop media-tracking application for Linux, written in C++20 using GTK4/gtkm
 - **Media entries** - add, edit and delete entries, with fields tailored to each category (director/genre for movies and series, author/genre/audiobook for books, performer/publisher/genre for albums, studio/publisher/platform for games).
 - **Release date with adjustable precision** - store a full date, a month and year, or just a year, depending on how much you actually know about older titles.
 - **Consumption date** - track the month and year you watched/read/listened/played each entry, defaulting to the current month and year when adding a new one
-- **Filtering** - narrow the list down by consumption year, and optionally by month within that year.
-- **Pagination** - entries are shown 20 per page.
+- **Filtering and search** - narrow the list down by consumption year, optionally by month within that year, and search entries by title ignoring case and diacritics.
+- **Pagination** - entries are shown 10 per page.
 - **Undo / Redo** - add, edit and delete are undoable from the Edit menu (Ctrl+Z / Ctrl+Shift+Z).
 - **Cloud sync** - background synchronization with a self-hosted Stapik Cloud server, with automatic conflict resolution based on timestamps and a status indicator in the window.
 - **Yearly archives** - only the current year is kept in the main cloud document; older years are archived separately and downloaded on demand.
@@ -185,6 +185,7 @@ Switch between five themes from **Settings → Theme**: Classic (the original re
 - [x] Category-based sidebar with per-type entry fields
 - [x] Filtering by consumption year/month
 - [x] Pagination
+- [x] Search by title
 - [x] Cloud sync with conflict resolution
 - [x] `.deb` package for easier distribution
 - [x] Multiple themes (Classic / Modern / Classic Pink / Dark / Neoclassic)

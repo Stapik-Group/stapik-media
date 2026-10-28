@@ -27,7 +27,6 @@ private:
     static constexpr int DEFAULT_HEIGHT = 800;
     static constexpr auto SETTING_CATEGORY = "sidebar.category";
     static constexpr int ADD_BUTTON_MARGIN = 8;
-    static constexpr auto WINDOW_TITLE = "Stapik Media";
     static constexpr int STATUS_MARGIN = 4;
     static constexpr std::size_t PAGE_SIZE = 10;
 
