@@ -25,6 +25,31 @@ std::string AddEntryCommand::description() const
     return LocaleManager::instance().translate("command.entry.add");
 }
 
+ImportEntriesCommand::ImportEntriesCommand(MediaModel& model, std::vector<MediaEntry> entries) :
+    m_model(model),
+    m_entries(std::move(entries))
+{}
+
+void ImportEntriesCommand::execute()
+{
+    m_model.insertEntries(m_entries);
+}
+
+void ImportEntriesCommand::undo()
+{
+    std::vector<std::string> ids;
+    ids.reserve(m_entries.size());
+    for (const auto& entry : m_entries)
+        ids.push_back(entry.id);
+
+    m_model.eraseEntries(ids);
+}
+
+std::string ImportEntriesCommand::description() const
+{
+    return LocaleManager::instance().translate("command.entry.import");
+}
+
 UpdateEntryCommand::UpdateEntryCommand(MediaModel& model, MediaEntry before, MediaEntry after) :
     m_model(model),
     m_before(std::move(before)),

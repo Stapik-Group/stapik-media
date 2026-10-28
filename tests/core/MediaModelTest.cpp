@@ -394,6 +394,69 @@ TEST_F(MediaModelTest, EntriesOfTheNewCurrentYearStayIntactWhenTheYearTurns)
     EXPECT_EQ(m_repository.load().entries.at(0).title, "Heat");
 }
 
+TEST_F(MediaModelTest, ImportAddsNewEntriesWithGeneratedIds)
+{
+    const auto added = m_model->importEntries({ test::makeMovie("Heat", m_year, 3, ""), test::makeBook("Dune", m_year, 4, "") });
+
+    EXPECT_EQ(added, 2U);
+    ASSERT_EQ(m_model->entries().size(), 2U);
+    EXPECT_FALSE(m_model->entries()[0].id.empty());
+    EXPECT_NE(m_model->entries()[0].id, m_model->entries()[1].id);
+    EXPECT_EQ(m_repository.load().entries.size(), 2U);
+}
+
+TEST_F(MediaModelTest, ImportSkipsWorksThatAreAlreadyInTheList)
+{
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year, 3, "a")));
+
+    const auto added = m_model->importEntries({ test::makeMovie("  HEAT ", m_year, 5, ""), test::makeMovie("Alien", m_year, 5, "") });
+
+    EXPECT_EQ(added, 1U);
+    EXPECT_EQ(m_model->entries().size(), 2U);
+}
+
+TEST_F(MediaModelTest, ImportSkipsWorksRepeatedInsideTheImportedFile)
+{
+    const auto candidates = std::vector<MediaEntry>{ test::makeMovie("Heat", m_year, 3, ""), test::makeMovie("heat", m_year, 4, ""), test::makeBook("Heat", m_year, 4, "") };
+
+    const auto verdicts = m_model->previewImport(candidates);
+    const auto added = m_model->importEntries(candidates);
+
+    EXPECT_EQ(verdicts, (std::vector<MediaModel::ImportVerdict>{ MediaModel::ImportVerdict::Add, MediaModel::ImportVerdict::Duplicate, MediaModel::ImportVerdict::Add }));
+    EXPECT_EQ(added, 2U);
+}
+
+TEST_F(MediaModelTest, ImportOfNothingNewChangesNothing)
+{
+    ASSERT_TRUE(m_model->addEntry(test::makeMovie("Heat", m_year, 3, "a")));
+    m_model->undoStack().clear();
+
+    EXPECT_EQ(m_model->importEntries({ test::makeMovie("Heat", m_year, 3, "") }), 0U);
+    EXPECT_FALSE(m_model->undoStack().canUndo());
+}
+
+TEST_F(MediaModelTest, ImportPutsEntriesOfEarlierYearsInTheirArchives)
+{
+    EXPECT_EQ(m_model->importEntries({ test::makeMovie("Heat", m_year, 3, ""), test::makeMovie("Alien", m_year - 2, 5, "") }), 2U);
+
+    EXPECT_EQ(m_repository.load().entries.size(), 1U);
+    const auto archives = m_repository.loadArchives();
+    ASSERT_TRUE(archives.contains(m_year - 2));
+    EXPECT_EQ(archives.at(m_year - 2).entries.size(), 1U);
+}
+
+TEST_F(MediaModelTest, WholeImportIsUndoneAndRedoneInOneStep)
+{
+    ASSERT_EQ(m_model->importEntries({ test::makeMovie("Heat", m_year, 3, ""), test::makeMovie("Alien", m_year - 1, 5, ""), test::makeBook("Dune", m_year, 4, "") }), 3U);
+
+    ASSERT_TRUE(m_model->undoStack().undo());
+    EXPECT_TRUE(m_model->entries().empty());
+    EXPECT_FALSE(m_model->undoStack().canUndo());
+
+    ASSERT_TRUE(m_model->undoStack().redo());
+    EXPECT_EQ(m_model->entries().size(), 3U);
+}
+
 TEST(MediaModelSaveFailureTest, FailureIsReportedOnceUntilASaveSucceedsAgain)
 {
     stapik::test::TemporaryDirectory directory{ "stapik-media-model-failure" };

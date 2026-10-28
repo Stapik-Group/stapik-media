@@ -12,11 +12,13 @@ A desktop media-tracking application for Linux, written in C++20 using GTK4/gtkm
 - **Release date with adjustable precision** - store a full date, a month and year, or just a year, depending on how much you actually know about older titles.
 - **Consumption date** - track the month and year you watched/read/listened/played each entry, defaulting to the current month and year when adding a new one
 - **Filtering and search** - narrow the list down by consumption year, optionally by month within that year, and search entries by title ignoring case and diacritics.
+- **Sorting** - by title, release date or the month of consumption, ascending or descending; the newest consumed entries come first by default and the choice is remembered.
 - **Pagination** - entries are shown 10 per page.
 - **Undo / Redo** - add, edit and delete are undoable from the Edit menu (Ctrl+Z / Ctrl+Shift+Z).
 - **Cloud sync** - background synchronization with a self-hosted Stapik Cloud server, with automatic conflict resolution based on timestamps and a status indicator in the window.
 - **Yearly archives** - only the current year is kept in the main cloud document; older years are archived separately and downloaded on demand.
 - **CSV export** - all entries to a CSV file that opens correctly in Excel (UTF-8 with a byte order mark and the separator of the current language).
+- **CSV import** - entries from a CSV file in the format of the export, with a preview that marks new, duplicate and invalid rows; the whole import is a single undoable step.
 - **Printing and PDF** - the list you see (category, filters and search, every page) can be printed or saved as a PDF.
 - **Settings window** - language, theme, font and the update check in one place.
 - **Built-in tutorial** - a help window with a contents tree (Help menu or F1), available in Polish, English and German.
@@ -243,6 +245,7 @@ Switch between five themes in **Settings → Settings…**: Classic (the origina
 - [x] Undo / Redo
 - [x] Yearly archives in the cloud
 - [x] Unit tests
-- [ ] Import from an existing spreadsheet (CSV/XLSX)
-- [ ] Sort options (by title, release date, consumption date)
+- [x] Sort options (by title, release date, consumption date)
+- [x] CSV import with a preview and duplicate detection
+- [ ] Import from an XLSX file
 - [ ] Flatpak package

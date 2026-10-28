@@ -38,6 +38,13 @@ public:
         ReadOnly
     };
 
+    enum class ImportVerdict
+    {
+        Add,
+        Duplicate,
+        ArchiveNotLoaded
+    };
+
     using EntryResult = stapik::Result<void, EntryError>;
 
     MediaModel(MediaDocument initial, MediaRepository& repository);
@@ -59,7 +66,12 @@ public:
     [[nodiscard]] EntryResult updateEntry(const std::string& id, MediaEntry entry);
     void removeEntry(const std::string& id);
 
+    [[nodiscard]] std::vector<ImportVerdict> previewImport(const std::vector<MediaEntry>& candidates) const;
+    std::size_t importEntries(std::vector<MediaEntry> candidates);
+
     void insertEntry(MediaEntry entry, std::optional<std::size_t> position = std::nullopt);
+    void insertEntries(std::vector<MediaEntry> entries);
+    void eraseEntries(const std::vector<std::string>& ids);
     bool replaceEntry(MediaEntry entry);
     std::optional<std::size_t> eraseEntry(const std::string& id);
 

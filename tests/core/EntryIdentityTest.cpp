@@ -64,3 +64,16 @@ TEST(EntryIdentityTest, TitleKeyIsTrimmedAndFolded)
 {
     EXPECT_EQ(EntryIdentity::titleKey("  HEAT\t"), "heat");
 }
+
+
+TEST(EntryIdentityTest, WorkKeyIsEqualExactlyWhenTheEntriesAreTheSameWork)
+{
+    const auto heat = test::makeMovie("Heat", 2024, 3, "a");
+    const auto sameHeat = test::makeMovie("  hEAT ", 2020, 11, "b");
+    const auto remake = releasedIn(test::makeMovie("Heat", 2024, 3, "c"), 2030);
+    const auto book = test::makeBook("Heat", 2024, 3, "d");
+
+    EXPECT_EQ(EntryIdentity::workKey(heat), EntryIdentity::workKey(sameHeat));
+    EXPECT_NE(EntryIdentity::workKey(heat), EntryIdentity::workKey(remake));
+    EXPECT_NE(EntryIdentity::workKey(heat), EntryIdentity::workKey(book));
+}

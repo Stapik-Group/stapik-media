@@ -11,6 +11,8 @@ FetchContent_MakeAvailable(googletest)
 include(GoogleTest)
 
 add_executable(stapikmedia_tests
+        core/CsvReaderTest.cpp
+        core/EntryCsvImportTest.cpp
         core/EntryCsvTest.cpp
         core/EntryIdentityTest.cpp
         core/MediaCategoryKeyTest.cpp

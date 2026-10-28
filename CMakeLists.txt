@@ -24,7 +24,9 @@ FetchContent_MakeAvailable(stapikcommon)
 
 add_library(stapikmediacore STATIC
         src/core/command/EntryCommands.cpp
+        src/core/export/CsvReader.cpp
         src/core/export/EntryCsv.cpp
+        src/core/export/EntryCsvImport.cpp
         src/core/model/EntryIdentity.cpp
         src/core/model/MediaDocument.cpp
         src/core/model/MediaModel.cpp
@@ -64,11 +66,13 @@ stapik_add_application(
         SOURCES
                 src/app/MediaAppInfo.cpp
                 src/ui/action/ExportActionHandler.cpp
+                src/ui/action/ImportActionHandler.cpp
                 src/ui/action/MenuActionHandler.cpp
                 src/ui/dialog/details/AlbumDetailsForm.cpp
                 src/ui/dialog/details/BookDetailsForm.cpp
                 src/ui/dialog/details/GameDetailsForm.cpp
                 src/ui/dialog/details/ScreenDetailsForm.cpp
+                src/ui/dialog/ImportPreviewDialog.cpp
                 src/ui/dialog/MediaEntryDialog.cpp
                 src/ui/print/EntryPrintout.cpp
                 src/ui/util/DateFormatter.cpp

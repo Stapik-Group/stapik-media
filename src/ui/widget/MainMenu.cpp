@@ -16,6 +16,13 @@ namespace
         fileMenu.append_section(disconnectSection);
     }
 
+    void buildImportMenu(Gio::Menu& fileMenu)
+    {
+        const auto importSection = Gio::Menu::create();
+        importSection->append(LocaleManager::instance().translate("menu.file.importCsv"), "win.importCsv");
+        fileMenu.append_section(importSection);
+    }
+
     void buildExportMenu(Gio::Menu& fileMenu)
     {
         const auto& loc = LocaleManager::instance();
@@ -49,6 +56,7 @@ MainMenu::MainMenu(Gtk::ApplicationWindow& window, MediaModel& model, const stap
     m_actionHandler.registerActions();
     m_menu.settings().addBool("settings.checkForUpdates", m_updateCheckSetting);
     m_menu.addToMenu(StandardMenu::Target::File, buildDisconnectMenu);
+    m_menu.addToMenu(StandardMenu::Target::File, buildImportMenu);
     m_menu.addToMenu(StandardMenu::Target::File, buildExportMenu);
     m_menu.addToMenu(StandardMenu::Target::File, buildRestoreBackupMenu);
 }

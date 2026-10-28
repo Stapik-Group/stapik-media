@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../action/ExportActionHandler.hpp"
+#include "../action/ImportActionHandler.hpp"
 #include "../widget/MainMenu.hpp"
 #include "../../core/model/MediaModel.hpp"
 #include "../../infrastructure/storage/MediaRepository.hpp"
@@ -46,6 +47,7 @@ private:
     MediaRepository m_repository;
     MediaModel m_model;
     ExportActionHandler m_exportActions;
+    ImportActionHandler m_importActions;
 
     Gtk::Box m_mainBox;
     Gtk::Box m_contentBox;

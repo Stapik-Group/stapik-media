@@ -14,6 +14,7 @@
 #include <chrono>
 #include <format>
 #include <memory>
+#include <unordered_set>
 #include <utility>
 
 namespace
@@ -198,6 +199,93 @@ void MediaModel::removeEntry(const std::string& id)
     }
 
     m_undoStack.execute(std::make_unique<RemoveEntryCommand>(*this, std::move(*entry)));
+}
+
+std::vector<MediaModel::ImportVerdict> MediaModel::previewImport(const std::vector<MediaEntry>& candidates) const
+{
+    std::unordered_set<std::string> knownWorks;
+    for (const auto& entry : m_view)
+        knownWorks.insert(EntryIdentity::workKey(entry));
+
+    std::vector<ImportVerdict> verdicts;
+    verdicts.reserve(candidates.size());
+
+    for (const auto& candidate : candidates)
+    {
+        if (!canWriteYear(candidate.consumed.year()))
+            verdicts.push_back(ImportVerdict::ArchiveNotLoaded);
+        else if (!knownWorks.insert(EntryIdentity::workKey(candidate)).second)
+            verdicts.push_back(ImportVerdict::Duplicate);
+        else
+            verdicts.push_back(ImportVerdict::Add);
+    }
+
+    return verdicts;
+}
+
+std::size_t MediaModel::importEntries(std::vector<MediaEntry> candidates)
+{
+    if (!isWritable())
+        return 0;
+
+    archiveClosedYears();
+
+    const auto verdicts = previewImport(candidates);
+
+    std::vector<MediaEntry> accepted;
+    for (std::size_t index = 0; index < candidates.size(); ++index)
+    {
+        if (verdicts[index] != ImportVerdict::Add)
+            continue;
+
+        candidates[index].id = stapik::domain::generateId();
+        accepted.push_back(std::move(candidates[index]));
+    }
+
+    if (accepted.empty())
+        return 0;
+
+    const auto count = accepted.size();
+    m_undoStack.execute(std::make_unique<ImportEntriesCommand>(*this, std::move(accepted)));
+    return count;
+}
+
+void MediaModel::insertEntries(std::vector<MediaEntry> entries)
+{
+    Touched touched;
+    for (auto& entry : entries)
+    {
+        const auto archiveYear = archiveYearOf(entry);
+        documentFor(archiveYear).entries.push_back(std::move(entry));
+
+        if (archiveYear.has_value())
+            touched.archives.insert(*archiveYear);
+        else
+            touched.main = true;
+    }
+
+    commit(touched);
+}
+
+void MediaModel::eraseEntries(const std::vector<std::string>& ids)
+{
+    Touched touched;
+    for (const auto& id : ids)
+    {
+        const auto location = locate(id);
+        if (!location.has_value())
+            continue;
+
+        auto& document = documentFor(location->archiveYear);
+        document.entries.erase(document.entries.begin() + static_cast<std::ptrdiff_t>(location->index));
+
+        if (location->archiveYear.has_value())
+            touched.archives.insert(*location->archiveYear);
+        else
+            touched.main = true;
+    }
+
+    commit(touched);
 }
 
 void MediaModel::insertEntry(MediaEntry entry, const std::optional<std::size_t> position)
