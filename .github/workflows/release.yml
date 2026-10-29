@@ -40,6 +40,7 @@ jobs:
     with:
       application-name: stapikmedia
       images: '["ubuntu:24.04", "debian:13"]'
+      apt-packages: file
       cmake-args: -DSTAPIK_MEDIA_BUILD_TESTS=ON
       package: true
     secrets:
